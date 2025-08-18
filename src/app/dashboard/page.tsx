@@ -10,6 +10,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription
 } from '@/components/ui/card';
 import {
   Table,
@@ -21,6 +22,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import type { Campaign } from '@/types';
+import { Button } from '@/components/ui/button';
 
 const metricCards = [
   {
@@ -66,49 +68,57 @@ const statusVariant = {
 export default function DashboardPage() {
   return (
     <>
-      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {metricCards.map(card => (
           <Card key={card.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
-              <card.icon className="h-4 w-4 text-muted-foreground" />
+              <card.icon className="h-5 w-5 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{card.value}</div>
-              <p className="text-xs text-muted-foreground">{card.change}</p>
+              <div className="text-3xl font-bold">{card.value}</div>
+              <p className="text-xs text-muted-foreground pt-1">{card.change}</p>
             </CardContent>
           </Card>
         ))}
       </div>
-      <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-6 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
         <Card className="xl:col-span-2">
-          <CardHeader>
-            <CardTitle>Recent Campaigns</CardTitle>
+          <CardHeader className="flex flex-row items-center">
+            <div className="grid gap-2">
+                <CardTitle>Recent Campaigns</CardTitle>
+                <CardDescription>
+                    Your most recent campaign performance.
+                </CardDescription>
+            </div>
+            <Button asChild size="sm" className="ml-auto gap-1">
+                <a href="/campaigns">View All</a>
+            </Button>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Campaign</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead className="text-center">Status</TableHead>
                   <TableHead className="text-right">Earnings</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {campaigns.map(campaign => (
+                {campaigns.slice(0,5).map(campaign => (
                   <TableRow key={campaign.id}>
                     <TableCell>
                       <div className="font-medium">{campaign.name}</div>
-                      <div className="hidden text-sm text-muted-foreground md:inline">
+                      <div className="text-sm text-muted-foreground md:inline">
                         {campaign.brand}
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant={statusVariant[campaign.status]}>
+                    <TableCell className="text-center">
+                      <Badge variant={statusVariant[campaign.status]} className="capitalize">
                         {campaign.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right font-medium">
                       ${campaign.earnings.toFixed(2)}
                     </TableCell>
                   </TableRow>
