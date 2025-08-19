@@ -21,7 +21,7 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
-      <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
+      <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background/95 px-4 md:px-6 backdrop-blur-sm">
         <Link href="/" className="flex items-center gap-2 font-bold text-lg">
           <Logo className="h-6 w-6 text-primary" />
           <span className="hidden md:inline-block">VeriFlow</span>
@@ -29,7 +29,7 @@ export default function DashboardLayout({
         <div className="flex-1" />
         <div className="flex items-center gap-4">
           <ThemeToggle />
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" className="font-mono">
             $1,234.56
           </Button>
           <Button variant="ghost" size="icon" className="rounded-full">
@@ -65,7 +65,7 @@ export default function DashboardLayout({
           </DropdownMenu>
         </div>
       </header>
-      <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 bg-secondary/40">
+      <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 bg-background">
         {children}
       </main>
       <Button className="fixed bottom-6 right-6 h-16 w-16 rounded-full shadow-lg" size="icon">

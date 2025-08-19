@@ -2,54 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: 'Inter', sans-serif;
-}
-
 @layer base {
   :root {
-    --background: 240 5% 96.1%; /* #f5f5f5 */
+    --background: 0 0% 100%;
     --foreground: 224 71.4% 4.1%;
     --card: 0 0% 100%;
     --card-foreground: 224 71.4% 4.1%;
     --popover: 0 0% 100%;
     --popover-foreground: 224 71.4% 4.1%;
-    --primary: 262.1 52.1% 47.1%; /* #673ab7 */
+    --primary: 173 98% 38%; /* Vibrant Teal/Emerald */
     --primary-foreground: 210 20% 98%;
-    --secondary: 220 14.3% 95.9%;
-    --secondary-foreground: 220.9 39.3% 11%;
+    --secondary: 262 82% 58%; /* Electric Purple */
+    --secondary-foreground: 210 20% 98%;
     --muted: 220 14.3% 95.9%;
     --muted-foreground: 220 8.9% 46.1%;
-    --accent: 173.5 100% 30.6%; /* #009688 */
-    --accent-foreground: 210 20% 98%;
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 220.9 39.3% 11%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 20% 98%;
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 262.1 52.1% 47.1%;
-    --radius: 0.5rem;
+    --ring: 173 98% 38%;
+    --radius: 0.75rem; /* rounded-xl */
   }
- 
+
   .dark {
-    --background: 240 5% 10%; /* A darker gray for dark mode */
+    --background: 222 47% 11%; /* Dark Slate Blue */
     --foreground: 210 20% 98%;
-    --card: 224 71.4% 4.1%;
+    --card: 222 47% 11%;
     --card-foreground: 210 20% 98%;
     --popover: 224 71.4% 4.1%;
     --popover-foreground: 210 20% 98%;
-    --primary: 262.1 62.1% 57.1%; /* Brighter purple for dark mode */
+    --primary: 173 90% 48%; /* Brighter Teal */
     --primary-foreground: 210 20% 98%;
-    --secondary: 215 27.9% 16.9%;
+    --secondary: 262 92% 68%; /* Brighter Purple */
     --secondary-foreground: 210 20% 98%;
     --muted: 215 27.9% 16.9%;
     --muted-foreground: 217.5 16.7% 65.1%;
-    --accent: 173.5 90% 40.6%; /* Brighter teal for dark mode */
+    --accent: 215 27.9% 16.9%;
     --accent-foreground: 210 20% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 20% 98%;
     --border: 215 27.9% 16.9%;
     --input: 215 27.9% 16.9%;
-    --ring: 262.1 62.1% 57.1%;
+    --ring: 173 90% 48%;
   }
 }
 
@@ -58,6 +54,7 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
