@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Bell, Plus, Search } from 'lucide-react';
+import { Bell, Plus, Bot } from 'lucide-react';
 import { Logo } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,6 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import Image from 'next/image';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { AnomalyDetector } from '@/components/anomaly-detector';
 
 export default function DashboardLayout({
   children,
@@ -65,7 +66,7 @@ export default function DashboardLayout({
           </DropdownMenu>
         </div>
       </header>
-      <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 bg-background">
+      <main className="flex-1 p-4 md:p-8 bg-background">
         {children}
       </main>
       <Button className="fixed bottom-6 right-6 h-16 w-16 rounded-full shadow-lg" size="icon">

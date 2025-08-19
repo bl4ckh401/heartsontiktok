@@ -79,15 +79,10 @@ export function AnomalyDetector() {
   }
 
   return (
-    <Card className="h-full flex flex-col">
+    <Card className="h-full flex flex-col shadow-sm">
       <CardHeader>
-        <div className="flex items-center gap-2">
-          <Bot className="h-6 w-6 text-primary" />
-          <CardTitle>Campaign Anomaly Detector</CardTitle>
-        </div>
         <CardDescription>
-          Use our AI-powered tool to detect unusual activity in your campaign
-          metrics.
+          Paste your campaign metrics as a JSON array to detect unusual activity.
         </CardDescription>
       </CardHeader>
       <Form {...form}>
@@ -111,24 +106,21 @@ export function AnomalyDetector() {
               name="metrics"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Metrics Data</FormLabel>
+                  <FormLabel>Metrics Data (JSON)</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Paste your campaign metrics as a JSON array."
-                      className="min-h-[200px] font-mono text-xs"
+                      placeholder="Paste your campaign metrics here."
+                      className="min-h-[150px] font-mono text-xs"
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>
-                    Provide a JSON array of metric objects.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </CardContent>
           <CardFooter className="flex-col items-start gap-4">
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading} className="w-full">
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -150,7 +142,7 @@ export function AnomalyDetector() {
                 <Terminal className="h-4 w-4" />
                 <AlertTitle>
                   {result.isAnomaly ? 'Anomaly Detected!' : 'Analysis Complete'}
-                </AlertTitle>
+                </Title>
                 <AlertDescription>
                   {result.anomalyDescription}
                 </AlertDescription>

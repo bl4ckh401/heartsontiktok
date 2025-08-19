@@ -6,6 +6,7 @@ import {
   Activity,
   AlertTriangle,
   Sparkles,
+  Bot,
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -22,7 +23,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
-import { Badge } from '@/components/ui/badge';
+import { AnomalyDetector } from '@/components/anomaly-detector';
 
 const kpiCards = [
   {
@@ -181,9 +182,14 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+        <div className="lg:col-span-1">
+           <h2 className="text-2xl font-bold tracking-tight mb-4 flex items-center gap-2">
+            <Bot className="h-6 w-6" />
+            AI Analyzer
+          </h2>
+          <AnomalyDetector />
+        </div>
       </div>
     </>
   );
 }
-
-    
