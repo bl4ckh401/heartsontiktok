@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import Image from 'next/image';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function DashboardLayout({
   children,
@@ -27,6 +28,7 @@ export default function DashboardLayout({
         </Link>
         <div className="flex-1" />
         <div className="flex items-center gap-4">
+          <ThemeToggle />
           <Button variant="outline" size="sm">
             $1,234.56
           </Button>
