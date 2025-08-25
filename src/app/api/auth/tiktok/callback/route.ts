@@ -62,6 +62,7 @@ export async function GET(req: NextRequest) {
     
     // Fetch user info from TikTok
     const userRes = await fetch('https://open.tiktokapis.com/v2/user/info/?fields=open_id,union_id,avatar_url,display_name', {
+      method: 'POST', // Corrected from GET to POST
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     const { data: userData, error: userError } = await userRes.json();
@@ -92,7 +93,7 @@ export async function GET(req: NextRequest) {
     const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
     const sessionCookie = await admin.auth().createSessionCookie(uid, {expiresIn});
     
-    const response = NextResponse.redirect(new URL('/dashboard?success=login_successful', req.url));
+    const response = NextResponse.redirect(new URL('/dashboard', req.url));
     response.cookies.set('session', sessionCookie, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: expiresIn });
 
     return response;
