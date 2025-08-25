@@ -5,36 +5,70 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
 import Link from 'next/link';
 import Image from 'next/image';
-
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ArrowRight, Calendar, Tag, Target } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Campaign {
   id: string;
   name: string;
   description: string;
-  // Add other relevant campaign properties here
+  budget: number;
+  brandAssetsUrl?: string;
+  createdAt: any; 
 }
+
+const CampaignSkeleton = () => (
+  <Card className="flex flex-col justify-between overflow-hidden shadow-lg transition-transform hover:scale-[1.02] hover:shadow-xl">
+    <CardHeader>
+      <Skeleton className="h-40 w-full rounded-lg" />
+      <div className="pt-4">
+        <Skeleton className="h-6 w-3/4 mb-2" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-5/6 mt-1" />
+      </div>
+    </CardHeader>
+    <CardContent>
+      <div className="flex items-center text-sm text-muted-foreground mb-4">
+        <Skeleton className="h-5 w-24" />
+      </div>
+      <div className="flex items-center text-sm text-muted-foreground">
+        <Skeleton className="h-5 w-32" />
+      </div>
+    </CardContent>
+    <CardFooter>
+      <Skeleton className="h-10 w-full rounded-md" />
+    </CardFooter>
+  </Card>
+);
 
 export default function CampaignListingPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
-
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCampaigns = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        // Replace with actual API call to fetch campaigns
-        const response = await fetch('/api/campaigns'); // Example API endpoint
+        const response = await fetch('/api/campaigns'); 
         if (!response.ok) {
           throw new Error(`Error fetching campaigns: ${response.statusText}`);
         }
-        const data = await response.json(); // Assuming the API returns { success: boolean, data: Campaign[] }
-        setCampaigns(data.data || []); // Set campaigns from the 'data' field of the response
+        const data = await response.json();
+        if(data.success) {
+          setCampaigns(data.campaigns || []); 
+        } else {
+          throw new Error(data.message || "Failed to fetch campaigns.");
+        }
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -43,35 +77,63 @@ export default function CampaignListingPage() {
     };
 
     fetchCampaigns();
-  }, []); // Empty dependency array means this effect runs once on mount
-
-  if (loading) {
-    return <p>Loading campaigns...</p>;
-  }
-
-  if (error) {
-    return <p className="text-red-500">Error loading campaigns: {error}</p>;
-  }
+  }, []);
 
   return (
     <div className="container mx-auto py-6">
-      <h1 className="text-2xl font-bold mb-4">Available Campaigns</h1>
-      {campaigns.length === 0 ? (
-        <p>No campaigns available at the moment.</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold tracking-tight">Available Campaigns</h1>
+      </div>
+
+      {loading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <CampaignSkeleton />
+          <CampaignSkeleton />
+          <CampaignSkeleton />
+        </div>
+      )}
+
+      {error && <p className="text-center text-destructive">Error: {error}</p>}
+      
+      {!loading && !error && campaigns.length === 0 && (
+        <div className="text-center py-16 border-2 border-dashed rounded-lg">
+          <Target className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-2 text-sm font-semibold text-foreground">No Campaigns Available</h3>
+          <p className="mt-1 text-sm text-muted-foreground">Check back later for new opportunities.</p>
+        </div>
+      )}
+
+      {!loading && campaigns.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {campaigns.map((campaign) => (
-            <Card key={campaign.id} className="flex flex-col justify-between">
-              <CardHeader>
-                {/* You might want to display a campaign image here if available */}
-                <CardTitle>{campaign.name}</CardTitle>
-                <CardDescription>{campaign.description}</CardDescription>
+            <Card key={campaign.id} className="flex flex-col justify-between overflow-hidden shadow-md transition-transform hover:scale-[1.02] hover:shadow-xl dark:border-gray-800">
+              <CardHeader className="p-0">
+                <Image 
+                  src={`https://picsum.photos/seed/${campaign.id}/600/400`}
+                  alt={`${campaign.name} cover image`}
+                  width={600}
+                  height={400}
+                  className="w-full h-40 object-cover"
+                  data-ai-hint="social media campaign"
+                />
+                <div className="p-6">
+                  <CardTitle className="text-xl mb-2">{campaign.name}</CardTitle>
+                  <CardDescription className="line-clamp-2">{campaign.description}</CardDescription>
+                </div>
               </CardHeader>
-              <CardContent>
-                <Link href={`/dashboard/campaigns/${campaign.id}`} className="text-blue-500 hover:underline">
-                  View Details
-                </Link>
+              <CardContent className="p-6 pt-0">
+                  <div className="flex items-center text-sm text-muted-foreground mb-4">
+                    <Tag className="mr-2 h-4 w-4" />
+                    <span>Budget: KES {campaign.budget.toLocaleString()}</span>
+                  </div>
               </CardContent>
+              <CardFooter className="p-6 pt-0">
+                <Link href={`/dashboard/campaigns/${campaign.id}`} className="w-full" passHref>
+                  <Button className="w-full">
+                    View Details <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </CardFooter>
             </Card>
           ))}
         </div>
