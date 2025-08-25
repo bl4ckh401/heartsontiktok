@@ -9,21 +9,15 @@ export async function GET(req: NextRequest) {
 
   if (!TIKTOK_CLIENT_KEY) {
     console.error('Missing TIKTOK_CLIENT_KEY environment variable for TikTok OAuth.');
-    // In a real app, you might redirect to an error page.
     return NextResponse.json({ error: 'Server configuration error: Missing TikTok Client Key.' }, { status: 500 });
   }
 
   const csrfState = crypto.randomBytes(16).toString('hex');
   const cookieStore = cookies();
- (await cookieStore).set('csrfState', csrfState, { maxAge: 60 * 60, httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+  cookieStore.set('csrfState', csrfState, { maxAge: 60 * 60, httpOnly: true, secure: process.env.NODE_ENV === 'production' });
 
-  const APP_URL = process.env.APP_URL;
-  if (!APP_URL) {
-    console.error('Missing APP_URL environment variable.');
- return NextResponse.json({ error: 'Server configuration error: Missing APP_URL.' }, { status: 500 });
-  }
-
-  const redirectURI = `${APP_URL}/api/auth/tiktok/callback`;
+  const { protocol, host } = new URL(req.url);
+  const redirectUri = `${protocol}//${host}/api/auth/tiktok/callback`;
   
   const scopes = [
     'user.info.basic',
@@ -39,7 +33,7 @@ export async function GET(req: NextRequest) {
     client_key: TIKTOK_CLIENT_KEY,
     scope: scopes,
     response_type: 'code',
-    redirect_uri: redirectURI,
+    redirect_uri: redirectUri,
     state: csrfState,
   });
 

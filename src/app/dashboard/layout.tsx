@@ -13,6 +13,8 @@ import {
   Settings,
   Wallet,
   Menu,
+  User,
+  LogOut,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,13 +29,13 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/icons';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { useEffect, useState } from 'react';
+import Cookies from 'js-cookie';
 
 const navItems = [
   { href: '/dashboard', icon: Home, label: 'Home' },
-  // { href: '/dashboard/analytics', icon: BarChart3, label: 'Analytics' },
   { href: '/dashboard/campaigns/list', icon: Megaphone, label: 'Campaigns' },
   { href: '/dashboard/payouts', icon: Wallet, label: 'Payouts' },
-  // { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
 ];
 
 export default function DashboardLayout({
@@ -42,6 +44,14 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const userInfoCookie = Cookies.get('user_info');
+    if (userInfoCookie) {
+      setUser(JSON.parse(userInfoCookie));
+    }
+  }, []);
 
   const NavContent = () => (
     <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
@@ -66,7 +76,7 @@ export default function DashboardLayout({
       <div className="hidden border-r bg-muted/40 md:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-            <Link href="/" className="flex items-center gap-2 font-semibold">
+            <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
               <Logo className="h-6 w-6 text-primary" />
               <span className="">VeriFlow</span>
             </Link>
@@ -115,33 +125,53 @@ export default function DashboardLayout({
             </SheetContent>
           </Sheet>
           <div className="w-full flex-1">
-             <Button>
-                <Plus className="mr-2 h-4 w-4" /> Create Campaign
+             <Button asChild>
+                <Link href="/dashboard/campaigns/create"><Plus className="mr-2 h-4 w-4" /> Create Campaign</Link>
              </Button>
           </div>
           <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" size="icon" className="rounded-full">
-                <Image
-                  src="https://placehold.co/40x40.png"
-                  width={40}
-                  height={40}
-                  alt="User Avatar"
-                  className="rounded-full"
-                  data-ai-hint="creator avatar"
-                />
+                {user ? (
+                  <Image
+                    src={user.avatar_url || "https://placehold.co/40x40.png"}
+                    width={40}
+                    height={40}
+                    alt={user.display_name || "User Avatar"}
+                    className="rounded-full"
+                    data-ai-hint="creator avatar"
+                  />
+                ) : (
+                  <User className="h-5 w-5" />
+                )}
                 <span className="sr-only">Toggle user menu</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>
+                {user ? user.display_name : 'My Account'}
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link href="#" className="flex items-center">
+                  <User className="mr-2 h-4 w-4" />
+                  Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link href="#" className="flex items-center">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Settings
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link href="/api/auth/logout" className="flex items-center">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </Link>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>

@@ -1,5 +1,6 @@
 
 'use client';
+
 import { useEffect, useState } from 'react';
 import {
     Card,
@@ -8,134 +9,79 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { Video, Heart, MessageCircle, Share2, Eye } from 'lucide-react'; // Added Eye icon for views
-import Cookies from 'js-cookie';
+import { Eye, Heart, MessageCircle, Share2, Loader2, AlertCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function PayoutsPage() {
     const [eligibleVideos, setEligibleVideos] = useState<any[]>([]);
     const [selectedVideoIds, setSelectedVideoIds] = useState<string[]>([]);
-    const [cursor, setCursor] = useState<number>(0);
-    const [hasMore, setHasMore] = useState<boolean>(true);
-    const [loading, setLoading] = useState<boolean>(false); // Added loading state
-    const [error, setError] = useState<string | null>(null); // Added error state
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [payoutStatus, setPayoutStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
-    const MIN_PAYOUT_VIEWS = 1000; // Define minimum payout view threshold
-    const videoFields = 'id,title,cover_image_url,embed_link,like_count,comment_count,share_count,view_count,create_time';
+    const { toast } = useToast();
+    const MIN_PAYOUT_VIEWS = 1000;
 
     useEffect(() => {
         const fetchEligibleVideos = async () => {
-            const tokenResponse = await fetch('/api/get-tiktok-token');
-            const tokenData = await tokenResponse.json();
-      
-            if (!tokenData.accessToken) {
-              console.error('TikTok access token not found in cookies.');
-              return;
-            }
-      
+            setLoading(true);
+            setError(null);
             try {
-              // Fetch user profile
-              const userInfoResponse = await fetch(
-                `https://open.tiktokapis.com/v2/user/info/?fields=display_name,avatar_url,follower_count,following_count,likes_count,video_count,bio_description`,
-                {
-                  headers: {
-                    Authorization: `Bearer ${tokenData.accessToken}`,
-                  },
+                const response = await fetch('/api/videos');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch videos.');
                 }
-              );
-              const userInfoData = await userInfoResponse.json();
-      
-              // Fetch recent videos
-              const videoFields = 'id,title,cover_image_url,embed_link,like_count,comment_count,share_count,view_count'; // Define fields here
-              const videoListResponse = await fetch(`https://open.tiktokapis.com/v2/video/list/?fields=${videoFields}`, {
-                      method: 'POST',
-                      headers: {
-                          'Authorization': `Bearer ${tokenData.accessToken}`,
-                          'Content-Type': 'application/json',
-                      }, // Use the fetched accessToken
-                      body: JSON.stringify({ max_count: 20 }),
-                  });
-                  const videoListData = await videoListResponse.json();
-              
-                  if (videoListData.data && videoListData.data.videos) {
-                    setEligibleVideos(videoListData.data.videos);
-      
-                    // Aggregate some data for metrics based on recent videos
-                    const totalComments = videoListData.data.videos.reduce((sum: number, v: any) => sum + (v.comment_count || 0), 0);
-                    const totalShares = videoListData.data.videos.reduce((sum: number, v: any) => sum + (v.share_count || 0), 0);
-    
-                  } else if (videoListData.error) {
-                      console.error('Error fetching video list:', videoListData.error);
-                  }
-            } catch (error) {
-              console.error('Error fetching TikTok data:', error);
-              // Handle error in UI, e.g., show an error message
+                const data = await response.json();
+                if (data.videos) {
+                    const filteredVideos = data.videos.filter((v: any) => (v.view_count || 0) >= MIN_PAYOUT_VIEWS);
+                    setEligibleVideos(filteredVideos);
+                } else if (data.error) {
+                    throw new Error(data.error);
+                }
+            } catch (err: any) {
+                setError(err.message);
+                toast({
+                    title: 'Error Fetching Videos',
+                    description: err.message,
+                    variant: 'destructive',
+                });
+            } finally {
+                setLoading(false);
             }
-          };
+        };
 
         fetchEligibleVideos();
-    }, [cursor]); // Depend on cursor for pagination
+    }, [toast]);
 
-    const loadMoreVideos = async () => {
-        if (!hasMore || loading) return;
-        // The useEffect with [cursor] dependency will handle fetching when cursor state updates
-        // Just need to make sure we don't manually set cursor here if useEffect is handling it.
-        // The fetchEligibleVideos function already updates cursor.
-        // If this button is clicked, it means hasMore is true and we need the next page.
-        // The current useEffect logic already triggers on cursor change.
-        // This button's purpose is just to make the API call trigger for the next page.
-        // The useEffect logic handles the cursor update and fetching.
-        // So, simply letting the useEffect handle it is the correct approach.
-        // We might want to add a visual loading state specific to loading more.
+    const handleSelectVideo = (videoId: string) => {
+        setSelectedVideoIds((prevIds) =>
+            prevIds.includes(videoId)
+                ? prevIds.filter((id) => id !== videoId)
+                : [...prevIds, videoId]
+        );
     };
-
-
-    const handleSelectVideo = (videoId: string, isSelected: boolean) => {
-        if (isSelected) {
-            setSelectedVideoIds(prevIds => [...prevIds, videoId]);
-        } else {
-            setSelectedVideoIds(prevIds => prevIds.filter(id => id !== videoId));
-        }
-    };
-
-    const handleRequestPayout = async () => {
-        // This function will now be in the new PayoutsPage
-        // It should send selectedVideoIds and phone number to backend
-        // (Payment info collection UI still needs to be added here)
-        alert("Requesting payout for selected videos (Backend integration needed)");
-        // Example:
-        // const payoutResponse = await fetch('/api/request-payout', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({ videoIds: selectedVideoIds, phoneNumber: '...' }), // Add phone number input
-        // });
-        // Handle response
-    };
-
-    // Need state and UI for payment info (phone number)
-    const [phoneNumber, setPhoneNumber] = useState('');
-    const [payoutStatus, setPayoutStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    
+    const totalSelectedPayout = selectedVideoIds.reduce((total, id) => {
+        const video = eligibleVideos.find(v => v.id === id);
+        // Using a placeholder calculation. Replace with your actual payout logic.
+        const payout = (video?.view_count || 0) * 0.01; 
+        return total + payout;
+    }, 0).toFixed(2);
 
 
     const triggerPayout = async () => {
         if (selectedVideoIds.length === 0) {
-            alert("Please select at least one video for payout.");
+            toast({ title: 'No videos selected', description: 'Please select at least one video.', variant: 'destructive' });
             return;
         }
-
-        if (!phoneNumber) {
-            alert("Please enter your phone number for payout.");
+        if (!phoneNumber.match(/^(07|01)\d{8}$/)) {
+            toast({ title: 'Invalid Phone Number', description: 'Please enter a valid M-Pesa number (e.g., 0712345678).', variant: 'destructive' });
             return;
         }
 
@@ -143,147 +89,140 @@ export default function PayoutsPage() {
         setError(null);
 
         try {
-            const payoutResponse = await fetch('/api/request-payout', {
+            const response = await fetch('/api/request-payout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ videoIds: selectedVideoIds, phoneNumber: phoneNumber }),
+                body: JSON.stringify({ videoIds: selectedVideoIds, phoneNumber }),
             });
 
-            const result = await payoutResponse.json();
+            const result = await response.json();
 
             if (result.success) {
                 setPayoutStatus('success');
-                // Optionally clear selected videos or update their status
+                toast({ title: 'Payout Request Successful!', description: `Your request for KES ${totalSelectedPayout} has been submitted.` });
                 setSelectedVideoIds([]);
-                // You might want to refetch eligible videos or update their status in the list
             } else {
-                setPayoutStatus('error');
-                setError(result.message || 'Payout request failed.');
+                throw new Error(result.message || 'Payout request failed.');
             }
-
         } catch (err: any) {
             setPayoutStatus('error');
-            setError(`Failed to send payout request: ${err.message}`);
+            setError(err.message);
+            toast({ title: 'Payout Failed', description: err.message, variant: 'destructive' });
+        } finally {
+             setTimeout(() => setPayoutStatus('idle'), 3000);
         }
     };
 
-
     return (
-        <div className="container mx-auto py-6 space-y-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Eligible Videos for Payout</CardTitle>
-                    <CardDescription>
-                        Select videos that have met the minimum view threshold ({MIN_PAYOUT_VIEWS} views) for payout.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {loading && eligibleVideos.length === 0 && <p>Loading videos...</p>}
-                    {error && <p className="text-red-500">{error}</p>}
-                    {!loading && eligibleVideos.length === 0 && !error && <p>No eligible videos found yet.</p>}
+        <div className="container mx-auto py-6 space-y-8">
+             <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Request Payout</h1>
+                    <p className="text-muted-foreground mt-1">Select eligible videos and get paid for your content.</p>
+                </div>
+            </div>
 
-                    {eligibleVideos.length > 0 && (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="w-[50px]"></TableHead> {/* Checkbox column */}
-                                    <TableHead className="hidden w-[100px] sm:table-cell">Thumbnail</TableHead>
-                                    <TableHead>Title</TableHead>
-                                    <TableHead className="hidden md:table-cell">Views</TableHead>
-                                    <TableHead className="hidden md:table-cell">Likes</TableHead>
-                                    <TableHead className="hidden md:table-cell">Comments</TableHead>
-                                    <TableHead className="hidden md:table-cell">Shares</TableHead>
-                                    {/* Add column for AI verification status later */}
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Eligible Videos</CardTitle>
+                            <CardDescription>
+                                Only videos with over {MIN_PAYOUT_VIEWS.toLocaleString()} views are shown here.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {loading && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                   {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-48 w-full rounded-lg" />)}
+                                </div>
+                            )}
+                            {error && (
+                                <div className="flex flex-col items-center justify-center text-center py-10">
+                                    <AlertCircle className="w-12 h-12 text-destructive mb-4" />
+                                    <p className="font-semibold">Failed to load videos</p>
+                                    <p className="text-muted-foreground text-sm">{error}</p>
+                                </div>
+                            )}
+                            {!loading && !error && eligibleVideos.length === 0 && (
+                                 <div className="text-center py-16 border-2 border-dashed rounded-lg">
+                                    <Video className="mx-auto h-12 w-12 text-muted-foreground" />
+                                    <h3 className="mt-2 text-sm font-semibold text-foreground">No Eligible Videos</h3>
+                                    <p className="mt-1 text-sm text-muted-foreground">Keep creating! Videos with over {MIN_PAYOUT_VIEWS.toLocaleString()} views will appear here.</p>
+                                 </div>
+                            )}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {eligibleVideos.map((video) => (
-                                    <TableRow key={video.id} className={selectedVideoIds.includes(video.id) ? 'bg-blue-100' : ''}>
-                                        <TableCell>
-                                            <Checkbox
-                                                checked={selectedVideoIds.includes(video.id)}
-                                                onCheckedChange={(isChecked: boolean) => handleSelectVideo(video.id, isChecked)}
-                                            />
-                                        </TableCell>
-                                        <TableCell className="hidden sm:table-cell">
+                                    <Card
+                                        key={video.id}
+                                        className={`overflow-hidden transition-all duration-200 cursor-pointer ${selectedVideoIds.includes(video.id) ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : 'ring-0'}`}
+                                        onClick={() => handleSelectVideo(video.id)}
+                                    >
+                                        <div className="relative">
                                             <Image
                                                 alt={video.title || "Video thumbnail"}
-                                                className="aspect-square rounded-md object-cover"
-                                                height="64"
-                                                src={video.cover_image_url || 'https://placehold.co/64x64.png'}
-                                                width="64"
+                                                className="aspect-video w-full object-cover"
+                                                height="200"
+                                                src={video.cover_image_url || 'https://placehold.co/400x225.png'}
+                                                width="400"
                                                 unoptimized
-                                                onError={(e) => e.currentTarget.src = 'https://placehold.co/64x64.png'}
+                                                onError={(e) => e.currentTarget.src = 'https://placehold.co/400x225.png'}
                                                 data-ai-hint="video thumbnail"
                                             />
-                                        </TableCell>
-                                        <TableCell className="font-medium">{video.title || 'Untitled Video'}</TableCell>
-                                        <TableCell className="hidden md:table-cell flex items-center gap-1">
-                                            <Eye className="h-4 w-4 text-muted-foreground" />
-                                            {video.view_count?.toLocaleString() || 0}
-                                        </TableCell>
-                                        <TableCell className="hidden md:table-cell flex items-center gap-1">
-                                            <Heart className="h-4 w-4 text-muted-foreground" />
-                                            {video.like_count?.toLocaleString() || 0}
-                                        </TableCell>
-                                        <TableCell className="hidden md:table-cell flex items-center gap-1">
-                                            <MessageCircle className="h-4 w-4 text-muted-foreground" />
-                                            {video.comment_count?.toLocaleString() || 0}
-                                        </TableCell>
-                                        <TableCell className="hidden md:table-cell flex items-center gap-1">
-                                            <Share2 className="h-4 w-4 text-muted-foreground" />
-                                            {video.share_count?.toLocaleString() || 0}
-                                        </TableCell>
-                                        {/* Placeholder for AI Status */}
-                                        {/* <TableCell>
-                                             <span className="text-sm text-muted-foreground">Pending AI Check</span>
-                                         </TableCell> */}
-                                    </TableRow>
+                                            <div className="absolute top-2 right-2">
+                                                 <Checkbox checked={selectedVideoIds.includes(video.id)} className="bg-background/80 backdrop-blur-sm h-6 w-6" />
+                                            </div>
+                                        </div>
+                                        <CardContent className="p-4">
+                                            <h3 className="font-semibold truncate" title={video.title || 'Untitled Video'}>{video.title || 'Untitled Video'}</h3>
+                                            <div className="flex justify-between text-sm text-muted-foreground mt-2">
+                                                <div className="flex items-center gap-1.5"><Eye className="h-4 w-4" /> {video.view_count?.toLocaleString() || 0}</div>
+                                                <div className="flex items-center gap-1.5"><Heart className="h-4 w-4" /> {video.like_count?.toLocaleString() || 0}</div>
+                                                <div className="flex items-center gap-1.5"><MessageCircle className="h-4 w-4" /> {video.comment_count?.toLocaleString() || 0}</div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
                                 ))}
-                            </TableBody>
-                        </Table>
-                    )}
-
-                    {hasMore && (
-                        <div className="flex justify-center mt-4">
-                            <Button onClick={loadMoreVideos} disabled={loading}>
-                                {loading ? 'Loading More...' : 'Load More'}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+                <div className="lg:col-span-1 space-y-6">
+                    <Card className="sticky top-6">
+                        <CardHeader>
+                            <CardTitle>Payout Summary</CardTitle>
+                            <CardDescription>Enter your M-Pesa number to receive payment.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                             <div>
+                                <p className="text-sm text-muted-foreground">Videos Selected</p>
+                                <p className="text-xl font-bold">{selectedVideoIds.length}</p>
+                            </div>
+                             <div>
+                                <p className="text-sm text-muted-foreground">Estimated Payout</p>
+                                <p className="text-3xl font-bold text-primary">KES {totalSelectedPayout}</p>
+                                <p className="text-xs text-muted-foreground">Calculation is an estimate.</p>
+                            </div>
+                            <div className="space-y-2">
+                                <label htmlFor="phoneNumber" className="text-sm font-medium">M-Pesa Number</label>
+                                <Input
+                                    id="phoneNumber"
+                                    type="tel"
+                                    value={phoneNumber}
+                                    onChange={(e) => setPhoneNumber(e.target.value)}
+                                    placeholder="e.g., 0712345678"
+                                    disabled={payoutStatus === 'loading' || selectedVideoIds.length === 0}
+                                />
+                            </div>
+                        </CardContent>
+                        <CardContent>
+                             <Button onClick={triggerPayout} className="w-full" size="lg" disabled={selectedVideoIds.length === 0 || payoutStatus === 'loading' || !phoneNumber}>
+                                {payoutStatus === 'loading' ? <Loader2 className="animate-spin" /> : `Request Payout`}
                             </Button>
-                        </div>
-                    )}
-
-                </CardContent>
-            </Card>
-
-            {selectedVideoIds.length > 0 && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Request Payout</CardTitle>
-                        <CardDescription>
-                            Enter your phone number and request payout for the selected videos.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex items-center gap-4">
-                            <label htmlFor="phoneNumber" className="w-24 text-right">Phone Number:</label>
-                            <Input
-                                id="phoneNumber"
-                                type="tel"
-                                value={phoneNumber}
-                                onChange={(e) => setPhoneNumber(e.target.value)}
-                                placeholder="e.g., 0712345678"
-                                className="max-w-xs"
-                                disabled={payoutStatus === 'loading'}
-                            />
-                        </div>
-                        <Button onClick={triggerPayout} disabled={selectedVideoIds.length === 0 || payoutStatus === 'loading'}>
-                            {payoutStatus === 'loading' ? 'Processing...' : `Request Payout for ${selectedVideoIds.length} Video(s)`}
-                        </Button>
-                        {payoutStatus === 'success' && <p className="text-green-500 mt-2">Payout request submitted successfully!</p>}
-                        {payoutStatus === 'error' && error && <p className="text-red-500 mt-2">{error}</p>}
-                    </CardContent>
-                </Card>
-            )}
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
         </div>
     );
 }
