@@ -4,17 +4,18 @@ import {cookies} from 'next/headers';
 import type {NextRequest} from 'next/server';
 
 export async function GET(req: NextRequest) {
-  const {searchParams} = new URL(req.url);
+  const {searchParams, protocol, host} = new URL(req.url);
   const code = searchParams.get('code');
   const state = searchParams.get('state');
   const error = searchParams.get('error');
+  const errorDescription = searchParams.get('error_description');
 
   const cookieStore = cookies();
   const csrfState = cookieStore.get('csrfState')?.value;
 
   if (error) {
     console.error(`TikTok Auth Error: ${error}`);
-    return NextResponse.redirect(new URL(`/login?error=${error}`, req.url));
+    return NextResponse.redirect(new URL(`/login?error=${error}&error_description=${encodeURIComponent(errorDescription || 'Unknown error.')}`, req.url));
   }
   
   if (!state || state !== csrfState) {
@@ -30,10 +31,12 @@ export async function GET(req: NextRequest) {
   try {
     const TIKTOK_CLIENT_KEY = process.env.TIKTOK_CLIENT_KEY;
     const TIKTOK_CLIENT_SECRET = process.env.TIKTOK_CLIENT_SECRET;
-    const APP_URL = process.env.APP_URL;
+    
+    // Dynamically construct the redirect URI to ensure it matches exactly.
+    const redirectUri = `${protocol}//${host}/api/auth/tiktok/callback`;
 
-    if (!TIKTOK_CLIENT_KEY || !TIKTOK_CLIENT_SECRET || !APP_URL) {
-      throw new Error('TikTok client key, secret, or app URL is not defined in environment variables.');
+    if (!TIKTOK_CLIENT_KEY || !TIKTOK_CLIENT_SECRET) {
+      throw new Error('TikTok client key or secret is not defined in environment variables.');
     }
     
     const tokenUrl = 'https://open.tiktokapis.com/v2/oauth/token/';
@@ -44,7 +47,7 @@ export async function GET(req: NextRequest) {
       client_secret: TIKTOK_CLIENT_SECRET,
       code: decodedCode,
       grant_type: 'authorization_code',
-      redirect_uri: `${APP_URL}/api/auth/tiktok/callback`,
+      redirect_uri: redirectUri,
     });
 
     const tokenRes = await fetch(tokenUrl, {

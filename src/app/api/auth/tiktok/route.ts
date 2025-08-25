@@ -17,7 +17,7 @@ export function GET(req: NextRequest) {
   const cookieStore = cookies();
   cookieStore.set('csrfState', csrfState, { maxAge: 60 * 60, httpOnly: true, secure: process.env.NODE_ENV === 'production' });
 
-
+  // This must match the redirectUri in the callback route
   const redirectURI = `${APP_URL}/api/auth/tiktok/callback`;
   
   const scopes = [
