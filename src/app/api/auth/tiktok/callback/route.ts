@@ -52,49 +52,41 @@ export async function GET(req: NextRequest) {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: tokenParams.toString(),
     });
+
     const tokenData = await tokenRes.json();
 
-    if (!tokenRes.ok) {
+    if (!tokenRes.ok || tokenData.error) {
       console.error('TikTok token exchange response:', tokenData);
-      throw new Error(`Failed to fetch access token: ${tokenData.error_description || 'Unknown error'}`);
+      const errorMessage = tokenData.error_description || 'Unknown token exchange error';
+      throw new Error(`Failed to fetch access token: ${errorMessage}`);
     }
 
     const accessToken = tokenData.access_token;
     
-    const userRes = await fetch('https://open.tiktokapis.com/v2/user/info/?fields=open_id,union_id,avatar_url,display_name', {
+    const userFields = 'open_id,union_id,avatar_url,display_name';
+    const userRes = await fetch(`https://open.tiktokapis.com/v2/user/info/?fields=${userFields}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     
-    if (!userRes.ok) {
-        const text = await userRes.text();
-        console.error('TikTok user info raw error response:', text);
-        try {
-            const errorJson = JSON.parse(text);
-            throw new Error(`Failed to fetch user info from TikTok: ${errorJson.error_description || text}`);
-        } catch (e:any) {
-            throw new Error(`Failed to fetch user info from TikTok: ${text}`);
-        }
-    }
-    
     const userData = await userRes.json();
-    if(userData.error && userData.error.code !== 'ok') {
+    
+    if (userData.error && userData.error.code !== 'ok') {
         console.error('TikTok user info error:', userData.error);
-        throw new Error(`Failed to fetch user info: ${userData.error.message}`);
+        throw new Error(`Failed to fetch user info from TikTok: ${userData.error.message}`);
     }
     
     // TEMPORARY: Set a simple session cookie without Firebase
-    const response = NextResponse.redirect(new URL('/dashboard?success=login_successful', req.url));
+    const response = NextResponse.redirect(new URL('/dashboard', req.url));
     const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
     response.cookies.set('session', 'true', { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: expiresIn });
+    response.cookies.set('user_info', JSON.stringify(userData.data), { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: expiresIn });
+
 
     return response;
 
   } catch (e: any) {
     console.error('Error in TikTok callback:', e.message);
-    const errorMessage = e.message.includes('Failed to fetch access token') 
-      ? 'token_exchange_failed' 
-      : 'generic_error';
-    const errorDescription = e.message;
-    return NextResponse.redirect(new URL(`/login?error=${errorMessage}&error_description=${encodeURIComponent(errorDescription)}`, req.url));
+    const errorMessage = e.message || 'generic_error';
+    return NextResponse.redirect(new URL(`/login?error=generic_error&error_description=${encodeURIComponent(errorMessage)}`, req.url));
   }
 }
