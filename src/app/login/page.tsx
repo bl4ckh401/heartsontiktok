@@ -2,32 +2,29 @@
 'use client';
 
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import React, { useEffect } from 'react';
-import { Logo } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { TikTokIcon } from '@/components/tiktok-icon';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
+import router from 'next/router';
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const { toast } = useToast();
 
   const error = searchParams.get('error');
   const errorDescription = searchParams.get('error_description');
 
   useEffect(() => {
-    const success = searchParams.get('success');
-    if (success === 'login_successful') {
-        toast({
-            title: "Login Successful",
-            description: "Welcome to your dashboard!",
-        });
-        // clean up the URL
-        router.replace('/dashboard'); 
+    if (errorDescription) {
+      toast({
+        title: 'Authentication Error',
+        description: decodeURIComponent(errorDescription),
+        variant: 'destructive',
+      });
     }
   }, [searchParams, toast, router]);
 
@@ -40,29 +37,21 @@ export default function LoginPage() {
     generic_error: 'An unexpected error occurred. Please try again later.',
   };
 
-  const errorMessage = error ? errorMessages[error] || 'An unknown error occurred.' : null;
-
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center text-center mb-8">
-          <Logo className="h-12 w-12 text-primary mb-4" />
           <h1 className="text-3xl font-bold tracking-tight">Welcome to VeriFlow</h1>
           <p className="text-muted-foreground mt-2">The mission control center for your creator career.</p>
         </div>
-
-        {errorMessage && (
-          <Alert variant="destructive" className="mb-4 text-left">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Authentication Error</AlertTitle>
-            <AlertDescription>
-                {errorMessage}
-                {errorDescription && <pre className="mt-2 whitespace-pre-wrap text-xs font-mono bg-destructive-foreground/10 p-2 rounded-md"><code>{decodeURIComponent(errorDescription)}</code></pre>}
-            </AlertDescription>
-          </Alert>
-        )}
         
         <div className="space-y-4">
+          {error && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>{errorMessages[error] || 'Authentication Error'}</AlertTitle>
+            </Alert>
+          )}
           <Button asChild className="w-full" size="lg">
             <Link href="/api/auth/tiktok" className="flex items-center gap-3">
               <TikTokIcon className="h-6 w-6" />

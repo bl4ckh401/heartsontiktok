@@ -4,8 +4,8 @@ import { cookies } from 'next/headers';
 import type { NextRequest } from 'next/server';
 import crypto from 'crypto';
 
-export function GET(req: NextRequest) {
-  const TIKTOK_CLIENT_KEY = process.env.TIKTOK_CLIENT_KEY;
+export async function GET(req: NextRequest) {
+ const TIKTOK_CLIENT_KEY = process.env.TIKTOK_CLIENT_KEY;
 
   if (!TIKTOK_CLIENT_KEY) {
     console.error('Missing TIKTOK_CLIENT_KEY environment variable for TikTok OAuth.');
@@ -15,11 +15,15 @@ export function GET(req: NextRequest) {
 
   const csrfState = crypto.randomBytes(16).toString('hex');
   const cookieStore = cookies();
-  cookieStore.set('csrfState', csrfState, { maxAge: 60 * 60, httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+ (await cookieStore).set('csrfState', csrfState, { maxAge: 60 * 60, httpOnly: true, secure: process.env.NODE_ENV === 'production' });
 
-  // Dynamically construct the redirectURI from the request headers
-  const { protocol, host } = new URL(req.url);
-  const redirectURI = `${protocol}//${host}/api/auth/tiktok/callback`;
+  const APP_URL = process.env.APP_URL;
+  if (!APP_URL) {
+    console.error('Missing APP_URL environment variable.');
+ return NextResponse.json({ error: 'Server configuration error: Missing APP_URL.' }, { status: 500 });
+  }
+
+  const redirectURI = `${APP_URL}/api/auth/tiktok/callback`;
   
   const scopes = [
     'user.info.basic',
@@ -28,7 +32,7 @@ export function GET(req: NextRequest) {
     'user.info.profile',
     'user.info.stats',
     'video.list',
-  ].join(',');
+ ].join(',');
 
   let url = 'https://www.tiktok.com/v2/auth/authorize/';
   const params = new URLSearchParams({

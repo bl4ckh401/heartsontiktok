@@ -4,14 +4,14 @@ import {cookies} from 'next/headers';
 import type {NextRequest} from 'next/server';
 
 export async function GET(req: NextRequest) {
-  const {searchParams, protocol, host} = new URL(req.url);
+  const {searchParams} = new URL(req.url);
   const code = searchParams.get('code');
   const state = searchParams.get('state');
   const error = searchParams.get('error');
   const errorDescription = searchParams.get('error_description');
 
   const cookieStore = cookies();
-  const csrfState = cookieStore.get('csrfState')?.value;
+  const csrfState = (await cookieStore).get('csrfState')?.value;
 
   if (error) {
     console.error(`TikTok Auth Error: ${error}`);
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL('/login?error=invalid_state', req.url));
   }
   
-  cookieStore.delete('csrfState');
+  (await cookieStore).delete('csrfState');
 
   if (!code) {
     return NextResponse.redirect(new URL('/login?error=missing_code', req.url));
@@ -31,27 +31,30 @@ export async function GET(req: NextRequest) {
   try {
     const TIKTOK_CLIENT_KEY = process.env.TIKTOK_CLIENT_KEY;
     const TIKTOK_CLIENT_SECRET = process.env.TIKTOK_CLIENT_SECRET;
-    
-    // Dynamically construct the redirect URI to ensure it matches exactly.
-    const redirectUri = `${protocol}//${host}/api/auth/tiktok/callback`;
+    const APP_URL = process.env.APP_URL;
+
+    if (!TIKTOK_CLIENT_KEY || !TIKTOK_CLIENT_SECRET || !APP_URL) {
+      throw new Error('APP_URL environment variable is not defined.');
+    }
+    const redirectUri = `${APP_URL}/api/auth/tiktok/callback`;
 
     if (!TIKTOK_CLIENT_KEY || !TIKTOK_CLIENT_SECRET) {
       throw new Error('TikTok client key or secret is not defined in environment variables.');
     }
     
     const tokenUrl = 'https://open.tiktokapis.com/v2/oauth/token/';
-    const decodedCode = decodeURIComponent(code);
+    const decodedCode = code;
 
     const tokenParams = new URLSearchParams({
       client_key: TIKTOK_CLIENT_KEY,
       client_secret: TIKTOK_CLIENT_SECRET,
-      code: decodedCode,
+      code: code,
       grant_type: 'authorization_code',
       redirect_uri: redirectUri,
     });
 
     const tokenRes = await fetch(tokenUrl, {
-      method: 'POST',
+      method: 'POST', // Use POST method as specified in the docs
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: tokenParams.toString(),
     });
@@ -66,6 +69,7 @@ export async function GET(req: NextRequest) {
 
     const accessToken = tokenData.access_token;
     
+    // Fetch user info (optional but common)
     const userFields = 'open_id,union_id,avatar_url,display_name';
     const userRes = await fetch(`https://open.tiktokapis.com/v2/user/info/?fields=${userFields}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
