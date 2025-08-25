@@ -13,18 +13,25 @@ export function GET(req: NextRequest) {
   const APP_URL = process.env.APP_URL;
 
   if (!TIKTOK_CLIENT_KEY || !APP_URL) {
-    // In a real app, you'd want to handle this more gracefully
-    // and show an error page to the user.
     console.error('Missing required environment variables for TikTok OAuth.');
-    throw new Error('TIKTOK_CLIENT_KEY or APP_URL is not defined in .env');
+    return NextResponse.redirect(new URL('/login?error=configuration_error', req.url));
   }
 
   const redirectURI = `${APP_URL}/api/auth/tiktok/callback`;
   
+  const scopes = [
+    'user.info.basic',
+    'video.publish',
+    'video.upload',
+    'user.info.profile',
+    'user.info.stats',
+    'video.list',
+  ].join(',');
+
   let url = 'https://www.tiktok.com/v2/auth/authorize/';
   const params = new URLSearchParams({
     client_key: TIKTOK_CLIENT_KEY,
-    scope: 'user.info.basic',
+    scope: scopes,
     response_type: 'code',
     redirect_uri: redirectURI,
     state: csrfState,
