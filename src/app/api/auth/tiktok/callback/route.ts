@@ -79,24 +79,24 @@ export async function GET(req: NextRequest) {
         }
     }
     
-    const { data: userData, error: userError } = await userRes.json();
-    if(userError && userError.code !== 'ok') {
-        console.error('TikTok user info error:', userError);
-        throw new Error(`Failed to fetch user info: ${userError.message}`);
+    const userData = await userRes.json();
+    if(userData.error && userData.error.code !== 'ok') {
+        console.error('TikTok user info error:', userData.error);
+        throw new Error(`Failed to fetch user info: ${userData.error.message}`);
     }
 
-    const uid = `tiktok:${userData.union_id}`;
+    const uid = `tiktok:${userData.data.union_id}`;
 
     // Create or update user in Firebase
     await admin.auth().updateUser(uid, {
-      displayName: userData.display_name,
-      photoURL: userData.avatar_url,
+      displayName: userData.data.display_name,
+      photoURL: userData.data.avatar_url,
     }).catch(async (error) => {
       if (error.code === 'auth/user-not-found') {
         await admin.auth().createUser({
           uid: uid,
-          displayName: userData.display_name,
-          photoURL: userData.avatar_url,
+          displayName: userData.data.display_name,
+          photoURL: userData.data.avatar_url,
         });
       } else {
         throw error;
