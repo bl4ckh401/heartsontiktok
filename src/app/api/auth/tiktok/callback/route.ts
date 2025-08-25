@@ -53,6 +53,7 @@ export async function GET(req: NextRequest) {
       body: tokenParams.toString(),
     });
     const tokenData = await tokenRes.json();
+
     if (!tokenRes.ok) {
       console.error('TikTok token exchange response:', tokenData);
       throw new Error(`Failed to fetch access token: ${tokenData.error_description || 'Unknown error'}`);
@@ -62,9 +63,15 @@ export async function GET(req: NextRequest) {
     
     // Fetch user info from TikTok
     const userRes = await fetch('https://open.tiktokapis.com/v2/user/info/?fields=open_id,union_id,avatar_url,display_name', {
-      method: 'POST', // Corrected from GET to POST
       headers: { Authorization: `Bearer ${accessToken}` },
     });
+
+    if (!userRes.ok) {
+        const text = await userRes.text();
+        console.error('TikTok user info raw error response:', text);
+        throw new Error('Failed to fetch user info from TikTok.');
+    }
+    
     const { data: userData, error: userError } = await userRes.json();
     if(userError && userError.code !== 'ok') {
         console.error('TikTok user info error:', userError);
@@ -93,7 +100,7 @@ export async function GET(req: NextRequest) {
     const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
     const sessionCookie = await admin.auth().createSessionCookie(uid, {expiresIn});
     
-    const response = NextResponse.redirect(new URL('/dashboard', req.url));
+    const response = NextResponse.redirect(new URL('/dashboard?success=login_successful', req.url));
     response.cookies.set('session', sessionCookie, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: expiresIn });
 
     return response;
@@ -103,6 +110,7 @@ export async function GET(req: NextRequest) {
     const errorMessage = e.message.includes('Failed to fetch access token') 
       ? 'token_exchange_failed' 
       : 'generic_error';
-    return NextResponse.redirect(new URL(`/login?error=${errorMessage}&error_description=${encodeURIComponent(e.message)}`, req.url));
+    const errorDescription = e.message.startsWith('Failed to fetch user info') ? e.message : 'An unexpected error occurred.';
+    return NextResponse.redirect(new URL(`/login?error=${errorMessage}&error_description=${encodeURIComponent(errorDescription)}`, req.url));
   }
 }
