@@ -65,11 +65,18 @@ export async function GET(req: NextRequest) {
     const userRes = await fetch('https://open.tiktokapis.com/v2/user/info/?fields=open_id,union_id,avatar_url,display_name', {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
-
+    
     if (!userRes.ok) {
         const text = await userRes.text();
         console.error('TikTok user info raw error response:', text);
-        throw new Error('Failed to fetch user info from TikTok.');
+        try {
+            // Try to parse as JSON to get a more specific error
+            const errorJson = JSON.parse(text);
+            throw new Error(`Failed to fetch user info from TikTok: ${errorJson.error_description || text}`);
+        } catch (e) {
+            // If it's not JSON, throw the raw text
+            throw new Error('Failed to fetch user info from TikTok.');
+        }
     }
     
     const { data: userData, error: userError } = await userRes.json();
@@ -110,7 +117,7 @@ export async function GET(req: NextRequest) {
     const errorMessage = e.message.includes('Failed to fetch access token') 
       ? 'token_exchange_failed' 
       : 'generic_error';
-    const errorDescription = e.message.startsWith('Failed to fetch user info') ? e.message : 'An unexpected error occurred.';
+    const errorDescription = e.message;
     return NextResponse.redirect(new URL(`/login?error=${errorMessage}&error_description=${encodeURIComponent(errorDescription)}`, req.url));
   }
 }
