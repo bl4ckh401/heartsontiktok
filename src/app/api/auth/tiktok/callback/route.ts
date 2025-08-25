@@ -1,35 +1,31 @@
 
-import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import type { NextRequest } from 'next/server';
+import {NextResponse} from 'next/server';
+import {cookies} from 'next/headers';
+import type {NextRequest} from 'next/server';
+import admin from '@/lib/firebase-admin';
+import * as jose from 'jose';
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
+  const {searchParams} = new URL(req.url);
   const code = searchParams.get('code');
   const state = searchParams.get('state');
   const error = searchParams.get('error');
-  const errorDescription = searchParams.get('error_description');
 
   const cookieStore = cookies();
   const csrfState = cookieStore.get('csrfState')?.value;
 
-  // Clear the CSRF state cookie after using it
   cookieStore.delete('csrfState');
 
   if (error) {
-    console.error(`TikTok Auth Error: ${error} - ${errorDescription}`);
-    // Redirect to an error page or the login page with an error message
+    console.error(`TikTok Auth Error: ${error}`);
     return NextResponse.redirect(new URL('/login?error=tiktok_auth_failed', req.url));
   }
 
   if (!state || state !== csrfState) {
-    console.error('TikTok Auth Error: Invalid CSRF state');
-    // Redirect to an error page for state mismatch
     return NextResponse.redirect(new URL('/login?error=invalid_state', req.url));
   }
 
   if (!code) {
-    console.error('TikTok Auth Error: No code provided');
     return NextResponse.redirect(new URL('/login?error=missing_code', req.url));
   }
 
@@ -38,47 +34,69 @@ export async function GET(req: NextRequest) {
     const TIKTOK_CLIENT_SECRET = process.env.TIKTOK_CLIENT_SECRET;
     const APP_URL = process.env.APP_URL;
 
-
     if (!TIKTOK_CLIENT_KEY || !TIKTOK_CLIENT_SECRET || !APP_URL) {
-      console.error('Missing required environment variables for TikTok OAuth token exchange.');
       throw new Error('TikTok client key, secret, or app URL is not defined in environment variables.');
     }
-
-    const tokenUrl = 'https://open.tiktokapis.com/v2/oauth/token/';
     
-    const params = new URLSearchParams();
-    params.append('client_key', TIKTOK_CLIENT_KEY);
-    params.append('client_secret', TIKTOK_CLIENT_SECRET);
-    params.append('code', code);
-    params.append('grant_type', 'authorization_code');
-    params.append('redirect_uri', `${APP_URL}/api/auth/tiktok/callback`);
-
-    const response = await fetch(tokenUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: params,
+    // Exchange auth code for access token
+    const tokenUrl = 'https://open.tiktokapis.com/v2/oauth/token/';
+    const tokenParams = new URLSearchParams({
+      client_key: TIKTOK_CLIENT_KEY,
+      client_secret: TIKTOK_CLIENT_SECRET,
+      code: code,
+      grant_type: 'authorization_code',
+      redirect_uri: `${APP_URL}/api/auth/tiktok/callback`,
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-        throw new Error(`Failed to fetch access token: ${data.error_description || response.statusText}`);
+    const tokenRes = await fetch(tokenUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: tokenParams,
+    });
+    const tokenData = await tokenRes.json();
+    if (!tokenRes.ok) {
+      throw new Error(`Failed to fetch access token: ${tokenData.error_description}`);
     }
 
-    // SUCCESS! You have the access token.
-    // In a real application, you would:
-    // 1. Save the access_token, refresh_token, and expiry to the user's record in your Firebase database.
-    // 2. Create a session for the user (e.g., using a JWT or session cookie).
-    // 3. Redirect them to their dashboard.
-    console.log('Successfully obtained TikTok Access Token:', data);
+    const accessToken = tokenData.access_token;
+    
+    // Fetch user info from TikTok
+    const userRes = await fetch('https://open.tiktokapis.com/v2/user/info/?fields=open_id,union_id,avatar_url,display_name', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    const { data: userData, error: userError } = await userRes.json();
+    if(userError.code !== 'ok') {
+        throw new Error(`Failed to fetch user info: ${userError.message}`);
+    }
 
-    // For now, we'll just redirect to the dashboard.
-    return NextResponse.redirect(new URL('/dashboard', req.url));
+    const uid = `tiktok:${userData.union_id}`;
+
+    // Create or update user in Firebase
+    await admin.auth().updateUser(uid, {
+      displayName: userData.display_name,
+      photoURL: userData.avatar_url,
+    }).catch(async (error) => {
+      if (error.code === 'auth/user-not-found') {
+        await admin.auth().createUser({
+          uid: uid,
+          displayName: userData.display_name,
+          photoURL: userData.avatar_url,
+        });
+      } else {
+        throw error;
+      }
+    });
+
+    // Create a session for the user
+    const sessionCookie = await admin.auth().createSessionCookie(uid, {expiresIn: 60 * 60 * 24 * 5 * 1000});
+    
+    const response = NextResponse.redirect(new URL('/dashboard?success=login_successful', req.url));
+    response.cookies.set('session', sessionCookie, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 60 * 60 * 24 * 5 });
+
+    return response;
 
   } catch (e: any) {
-    console.error('Error fetching TikTok access token:', e.message);
+    console.error('Error in TikTok callback:', e.message);
     return NextResponse.redirect(new URL('/login?error=token_exchange_failed', req.url));
   }
 }
