@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
 
   if (error) {
     console.error(`TikTok Auth Error: ${error}`);
-    return NextResponse.redirect(new URL('/login?error=tiktok_auth_failed', req.url));
+    return NextResponse.redirect(new URL(`/login?error=${error}`, req.url));
   }
   
   if (!state || state !== csrfState) {
@@ -54,7 +54,8 @@ export async function GET(req: NextRequest) {
     });
     const tokenData = await tokenRes.json();
     if (!tokenRes.ok) {
-      throw new Error(`Failed to fetch access token: ${tokenData.error_description}`);
+      console.error('TikTok token exchange response:', tokenData);
+      throw new Error(`Failed to fetch access token: ${tokenData.error_description || 'Unknown error'}`);
     }
 
     const accessToken = tokenData.access_token;
@@ -64,7 +65,8 @@ export async function GET(req: NextRequest) {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     const { data: userData, error: userError } = await userRes.json();
-    if(userError.code !== 'ok') {
+    if(userError && userError.code !== 'ok') {
+        console.error('TikTok user info error:', userError);
         throw new Error(`Failed to fetch user info: ${userError.message}`);
     }
 
@@ -97,6 +99,9 @@ export async function GET(req: NextRequest) {
 
   } catch (e: any) {
     console.error('Error in TikTok callback:', e.message);
-    return NextResponse.redirect(new URL('/login?error=token_exchange_failed', req.url));
+    const errorMessage = e.message.includes('Failed to fetch access token') 
+      ? 'token_exchange_failed' 
+      : 'generic_error';
+    return NextResponse.redirect(new URL(`/login?error=${errorMessage}&error_description=${encodeURIComponent(e.message)}`, req.url));
   }
 }

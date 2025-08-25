@@ -5,17 +5,18 @@ import type { NextRequest } from 'next/server';
 import crypto from 'crypto';
 
 export function GET(req: NextRequest) {
-  const csrfState = crypto.randomBytes(16).toString('hex');
-  const cookieStore = cookies();
-  cookieStore.set('csrfState', csrfState, { maxAge: 60000, httpOnly: true, secure: process.env.NODE_ENV === 'production' });
-
   const TIKTOK_CLIENT_KEY = process.env.TIKTOK_CLIENT_KEY;
   const APP_URL = process.env.APP_URL;
 
   if (!TIKTOK_CLIENT_KEY || !APP_URL) {
     console.error('Missing required environment variables for TikTok OAuth.');
-    return NextResponse.redirect(new URL('/login?error=configuration_error', req.url));
+    return NextResponse.json({ error: 'Server configuration error.' }, { status: 500 });
   }
+
+  const csrfState = crypto.randomBytes(16).toString('hex');
+  const cookieStore = cookies();
+  cookieStore.set('csrfState', csrfState, { maxAge: 60 * 60, httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+
 
   const redirectURI = `${APP_URL}/api/auth/tiktok/callback`;
   

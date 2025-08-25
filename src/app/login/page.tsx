@@ -12,9 +12,11 @@ import { AlertTriangle } from 'lucide-react';
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
-  const error = searchParams.get('error');
-  const { toast } = useToast();
   const router = useRouter();
+  const { toast } = useToast();
+
+  const error = searchParams.get('error');
+  const errorDescription = searchParams.get('error_description');
 
   useEffect(() => {
     const success = searchParams.get('success');
@@ -33,10 +35,11 @@ export default function LoginPage() {
     tiktok_auth_failed: 'Authentication with TikTok failed. Please try again.',
     invalid_state: 'Invalid state. The request could not be verified, please try again.',
     missing_code: 'The authorization code was not provided by TikTok. Please try again.',
-    token_exchange_failed: 'Could not verify your TikTok account. Please try again later.',
+    token_exchange_failed: 'Could not verify your TikTok account. Please check your app configuration and try again.',
+    generic_error: 'An unexpected error occurred. Please try again later.',
   };
 
-  const errorMessage = error ? errorMessages[error] : null;
+  const errorMessage = error ? errorMessages[error] || 'An unknown error occurred.' : null;
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
@@ -48,10 +51,13 @@ export default function LoginPage() {
         </div>
 
         {errorMessage && (
-          <Alert variant="destructive" className="mb-4">
+          <Alert variant="destructive" className="mb-4 text-left">
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Authentication Error</AlertTitle>
-            <AlertDescription>{errorMessage}</AlertDescription>
+            <AlertDescription>
+                {errorMessage}
+                {errorDescription && <pre className="mt-2 whitespace-pre-wrap text-xs font-mono bg-destructive-foreground/10 p-2 rounded-md"><code>{decodeURIComponent(errorDescription)}</code></pre>}
+            </AlertDescription>
           </Alert>
         )}
         
@@ -65,7 +71,7 @@ export default function LoginPage() {
         </div>
         
         <p className="text-center text-xs text-muted-foreground mt-8">
-          By continuing, you agree to VeriFlow’s <Link href="/terms" className="underline hover:text-primary">Terms of Service</Link> and <Link href="/privacy" className="underline hover:text-primary">Privacy Policy</Link>.
+          By continuing, you agree to VeriFlow’s <Link href="/terms" className="underline hover:text-primary">Terms of Service</Link> and <Link href="/privacy" a-label="Open the VeriFlow Privacy Policy page" className="underline hover:text-primary">Privacy Policy</Link>.
         </p>
       </div>
     </div>
