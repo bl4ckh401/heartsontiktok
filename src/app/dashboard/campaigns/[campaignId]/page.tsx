@@ -17,11 +17,23 @@ import {
   ArrowLeft,
   CheckCircle,
   Download,
-  Link as LinkIcon,
-  Tag,
-  Target,
+  UploadCloud,
+  Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
 
 interface Campaign {
   id: string;
@@ -31,6 +43,105 @@ interface Campaign {
   brandAssetsUrl?: string;
   createdAt: any;
 }
+
+const SubmitContentDialog = ({ campaignId }: { campaignId: string }) => {
+  const [open, setOpen] = useState(false);
+  const [videoUrl, setVideoUrl] = useState('');
+  const [title, setTitle] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/post-video', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoUrl, title, campaignId }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Failed to submit content.');
+      }
+
+      toast({
+        title: 'Submission Successful!',
+        description: 'Your video is being posted to TikTok. This may take a few moments.',
+      });
+      setOpen(false);
+      setVideoUrl('');
+      setTitle('');
+    } catch (error: any) {
+      toast({
+        title: 'Submission Failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="lg" className="w-full text-lg py-6">
+          <UploadCloud className="mr-2 h-5 w-5" />
+          Submit Content for Campaign
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle>Submit Your Content</DialogTitle>
+            <DialogDescription>
+              Provide the URL to your video and a caption to post it to TikTok for this campaign.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="videoUrl" className="text-right">
+                Video URL
+              </Label>
+              <Input
+                id="videoUrl"
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                className="col-span-3"
+                placeholder="https://example.com/video.mp4"
+                required
+                type="url"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="title" className="text-right">
+                Caption
+              </Label>
+              <Textarea
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="col-span-3"
+                placeholder="My awesome campaign video! #VeriFlow"
+                required
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isSubmitting ? 'Submitting...' : 'Submit to TikTok'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 const CampaignDetailsPage = () => {
   const params = useParams();
@@ -173,9 +284,7 @@ const CampaignDetailsPage = () => {
             </CardContent>
           </Card>
 
-          <Button size="lg" className="w-full text-lg py-6">
-            Apply to Campaign
-          </Button>
+          <SubmitContentDialog campaignId={campaign.id} />
 
           {campaign.brandAssetsUrl && (
             <Card>
@@ -260,5 +369,3 @@ const CampaignDetailsSkeleton = () => (
 );
 
 export default CampaignDetailsPage;
-
-    
