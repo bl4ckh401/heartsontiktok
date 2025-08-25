@@ -14,8 +14,6 @@ export async function GET(req: NextRequest) {
   const cookieStore = cookies();
   const csrfState = cookieStore.get('csrfState')?.value;
 
-  cookieStore.delete('csrfState');
-
   if (error) {
     console.error(`TikTok Auth Error: ${error}`);
     return NextResponse.redirect(new URL('/login?error=tiktok_auth_failed', req.url));
@@ -24,6 +22,8 @@ export async function GET(req: NextRequest) {
   if (!state || state !== csrfState) {
     return NextResponse.redirect(new URL('/login?error=invalid_state', req.url));
   }
+
+  cookieStore.delete('csrfState');
 
   if (!code) {
     return NextResponse.redirect(new URL('/login?error=missing_code', req.url));
