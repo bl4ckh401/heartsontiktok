@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   const errorDescription = searchParams.get('error_description');
 
   const cookieStore = cookies();
-  const csrfState = (await cookieStore).get('csrfState')?.value;
+  const csrfState = cookieStore.get('csrfState')?.value;
 
   if (error) {
     console.error(`TikTok Auth Error: ${error}`);
@@ -19,42 +19,37 @@ export async function GET(req: NextRequest) {
   }
   
   if (!state || state !== csrfState) {
-    return NextResponse.redirect(new URL('/login?error=invalid_state', req.url));
+    return NextResponse.redirect(new URL('/login?error=invalid_state&error_description=Invalid+state.+The+request+could+not+be+verified.', req.url));
   }
   
-  (await cookieStore).delete('csrfState');
+  cookieStore.delete('csrfState');
 
   if (!code) {
-    return NextResponse.redirect(new URL('/login?error=missing_code', req.url));
+    return NextResponse.redirect(new URL('/login?error=missing_code&error_description=The+authorization+code+was+not+provided+by+TikTok.', req.url));
   }
 
   try {
     const TIKTOK_CLIENT_KEY = process.env.TIKTOK_CLIENT_KEY;
     const TIKTOK_CLIENT_SECRET = process.env.TIKTOK_CLIENT_SECRET;
-    const APP_URL = process.env.APP_URL;
-
-    if (!TIKTOK_CLIENT_KEY || !TIKTOK_CLIENT_SECRET || !APP_URL) {
-      throw new Error('APP_URL environment variable is not defined.');
-    }
-    const redirectUri = `${APP_URL}/api/auth/tiktok/callback`;
-
+    
     if (!TIKTOK_CLIENT_KEY || !TIKTOK_CLIENT_SECRET) {
       throw new Error('TikTok client key or secret is not defined in environment variables.');
     }
+
+    const redirectUri = new URL('/api/auth/tiktok/callback', req.url).toString();
+    const decodedCode = decodeURIComponent(code);
     
     const tokenUrl = 'https://open.tiktokapis.com/v2/oauth/token/';
-    const decodedCode = code;
-
     const tokenParams = new URLSearchParams({
       client_key: TIKTOK_CLIENT_KEY,
       client_secret: TIKTOK_CLIENT_SECRET,
-      code: code,
+      code: decodedCode,
       grant_type: 'authorization_code',
       redirect_uri: redirectUri,
     });
 
     const tokenRes = await fetch(tokenUrl, {
-      method: 'POST', // Use POST method as specified in the docs
+      method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: tokenParams.toString(),
     });
@@ -69,8 +64,8 @@ export async function GET(req: NextRequest) {
 
     const accessToken = tokenData.access_token;
     
-    // Fetch user info (optional but common)
-    const userFields = 'open_id,union_id,avatar_url,display_name';
+    // Fetch user info
+    const userFields = 'open_id,union_id,avatar_url,display_name,bio_description,is_verified,follower_count,following_count,likes_count,video_count';
     const userRes = await fetch(`https://open.tiktokapis.com/v2/user/info/?fields=${userFields}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
@@ -83,18 +78,23 @@ export async function GET(req: NextRequest) {
         throw new Error(`Failed to fetch user info from TikTok: ${errorMessage}`);
     }
     
-    // TEMPORARY: Set a simple session cookie without Firebase
     const response = NextResponse.redirect(new URL('/dashboard', req.url));
-    const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
+    const expiresIn = 60 * 60 * 24 * 5; // 5 days in seconds
+    
+    // Store access token and user info in cookies to be used by the dashboard
+    response.cookies.set('tiktok_access_token', accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: tokenData.expires_in });
+    response.cookies.set('user_info', JSON.stringify(userData.data.user), { maxAge: expiresIn }); // User info can be a regular cookie
     response.cookies.set('session', 'true', { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: expiresIn });
-    response.cookies.set('user_info', JSON.stringify(userData.data), { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: expiresIn });
 
 
     return response;
 
   } catch (e: any) {
-    console.error('Error in TikTok callback:', e.message);
-    const errorMessage = e.message || 'generic_error';
+    console.error('Error in TikTok callback:', e);
+    // Sanitize error message for the redirect
+    const errorMessage = e.message.includes('JSON') ? 'An unexpected response was received from TikTok.' : e.message;
     return NextResponse.redirect(new URL(`/login?error=generic_error&error_description=${encodeURIComponent(errorMessage)}`, req.url));
   }
 }
+
+    

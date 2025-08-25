@@ -1,3 +1,4 @@
+
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
@@ -16,6 +17,24 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'p16-sign-sg.tiktokcdn.com',
+        port: '',
+        pathname: '/**',
+      },
+       {
+        protocol: 'https',
+        hostname: 'p19-sign.tiktokcdn-us.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'p16-sign.tiktokcdn-us.com',
+        port: '',
+        pathname: '/**',
+      }
     ],
   },
   experimental: {
@@ -24,3 +43,5 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
+    
