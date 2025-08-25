@@ -36,9 +36,11 @@ export async function GET(req: NextRequest) {
   try {
     const TIKTOK_CLIENT_KEY = process.env.TIKTOK_CLIENT_KEY;
     const TIKTOK_CLIENT_SECRET = process.env.TIKTOK_CLIENT_SECRET;
+    const APP_URL = process.env.APP_URL;
 
-    if (!TIKTOK_CLIENT_KEY || !TIKTOK_CLIENT_SECRET) {
-      throw new Error('TikTok client key or secret is not defined');
+
+    if (!TIKTOK_CLIENT_KEY || !TIKTOK_CLIENT_SECRET || !APP_URL) {
+      throw new Error('TikTok client key, secret, or app URL is not defined in environment variables.');
     }
 
     const tokenUrl = 'https://open.tiktokapis.com/v2/oauth/token/';
@@ -48,7 +50,7 @@ export async function GET(req: NextRequest) {
     params.append('client_secret', TIKTOK_CLIENT_SECRET);
     params.append('code', code);
     params.append('grant_type', 'authorization_code');
-    params.append('redirect_uri', `${process.env.APP_URL}/api/auth/tiktok/callback`);
+    params.append('redirect_uri', `${APP_URL}/api/auth/tiktok/callback`);
 
     const response = await fetch(tokenUrl, {
       method: 'POST',
@@ -66,7 +68,7 @@ export async function GET(req: NextRequest) {
 
     // SUCCESS! You have the access token.
     // In a real application, you would:
-    // 1. Save the access_token, refresh_token, and expiry to the user's record in your database.
+    // 1. Save the access_token, refresh_token, and expiry to the user's record in your Firebase database.
     // 2. Create a session for the user (e.g., using a JWT or session cookie).
     // 3. Redirect them to their dashboard.
     console.log('Successfully obtained TikTok Access Token:', data);
