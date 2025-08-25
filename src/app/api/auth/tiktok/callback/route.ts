@@ -75,7 +75,8 @@ export async function GET(req: NextRequest) {
     
     if (userData.error && userData.error.code !== 'ok') {
         console.error('TikTok user info error:', userData.error);
-        throw new Error(`Failed to fetch user info from TikTok: ${userData.error.message}`);
+        const errorMessage = userData.error.message || JSON.stringify(userData.error);
+        throw new Error(`Failed to fetch user info from TikTok: ${errorMessage}`);
     }
     
     // TEMPORARY: Set a simple session cookie without Firebase
