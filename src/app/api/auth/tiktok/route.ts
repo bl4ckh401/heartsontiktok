@@ -10,13 +10,16 @@ export function GET(req: NextRequest) {
   cookieStore.set('csrfState', csrfState, { maxAge: 60000, httpOnly: true, secure: process.env.NODE_ENV === 'production' });
 
   const TIKTOK_CLIENT_KEY = process.env.TIKTOK_CLIENT_KEY;
-  if (!TIKTOK_CLIENT_KEY) {
+  const APP_URL = process.env.APP_URL;
+
+  if (!TIKTOK_CLIENT_KEY || !APP_URL) {
     // In a real app, you'd want to handle this more gracefully
     // and show an error page to the user.
-    throw new Error('TIKTOK_CLIENT_KEY is not defined in .env');
+    console.error('Missing required environment variables for TikTok OAuth.');
+    throw new Error('TIKTOK_CLIENT_KEY or APP_URL is not defined in .env');
   }
 
-  const redirectURI = `${process.env.APP_URL}/api/auth/tiktok/callback`;
+  const redirectURI = `${APP_URL}/api/auth/tiktok/callback`;
   
   let url = 'https://www.tiktok.com/v2/auth/authorize/';
   const params = new URLSearchParams({

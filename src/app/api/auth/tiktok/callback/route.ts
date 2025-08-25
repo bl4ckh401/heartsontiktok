@@ -40,6 +40,7 @@ export async function GET(req: NextRequest) {
 
 
     if (!TIKTOK_CLIENT_KEY || !TIKTOK_CLIENT_SECRET || !APP_URL) {
+      console.error('Missing required environment variables for TikTok OAuth token exchange.');
       throw new Error('TikTok client key, secret, or app URL is not defined in environment variables.');
     }
 
