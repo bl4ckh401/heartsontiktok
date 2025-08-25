@@ -1,49 +1,264 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  AlertTriangle,
+  ArrowLeft,
+  CheckCircle,
+  Download,
+  Link as LinkIcon,
+  Tag,
+  Target,
+} from 'lucide-react';
+import Link from 'next/link';
 
-// Dummy campaign data (replace with fetched data in a real app)
-const dummyCampaign = {
-  id: 'dummy-campaign-1', // Replace with a specific dummy ID if needed for consistency
-  name: `Dummy Campaign`,
-  description: `This is a detailed description for a dummy campaign. It outlines the goals, target audience, and messaging.`,
-  budget: Math.floor(Math.random() * 10000) + 1000, // Random dummy budget
-  brandAssets: [
-    '/placeholder-logo.png', // Placeholder image for a logo
-    '/placeholder-banner.png', // Placeholder image for a banner
-  ],
-  requirements: 'Create a short video showcasing the product in a natural setting. Mention key features.',
-  timeline: 'Two weeks from selection date.',
-};
+interface Campaign {
+  id: string;
+  name: string;
+  description: string;
+  budget: number;
+  brandAssetsUrl?: string;
+  createdAt: any;
+}
 
-export default function CampaignDetailsPage() { 
+const CampaignDetailsPage = () => {
   const params = useParams();
-  const campaignId = params.campaignId;
-  return (
-    <div className="container mx-auto py-6 space-y-6">
-      <h1 className="text-2xl font-bold">Campaign Details</h1> {/* Move the budget to state */}
-      <p className="text-muted-foreground">Displaying details for Campaign ID: {campaignId}</p>
-      <div className="mt-8 p-4 border rounded">
-        <h2 className="text-xl font-semibold">Campaign Information</h2> {/* Initialize state with a random budget */}
-        <p><strong>Name:</strong> {dummyCampaign.name}</p> {/* Use the budget from state */}
-        <p><strong>Description:</strong> {dummyCampaign.description}</p>
-        <p><strong>Budget:</strong> ${dummyCampaign.budget.toLocaleString('en-US')}</p> {/* Remove the direct use of Math.random() */}
-        <p><strong>Requirements:</strong> {dummyCampaign.requirements}</p> 
-        <p><strong>Timeline:</strong> {dummyCampaign.timeline}</p>
+  const campaignId = params.campaignId as string;
+  const [campaign, setCampaign] = useState<Campaign | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-        <div className="mt-8 p-4 border rounded">
-          <h2 className="text-xl font-semibold">Brand Assets</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
-            {dummyCampaign.brandAssets.map((asset, index) => (
-              <div key={index} className="border rounded p-2 flex justify-center items-center">
-                <img src={asset} alt={`Brand Asset ${index + 1}`} className="max-h-32 object-contain" />
-                {/* In a real application, you might offer a download link */}
+  useEffect(() => {
+    if (!campaignId) return;
+
+    const fetchCampaignDetails = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`/api/campaigns/${campaignId}`);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to fetch campaign details.');
+        }
+        const data = await response.json();
+        setCampaign(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCampaignDetails();
+  }, [campaignId]);
+
+  if (loading) {
+    return <CampaignDetailsSkeleton />;
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-center">
+        <AlertTriangle className="w-16 h-16 text-destructive mb-4" />
+        <h2 className="text-2xl font-bold mb-2">Something Went Wrong</h2>
+        <p className="text-muted-foreground">{error}</p>
+        <Button asChild className="mt-4">
+          <Link href="/dashboard/campaigns/list">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Campaigns
+          </Link>
+        </Button>
+      </div>
+    );
+  }
+
+  if (!campaign) {
+    return <p>Campaign not found.</p>;
+  }
+
+  return (
+    <div className="container mx-auto py-6 space-y-8">
+      <Link
+        href="/dashboard/campaigns/list"
+        className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Back to Campaigns
+      </Link>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          <Card className="overflow-hidden">
+            <Image
+              src={`https://picsum.photos/seed/${campaign.id}/1200/600`}
+              alt={`${campaign.name} cover image`}
+              width={1200}
+              height={600}
+              className="w-full h-64 object-cover"
+              data-ai-hint="social media marketing"
+            />
+            <CardHeader>
+              <CardTitle className="text-3xl font-bold">{campaign.name}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <h3 className="text-lg font-semibold mb-2">Campaign Brief</h3>
+              <p className="text-muted-foreground">{campaign.description}</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Creator Requirements</CardTitle>
+              <CardDescription>
+                What you need to do to successfully complete this campaign.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <ul className="list-inside list-none space-y-3">
+                <li className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-1 flex-shrink-0" />
+                  <span>
+                    <strong>Content:</strong> Create one high-quality TikTok video (15-60 seconds) showcasing the product.
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-1 flex-shrink-0" />
+                  <span>
+                    <strong>Mention:</strong> Tag our official account @VeriFlow in the video caption.
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-1 flex-shrink-0" />
+                  <span>
+                    <strong>Hashtag:</strong> Include the official campaign hashtag #VeriFlowCreator in your caption.
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-1 flex-shrink-0" />
+                  <span>
+                    <strong>Authenticity:</strong> Your content should be genuine and reflect your personal style.
+                  </span>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Compensation</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-baseline space-x-2">
+                <span className="text-4xl font-bold">
+                  KES {campaign.budget.toLocaleString()}
+                </span>
+                <span className="text-muted-foreground">Fixed Rate</span>
               </div>
-            ))}
-          </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Paid upon successful review of the content.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Button size="lg" className="w-full text-lg py-6">
+            Apply to Campaign
+          </Button>
+
+          {campaign.brandAssetsUrl && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Brand Assets</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Button variant="outline" asChild className="w-full">
+                  <a
+                    href={campaign.brandAssetsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Download Assets
+                  </a>
+                </Button>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Click to download logos, product images, and brand guidelines.
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
   );
-}
+};
+
+const CampaignDetailsSkeleton = () => (
+  <div className="container mx-auto py-6 space-y-8">
+    <Skeleton className="h-6 w-48" />
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="lg:col-span-2 space-y-8">
+        <Card>
+          <Skeleton className="h-64 w-full" />
+          <CardHeader>
+            <Skeleton className="h-10 w-3/4" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-6 w-1/4 mb-4" />
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-5/6" />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-8 w-1/2" />
+            <Skeleton className="h-4 w-3/4" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-6 w-full" />
+          </CardContent>
+        </Card>
+      </div>
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-8 w-1/2" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-12 w-3/4" />
+            <Skeleton className="h-3 w-1/2 mt-2" />
+          </CardContent>
+        </Card>
+        <Skeleton className="h-16 w-full" />
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-8 w-1/2" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-3 w-3/4 mt-2" />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  </div>
+);
+
+export default CampaignDetailsPage;
+
+    
