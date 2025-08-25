@@ -37,10 +37,12 @@ export async function GET(req: NextRequest) {
     }
     
     const tokenUrl = 'https://open.tiktokapis.com/v2/oauth/token/';
+    const decodedCode = decodeURIComponent(code);
+
     const tokenParams = new URLSearchParams({
       client_key: TIKTOK_CLIENT_KEY,
       client_secret: TIKTOK_CLIENT_SECRET,
-      code: code,
+      code: decodedCode,
       grant_type: 'authorization_code',
       redirect_uri: `${APP_URL}/api/auth/tiktok/callback`,
     });
@@ -69,8 +71,8 @@ export async function GET(req: NextRequest) {
         try {
             const errorJson = JSON.parse(text);
             throw new Error(`Failed to fetch user info from TikTok: ${errorJson.error_description || text}`);
-        } catch (e) {
-            throw new Error('Failed to fetch user info from TikTok.');
+        } catch (e:any) {
+            throw new Error(`Failed to fetch user info from TikTok: ${text}`);
         }
     }
     
