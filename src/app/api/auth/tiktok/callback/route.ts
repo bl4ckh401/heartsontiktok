@@ -3,7 +3,6 @@ import {NextResponse} from 'next/server';
 import {cookies} from 'next/headers';
 import type {NextRequest} from 'next/server';
 import admin from '@/lib/firebase-admin';
-import * as jose from 'jose';
 
 export async function GET(req: NextRequest) {
   const {searchParams} = new URL(req.url);
@@ -18,11 +17,11 @@ export async function GET(req: NextRequest) {
     console.error(`TikTok Auth Error: ${error}`);
     return NextResponse.redirect(new URL('/login?error=tiktok_auth_failed', req.url));
   }
-
+  
   if (!state || state !== csrfState) {
     return NextResponse.redirect(new URL('/login?error=invalid_state', req.url));
   }
-
+  
   cookieStore.delete('csrfState');
 
   if (!code) {
@@ -51,7 +50,7 @@ export async function GET(req: NextRequest) {
     const tokenRes = await fetch(tokenUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: tokenParams,
+      body: tokenParams.toString(),
     });
     const tokenData = await tokenRes.json();
     if (!tokenRes.ok) {
@@ -88,10 +87,11 @@ export async function GET(req: NextRequest) {
     });
 
     // Create a session for the user
-    const sessionCookie = await admin.auth().createSessionCookie(uid, {expiresIn: 60 * 60 * 24 * 5 * 1000});
+    const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
+    const sessionCookie = await admin.auth().createSessionCookie(uid, {expiresIn});
     
     const response = NextResponse.redirect(new URL('/dashboard?success=login_successful', req.url));
-    response.cookies.set('session', sessionCookie, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 60 * 60 * 24 * 5 });
+    response.cookies.set('session', sessionCookie, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: expiresIn });
 
     return response;
 
