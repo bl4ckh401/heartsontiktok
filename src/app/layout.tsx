@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
   title: 'VeriFlow - Sustainable Creator Platform',
-  description: 'A legitimate app that pays creators, backed by real brand/advertiser money.',
+  description: 'VeriFlow is the mission control center for a creator\'s career, designed to help you manage brand partnerships, monetize your content, and track your growth with powerful, intuitive tools.',
 };
 
 export default function RootLayout({
