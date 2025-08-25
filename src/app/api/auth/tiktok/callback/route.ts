@@ -2,7 +2,6 @@
 import {NextResponse} from 'next/server';
 import {cookies} from 'next/headers';
 import type {NextRequest} from 'next/server';
-import admin from '@/lib/firebase-admin';
 
 export async function GET(req: NextRequest) {
   const {searchParams} = new URL(req.url);
@@ -37,7 +36,6 @@ export async function GET(req: NextRequest) {
       throw new Error('TikTok client key, secret, or app URL is not defined in environment variables.');
     }
     
-    // Exchange auth code for access token
     const tokenUrl = 'https://open.tiktokapis.com/v2/oauth/token/';
     const tokenParams = new URLSearchParams({
       client_key: TIKTOK_CLIENT_KEY,
@@ -61,7 +59,6 @@ export async function GET(req: NextRequest) {
 
     const accessToken = tokenData.access_token;
     
-    // Fetch user info from TikTok
     const userRes = await fetch('https://open.tiktokapis.com/v2/user/info/?fields=open_id,union_id,avatar_url,display_name', {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
@@ -70,11 +67,9 @@ export async function GET(req: NextRequest) {
         const text = await userRes.text();
         console.error('TikTok user info raw error response:', text);
         try {
-            // Try to parse as JSON to get a more specific error
             const errorJson = JSON.parse(text);
             throw new Error(`Failed to fetch user info from TikTok: ${errorJson.error_description || text}`);
         } catch (e) {
-            // If it's not JSON, throw the raw text
             throw new Error('Failed to fetch user info from TikTok.');
         }
     }
@@ -84,31 +79,11 @@ export async function GET(req: NextRequest) {
         console.error('TikTok user info error:', userData.error);
         throw new Error(`Failed to fetch user info: ${userData.error.message}`);
     }
-
-    const uid = `tiktok:${userData.data.union_id}`;
-
-    // Create or update user in Firebase
-    await admin.auth().updateUser(uid, {
-      displayName: userData.data.display_name,
-      photoURL: userData.data.avatar_url,
-    }).catch(async (error) => {
-      if (error.code === 'auth/user-not-found') {
-        await admin.auth().createUser({
-          uid: uid,
-          displayName: userData.data.display_name,
-          photoURL: userData.data.avatar_url,
-        });
-      } else {
-        throw error;
-      }
-    });
-
-    // Create a session for the user
-    const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
-    const sessionCookie = await admin.auth().createSessionCookie(uid, {expiresIn});
     
+    // TEMPORARY: Set a simple session cookie without Firebase
     const response = NextResponse.redirect(new URL('/dashboard?success=login_successful', req.url));
-    response.cookies.set('session', sessionCookie, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: expiresIn });
+    const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
+    response.cookies.set('session', 'true', { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: expiresIn });
 
     return response;
 
