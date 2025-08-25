@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   const errorDescription = searchParams.get('error_description');
 
   const cookieStore = cookies();
-  const csrfState = cookieStore.get('csrfState')?.value;
+  const csrfState = (await cookieStore).get('csrfState')?.value;
 
   if (error) {
     console.error(`TikTok Auth Error: ${error}`);
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL('/login?error=invalid_state&error_description=Invalid+state.+The+request+could+not+be+verified.', req.url));
   }
   
-  cookieStore.delete('csrfState');
+  (await cookieStore).delete('csrfState');
 
   if (!code) {
     return NextResponse.redirect(new URL('/login?error=missing_code&error_description=The+authorization+code+was+not+provided+by+TikTok.', req.url));
@@ -36,14 +36,19 @@ export async function GET(req: NextRequest) {
       throw new Error('TikTok client key or secret is not defined in environment variables.');
     }
 
-    const redirectUri = new URL('/api/auth/tiktok/callback', req.url).toString();
-    const decodedCode = decodeURIComponent(code);
-    
+    const APP_URL = process.env.APP_URL;
+
+    if (!TIKTOK_CLIENT_KEY || !TIKTOK_CLIENT_SECRET || !APP_URL) {
+      throw new Error('APP_URL environment variable is not defined.');
+    }
+    const redirectUri = `${APP_URL}/api/auth/tiktok/callback`;
+
+
     const tokenUrl = 'https://open.tiktokapis.com/v2/oauth/token/';
     const tokenParams = new URLSearchParams({
       client_key: TIKTOK_CLIENT_KEY,
       client_secret: TIKTOK_CLIENT_SECRET,
-      code: decodedCode,
+      code: code,
       grant_type: 'authorization_code',
       redirect_uri: redirectUri,
     });

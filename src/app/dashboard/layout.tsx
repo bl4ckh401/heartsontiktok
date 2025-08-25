@@ -30,10 +30,10 @@ import { ThemeToggle } from '@/components/theme-toggle';
 
 const navItems = [
   { href: '/dashboard', icon: Home, label: 'Home' },
-  { href: '/dashboard/analytics', icon: BarChart3, label: 'Analytics' },
-  { href: '/dashboard/campaigns', icon: Megaphone, label: 'Campaigns' },
+  // { href: '/dashboard/analytics', icon: BarChart3, label: 'Analytics' },
+  { href: '/dashboard/campaigns/list', icon: Megaphone, label: 'Campaigns' },
   { href: '/dashboard/payouts', icon: Wallet, label: 'Payouts' },
-  { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
+  // { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
 ];
 
 export default function DashboardLayout({
