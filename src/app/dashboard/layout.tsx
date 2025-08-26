@@ -15,6 +15,7 @@ import {
   Menu,
   User,
   LogOut,
+  Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -36,6 +37,7 @@ const navItems = [
   { href: '/dashboard', icon: Home, label: 'Home' },
   { href: '/dashboard/campaigns/list', icon: Megaphone, label: 'Campaigns' },
   { href: '/dashboard/payouts', icon: Wallet, label: 'Payouts' },
+  { href: '/dashboard/affiliates', icon: Users, label: 'Affiliates' },
 ];
 
 export default function DashboardLayout({
