@@ -9,10 +9,11 @@ import { TikTokIcon } from '@/components/tiktok-icon';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
-import router from 'next/router';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { toast } = useToast();
 
   const error = searchParams.get('error');
@@ -25,8 +26,10 @@ export default function LoginPage() {
         description: decodeURIComponent(errorDescription),
         variant: 'destructive',
       });
+      // Clear the error from the URL
+      router.replace('/login', { scroll: false });
     }
-  }, [searchParams, toast, router]);
+  }, [errorDescription, toast, router]);
 
 
   const errorMessages: { [key: string]: string } = {
@@ -50,6 +53,7 @@ export default function LoginPage() {
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>{errorMessages[error] || 'Authentication Error'}</AlertTitle>
+              {errorDescription && <AlertDescription>{decodeURIComponent(errorDescription)}</AlertDescription>}
             </Alert>
           )}
           <Button asChild className="w-full" size="lg">
@@ -61,7 +65,7 @@ export default function LoginPage() {
         </div>
         
         <p className="text-center text-xs text-muted-foreground mt-8">
-          By continuing, you agree to VeriFlow’s <Link href="/terms" className="underline hover:text-primary">Terms of Service</Link> and <Link href="/privacy" a-label="Open the VeriFlow Privacy Policy page" className="underline hover:text-primary">Privacy Policy</Link>.
+          By continuing, you agree to VeriFlow’s <Link href="/terms" className="underline hover:text-primary">Terms of Service</Link> and <Link href="/privacy" className="underline hover:text-primary">Privacy Policy</Link>.
         </p>
       </div>
     </div>

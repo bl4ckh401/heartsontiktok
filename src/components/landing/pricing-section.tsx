@@ -13,50 +13,51 @@ import Link from 'next/link';
 
 const tiers = [
   {
-    name: 'Creator',
-    price: '$0',
+    name: 'Gold',
+    price: 'KES 500',
     frequency: '/month',
-    description: 'For creators just getting started.',
+    description: 'Perfect for starting your monetization journey.',
     features: [
+      'Earn KES 0.005 per 1000 Likes',
       'Access to public campaigns',
-      'Instant video performance analytics',
+      'Standard video performance analytics',
       'Standard payouts',
       'Community support',
     ],
-    cta: 'Get Started for Free',
+    cta: 'Choose Gold',
     href: '/login',
     popular: false,
   },
   {
-    name: 'Pro',
-    price: '$29',
+    name: 'Platinum',
+    price: 'KES 750',
     frequency: '/month',
-    description: 'For professional creators scaling their brand.',
+    description: 'For creators ready to accelerate their growth.',
     features: [
-      'Everything in Creator, plus:',
-      'Exclusive brand partnerships',
+      'Earn KES 0.0075 per 1000 Likes',
+      'Access to exclusive brand campaigns',
       'Advanced analytics & trend insights',
       'Priority payouts',
       'Dedicated email support',
     ],
-    cta: 'Upgrade to Pro',
+    cta: 'Choose Platinum',
     href: '/login',
     popular: true,
   },
   {
-    name: 'Business',
-    price: 'Contact Us',
-    frequency: '',
-    description: 'For agencies and brands managing multiple creators.',
+    name: 'Diamond',
+    price: 'KES 1000',
+    frequency: '/month',
+    description: 'The ultimate toolkit for professional creators.',
     features: [
-      'Everything in Pro, plus:',
-      'Multi-user team access',
-      'Campaign management tools',
-      'Custom reporting & API access',
+      'Earn KES 0.01 per 1000 Likes',
+      'First access to premium campaigns',
+      'AI-powered content strategy tools',
+      'Instant payouts',
       'Dedicated account manager',
     ],
-    cta: 'Contact Sales',
-    href: '#',
+    cta: 'Choose Diamond',
+    href: '/login',
     popular: false,
   },
 ];
@@ -66,28 +67,28 @@ export function PricingSection() {
     <section id="pricing" className="container py-24 sm:py-32">
       <div className="text-center mb-12">
         <h2 className="text-3xl md:text-4xl font-bold">
-          Choose the Plan That's Right for You
+          Choose Your Path to Success
         </h2>
         <p className="text-xl text-muted-foreground mt-2">
           Simple, transparent pricing for creators at every level.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-8">
+      <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
         {tiers.map((tier) => (
           <Card
             key={tier.name}
             className={`flex flex-col border-2 ${
-              tier.popular ? 'border-primary shadow-lg' : 'border-border'
+              tier.popular ? 'border-primary shadow-2xl scale-105' : 'border-border'
             }`}
           >
             <CardHeader className="relative">
               {tier.popular && (
-                <div className="absolute top-0 right-6 -translate-y-1/2 bg-primary text-primary-foreground px-3 py-1 text-sm font-semibold rounded-full">
+                <div className="absolute top-0 right-6 -translate-y-1/2 bg-primary text-primary-foreground px-3 py-1 text-sm font-semibold rounded-full shadow-lg">
                   Most Popular
                 </div>
               )}
-              <CardTitle>{tier.name}</CardTitle>
+              <CardTitle className='text-2xl'>{tier.name}</CardTitle>
               <div className="flex items-baseline">
                 <span className="text-4xl font-bold">{tier.price}</span>
                 {tier.frequency && (
@@ -102,7 +103,7 @@ export function PricingSection() {
               <ul className="space-y-4">
                 {tier.features.map((feature) => (
                   <li key={feature} className="flex items-center">
-                    <Check className="h-5 w-5 text-green-500 mr-3" />
+                    <Check className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
                     <span>{feature}</span>
                   </li>
                 ))}
