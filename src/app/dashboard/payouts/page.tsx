@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { Eye, Heart, MessageCircle, Share2, Loader2, AlertCircle } from 'lucide-react';
+import { Eye, Heart, MessageCircle, Video, Loader2, AlertCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
@@ -101,6 +101,7 @@ export default function PayoutsPage() {
                 setPayoutStatus('success');
                 toast({ title: 'Payout Request Successful!', description: `Your request for KES ${totalSelectedPayout} has been submitted.` });
                 setSelectedVideoIds([]);
+                setPhoneNumber('');
             } else {
                 throw new Error(result.message || 'Payout request failed.');
             }
@@ -113,6 +114,20 @@ export default function PayoutsPage() {
         }
     };
 
+    const VideoSkeleton = () => (
+        <Card className="overflow-hidden">
+            <Skeleton className="aspect-video w-full" />
+            <CardContent className="p-4">
+                <Skeleton className="h-5 w-3/4 mb-2" />
+                <div className="flex justify-between">
+                    <Skeleton className="h-4 w-1/4" />
+                    <Skeleton className="h-4 w-1/4" />
+                    <Skeleton className="h-4 w-1/4" />
+                </div>
+            </CardContent>
+        </Card>
+    );
+
     return (
         <div className="container mx-auto py-6 space-y-8">
              <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
@@ -122,7 +137,7 @@ export default function PayoutsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 <div className="lg:col-span-2">
                     <Card>
                         <CardHeader>
@@ -134,7 +149,7 @@ export default function PayoutsPage() {
                         <CardContent className="space-y-4">
                             {loading && (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                   {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-48 w-full rounded-lg" />)}
+                                   {[...Array(4)].map((_, i) => <VideoSkeleton key={i} />)}
                                 </div>
                             )}
                             {error && (
@@ -155,7 +170,7 @@ export default function PayoutsPage() {
                                 {eligibleVideos.map((video) => (
                                     <Card
                                         key={video.id}
-                                        className={`overflow-hidden transition-all duration-200 cursor-pointer ${selectedVideoIds.includes(video.id) ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : 'ring-0'}`}
+                                        className={`overflow-hidden transition-all duration-200 cursor-pointer ${selectedVideoIds.includes(video.id) ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : 'ring-0 hover:ring-2 hover:ring-muted-foreground/20'}`}
                                         onClick={() => handleSelectVideo(video.id)}
                                     >
                                         <div className="relative">
@@ -170,7 +185,7 @@ export default function PayoutsPage() {
                                                 data-ai-hint="video thumbnail"
                                             />
                                             <div className="absolute top-2 right-2">
-                                                 <Checkbox checked={selectedVideoIds.includes(video.id)} className="bg-background/80 backdrop-blur-sm h-6 w-6" />
+                                                 <Checkbox checked={selectedVideoIds.includes(video.id)} className="bg-background/80 backdrop-blur-sm h-6 w-6 border-2" />
                                             </div>
                                         </div>
                                         <CardContent className="p-4">
@@ -196,12 +211,12 @@ export default function PayoutsPage() {
                         <CardContent className="space-y-4">
                              <div>
                                 <p className="text-sm text-muted-foreground">Videos Selected</p>
-                                <p className="text-xl font-bold">{selectedVideoIds.length}</p>
+                                <p className="text-2xl font-bold">{selectedVideoIds.length}</p>
                             </div>
                              <div>
                                 <p className="text-sm text-muted-foreground">Estimated Payout</p>
-                                <p className="text-3xl font-bold text-primary">KES {totalSelectedPayout}</p>
-                                <p className="text-xs text-muted-foreground">Calculation is an estimate.</p>
+                                <p className="text-4xl font-bold text-primary">KES {totalSelectedPayout}</p>
+                                <p className="text-xs text-muted-foreground">Final amount may vary. Calculation is an estimate.</p>
                             </div>
                             <div className="space-y-2">
                                 <label htmlFor="phoneNumber" className="text-sm font-medium">M-Pesa Number</label>
@@ -216,7 +231,7 @@ export default function PayoutsPage() {
                             </div>
                         </CardContent>
                         <CardContent>
-                             <Button onClick={triggerPayout} className="w-full" size="lg" disabled={selectedVideoIds.length === 0 || payoutStatus === 'loading' || !phoneNumber}>
+                             <Button onClick={triggerPayout} className="w-full" size="lg" disabled={selectedVideoIds.length === 0 || payoutStatus === 'loading' || !phoneNumber.match(/^(07|01)\d{8}$/)}>
                                 {payoutStatus === 'loading' ? <Loader2 className="animate-spin" /> : `Request Payout`}
                             </Button>
                         </CardContent>
@@ -226,3 +241,5 @@ export default function PayoutsPage() {
         </div>
     );
 }
+
+    
