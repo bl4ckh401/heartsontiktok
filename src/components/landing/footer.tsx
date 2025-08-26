@@ -2,6 +2,7 @@
 import { Logo } from '@/components/icons';
 import { TikTokIcon } from '../tiktok-icon';
 import { Twitter, Instagram, Youtube } from 'lucide-react';
+import Link from 'next/link';
 
 export function Footer() {
   return (
@@ -22,24 +23,24 @@ export function Footer() {
             <div>
               <h3 className="font-semibold">Platform</h3>
               <ul className="mt-4 space-y-2 text-sm">
-                <li><a href="#features" className="text-muted-foreground hover:text-foreground">Features</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground">Pricing</a></li>
-                <li><a href="#testimonials" className="text-muted-foreground hover:text-foreground">Testimonials</a></li>
+                <li><Link href="/#features" className="text-muted-foreground hover:text-foreground">Features</Link></li>
+                <li><Link href="/#pricing" className="text-muted-foreground hover:text-foreground">Pricing</Link></li>
+                <li><Link href="/#testimonials" className="text-muted-foreground hover:text-foreground">Testimonials</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="font-semibold">Company</h3>
               <ul className="mt-4 space-y-2 text-sm">
-                <li><a href="#" className="text-muted-foreground hover:text-foreground">About Us</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground">Careers</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground">Contact</a></li>
+                <li><Link href="#" className="text-muted-foreground hover:text-foreground">About Us</Link></li>
+                <li><Link href="#" className="text-muted-foreground hover:text-foreground">Careers</Link></li>
+                <li><Link href="#" className="text-muted-foreground hover:text-foreground">Contact</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="font-semibold">Legal</h3>
               <ul className="mt-4 space-y-2 text-sm">
-                <li><a href="#" className="text-muted-foreground hover:text-foreground">Privacy Policy</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground">Terms of Service</a></li>
+                <li><Link href="/privacy" className="text-muted-foreground hover:text-foreground">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="text-muted-foreground hover:text-foreground">Terms of Service</Link></li>
               </ul>
             </div>
           </div>
