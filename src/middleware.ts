@@ -4,42 +4,36 @@ import type { NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
   const session = request.cookies.get('session')?.value;
-  const url = request.nextUrl.clone();
+  const { pathname } = request.nextUrl;
 
-  const isLoginPage = url.pathname === '/login';
+  const isPublicRoute = pathname === '/' || pathname === '/login' || pathname === '/terms' || pathname === '/privacy';
+  const isDashboardRoute = pathname.startsWith('/dashboard');
 
-  // If the user is on the login page
-  if (isLoginPage) {
-    // If they have a session, redirect to the dashboard
-    if (session) {
-      url.pathname = '/dashboard';
-      return NextResponse.redirect(url);
-    }
-    // Otherwise, let them view the login page
-    return NextResponse.next();
-  }
-
-  // For any other page, check for a session
-  if (!session) {
-    // If no session, redirect to login, but preserve the original path for after login
-    url.searchParams.set('next', url.pathname);
+  if (isDashboardRoute && !session) {
+    const url = request.nextUrl.clone();
     url.pathname = '/login';
+    url.searchParams.set('next', pathname);
     return NextResponse.redirect(url);
   }
-  
-  // If they have a session, let them proceed
+
+  if ((pathname === '/login' || pathname === '/') && session) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/dashboard';
+    return NextResponse.redirect(url);
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
+     * Match all request paths except for:
      * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
+     * - favicon.ico
      */
     '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
-}
+};

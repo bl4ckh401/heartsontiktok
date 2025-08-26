@@ -125,9 +125,7 @@ export default function DashboardLayout({
             </SheetContent>
           </Sheet>
           <div className="w-full flex-1">
-             <Button asChild>
-                <Link href="/dashboard/campaigns/create"><Plus className="mr-2 h-4 w-4" /> Create Campaign</Link>
-             </Button>
+             
           </div>
           <ThemeToggle />
           <DropdownMenu>
@@ -152,19 +150,6 @@ export default function DashboardLayout({
               <DropdownMenuLabel>
                 {user ? user.display_name : 'My Account'}
               </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Link href="#" className="flex items-center">
-                  <User className="mr-2 h-4 w-4" />
-                  Profile
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link href="#" className="flex items-center">
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
-                </Link>
-              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
                 <Link href="/api/auth/logout" className="flex items-center">

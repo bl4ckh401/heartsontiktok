@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Calendar, Tag, Target } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
+// Define the structure for a Campaign
 interface Campaign {
   id: string;
   name: string;
@@ -25,6 +26,7 @@ interface Campaign {
   createdAt: any; 
 }
 
+// Skeleton loader component for campaigns
 const CampaignSkeleton = () => (
   <Card className="flex flex-col justify-between overflow-hidden shadow-lg transition-transform hover:scale-[1.02] hover:shadow-xl">
     <CardHeader>
@@ -53,6 +55,8 @@ export default function CampaignListingPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Simulate user role (replace with actual auth logic)
+  const [userRole, setUserRole] = useState<'user' | 'admin' | null>(null); 
 
   useEffect(() => {
     const fetchCampaigns = async () => {
@@ -76,6 +80,10 @@ export default function CampaignListingPage() {
       }
     };
 
+    // Simulate fetching user role (replace with actual auth logic)
+    // In a real app, you would fetch user data and set the role here
+    setUserRole('admin'); // Simulate an admin user for now
+
     fetchCampaigns();
   }, []);
 
@@ -83,6 +91,11 @@ export default function CampaignListingPage() {
     <div className="container mx-auto py-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Available Campaigns</h1>
+        {/* Conditionally render the Create Campaign button */}
+        {userRole === 'admin' && (
+          <Link href="/dashboard/campaigns/create" passHref>
+            <Button data-ai-hint="Create a new campaign">Create Campaign</Button>
+          </Link>)}
       </div>
 
       {loading && (

@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertTriangle,
   ArrowLeft,
+  CheckSquare,
   CheckCircle,
   Download,
   UploadCloud,
@@ -28,13 +29,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogClose,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 
+// Assuming a basic Campaign interface; expand as needed
 interface Campaign {
   id: string;
   name: string;
@@ -42,106 +44,8 @@ interface Campaign {
   budget: number;
   brandAssetsUrl?: string;
   createdAt: any;
+  requirements?: string; // Add requirements field
 }
-
-const SubmitContentDialog = ({ campaignId }: { campaignId: string }) => {
-  const [open, setOpen] = useState(false);
-  const [videoUrl, setVideoUrl] = useState('');
-  const [title, setTitle] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      const response = await fetch('/api/post-video', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoUrl, title, campaignId }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || 'Failed to submit content.');
-      }
-
-      toast({
-        title: 'Submission Successful!',
-        description: 'Your video is being posted to TikTok. This may take a few moments.',
-      });
-      setOpen(false);
-      setVideoUrl('');
-      setTitle('');
-    } catch (error: any) {
-      toast({
-        title: 'Submission Failed',
-        description: error.message,
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="lg" className="w-full text-lg py-6">
-          <UploadCloud className="mr-2 h-5 w-5" />
-          Submit Content for Campaign
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Submit Your Content</DialogTitle>
-            <DialogDescription>
-              Provide the URL to your video and a caption to post it to TikTok for this campaign.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="videoUrl" className="text-right">
-                Video URL
-              </Label>
-              <Input
-                id="videoUrl"
-                value={videoUrl}
-                onChange={(e) => setVideoUrl(e.target.value)}
-                className="col-span-3"
-                placeholder="https://example.com/video.mp4"
-                required
-                type="url"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="title" className="text-right">
-                Caption
-              </Label>
-              <Textarea
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="col-span-3"
-                placeholder="My awesome campaign video! #VeriFlow"
-                required
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isSubmitting ? 'Submitting...' : 'Submit to TikTok'}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-};
 
 const CampaignDetailsPage = () => {
   const params = useParams();
@@ -284,7 +188,70 @@ const CampaignDetailsPage = () => {
             </CardContent>
           </Card>
 
-          <SubmitContentDialog campaignId={campaign.id} />
+          {/* New Section for Content Submission */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Submit Your Content for This Campaign</CardTitle>
+              <CardDescription>
+                Upload your video and provide details to post it to TikTok.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.currentTarget);
+                  formData.append('campaignId', campaign.id); // Associate with campaign
+                  // Add isPaidPartnership to formData
+                  const isPaidPartnership = (e.currentTarget.elements.namedItem('paidPartnership') as HTMLInputElement)?.checked;
+                  formData.append('isPaidPartnership', isPaidPartnership.toString());
+
+                  // Handle submission to /api/post-video
+                  const response = await fetch('/api/post-video', {
+                    method: 'POST',
+                    body: formData,
+                  });
+                  const result = await response.json();
+                  if (response.ok && result.success) {
+                    alert('Video submission successful!');
+                    // Optionally reset form
+                    (e.target as HTMLFormElement).reset();
+                  } else {
+                    alert(`Video submission failed: ${result.message || 'Unknown error'}`);
+                  }
+                }}
+                className="space-y-4"
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="videoFile">
+                    Video File <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="videoFile"
+                    type="file"
+                    name="video" // Add name attribute
+                    accept="video/*"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="title">Video Title <span className="text-red-500">*</span></Label>
+                  <Textarea id="title" name="title" placeholder="Write a compelling title..." required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="hashtags">Hashtags</Label>
+                  <Input id="hashtags" name="hashtags" placeholder="#campaignhashtag #relevant" />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input type="checkbox" id="paidPartnership" name="paidPartnership" className="form-checkbox h-4 w-4 text-primary rounded" />
+                  <Label htmlFor="paidPartnership" className="text-sm font-medium leading-none">
+                    Mark as Paid Partnership
+                  </Label>
+                </div>
+                <Button type="submit" className="w-full">Submit to TikTok</Button>
+              </form>
+            </CardContent>
+          </Card>
 
           {campaign.brandAssetsUrl && (
             <Card>
