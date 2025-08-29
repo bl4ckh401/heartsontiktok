@@ -57,6 +57,11 @@ const MetricCard = ({ title, value, change, changeType, icon: Icon }: any) => (
   </Card>
 );
 
+interface AffiliateSummary {
+  totalEarnings: number;
+  totalConversions: number;
+}
+
 export default function DashboardPage() {
   const [userProfile, setUserProfile] = useState<any>({});
   const [recentVideos, setRecentVideos] = useState<any[]>([]);
@@ -67,6 +72,8 @@ export default function DashboardPage() {
     comments: { value: 'N/A', change: 'N/A', changeType: 'neutral' },
     shares: { value: 'N/A', change: 'N/A', changeType: 'neutral' },
   });
+  const [affiliateSummary, setAffiliateSummary] = useState<AffiliateSummary | null>(null);
+  const [loadingAffiliateSummary, setLoadingAffiliateSummary] = useState(true);
   const [chartData, setChartData] = useState<any[]>([]);
 
   useEffect(() => {
@@ -116,12 +123,29 @@ export default function DashboardPage() {
       }
     };
 
+    const fetchAffiliateSummary = async () => {
+      setLoadingAffiliateSummary(true);
+      try {
+        const response = await fetch('/api/affiliate/summary');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch affiliate summary: ${response.statusText}`);
+        }
+        const data: AffiliateSummary = await response.json();
+        setAffiliateSummary(data);
+      } catch (error) {
+        console.error('Error fetching affiliate summary:', error);
+      } finally {
+        setLoadingAffiliateSummary(false);
+      }
+    };
+
     fetchTikTokData();
+    fetchAffiliateSummary();
   }, []);
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="w-full">
         <CardContent className="p-6 flex items-center space-x-4">
           <Image
             src={userProfile.avatar_url || 'https://placehold.co/64x64.png'}
@@ -133,7 +157,7 @@ export default function DashboardPage() {
           />
           <div>
             <h2 className="text-2xl font-bold">{userProfile.display_name || 'Creator Name'}</h2>
-            <p className="text-muted-foreground">{userProfile.bio_description}</p>
+            <p className="text-muted-foreground text-sm md:text-base">{userProfile.bio_description}</p>
             <div className="text-sm text-muted-foreground mt-1">
               <span>{userProfile.likes_count?.toLocaleString()} Likes</span> &middot;{' '}
               <span>{userProfile.follower_count?.toLocaleString()} Followers</span> &middot;{' '}
@@ -160,8 +184,16 @@ export default function DashboardPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             <MetricCard title="Videos Posted" value={userProfile.video_count?.toLocaleString() || '0'} icon={Video} />
+            <MetricCard
+              title="Total Earnings"
+              value={loadingAffiliateSummary ? 'Loading...' : affiliateSummary?.totalEarnings.toFixed(2) || '0.00'}
+              icon={TrendingUp}
+            />
+            <MetricCard
+              title="Conversions"
+              value={loadingAffiliateSummary ? 'Loading...' : affiliateSummary?.totalConversions.toLocaleString() || '0'} icon={Users} />
             <MetricCard title="Likes" value={userProfile.likes_count?.toLocaleString() || '0'} icon={Heart} />
             <MetricCard title="Comments" value={keyMetrics.comments.value} icon={MessageCircle} />
             <MetricCard title="Shares" value={keyMetrics.shares.value} icon={Share2} />
@@ -192,7 +224,7 @@ export default function DashboardPage() {
           <CardDescription>Your latest video performance.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
+          <Table className="w-full">
             <TableHeader>
               <TableRow>
                 <TableHead className="hidden w-[100px] sm:table-cell">
@@ -207,7 +239,7 @@ export default function DashboardPage() {
             </TableHeader>
             <TableBody>
               {recentVideos.map((video) => (
-                <TableRow key={video.id}>
+                <TableRow key={video.id} className="hover:bg-muted/50">
                   <TableCell className="hidden sm:table-cell">
                     <Image
                       alt={video.title || 'Video thumbnail'}
@@ -220,11 +252,11 @@ export default function DashboardPage() {
                       data-ai-hint="video thumbnail"
                     />
                   </TableCell>
-                  <TableCell className="font-medium">{video.title || 'Untitled Video'}</TableCell>
-                  <TableCell>{video.view_count?.toLocaleString() || 0}</TableCell>
-                  <TableCell>{video.like_count?.toLocaleString() || 0}</TableCell>
-                  <TableCell>{video.comment_count?.toLocaleString() || 0}</TableCell>
-                  <TableCell>{video.share_count?.toLocaleString() || 0}</TableCell>
+                  <TableCell className="font-medium text-sm">{video.title || 'Untitled Video'}</TableCell>
+                  <TableCell className="text-sm">{video.view_count?.toLocaleString() || 0}</TableCell>
+                  <TableCell className="text-sm">{video.like_count?.toLocaleString() || 0}</TableCell>
+                  <TableCell className="text-sm">{video.comment_count?.toLocaleString() || 0}</TableCell>
+                  <TableCell className="text-sm">{video.share_count?.toLocaleString() || 0}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

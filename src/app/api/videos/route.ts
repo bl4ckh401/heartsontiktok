@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server';
 
 export async function GET(req: NextRequest) {
   const cookieStore = cookies();
-  const accessToken = cookieStore.get('tiktok_access_token')?.value;
+  const accessToken = (await cookieStore).get('tiktok_access_token')?.value;
 
   if (!accessToken) {
     return NextResponse.json({ error: 'TikTok access token not found' }, { status: 401 });

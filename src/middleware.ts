@@ -2,24 +2,35 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export async function middleware(request: NextRequest) {
+export const runtime = 'nodejs';
+
+export function middleware(request: NextRequest) {
   const session = request.cookies.get('session')?.value;
   const { pathname } = request.nextUrl;
 
-  const isPublicRoute = pathname === '/' || pathname === '/login' || pathname === '/terms' || pathname === '/privacy';
-  const isDashboardRoute = pathname.startsWith('/dashboard');
+  // Assume user is authenticated if session cookie exists
+  // In a real app, you'd verify this session against your backend
+  const isAuthenticated = !!session;
 
-  if (isDashboardRoute && !session) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    url.searchParams.set('next', pathname);
-    return NextResponse.redirect(url);
+  const isPublicRoute = 
+    pathname === '/login' || 
+    pathname === '/' || 
+    pathname === '/terms' || 
+    pathname === '/privacy';
+
+  // Allow API routes, Next.js internal routes, and static files to pass through
+  if (pathname.startsWith('/api') || pathname.startsWith('/_next') || pathname.includes('.')) {
+    return NextResponse.next();
   }
 
-  if ((pathname === '/login' || pathname === '/') && session) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
-    return NextResponse.redirect(url);
+  // If trying to access a protected route and not authenticated, redirect to login
+  if (!isAuthenticated && !isPublicRoute) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  // If authenticated and trying to access login or landing page, redirect to dashboard
+  if (isAuthenticated && (pathname === '/login' || pathname === '/')) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   return NextResponse.next();
@@ -28,12 +39,11 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for:
-     * - api (API routes)
+     * Match all request paths except for the ones starting with:
      * - _next/static (static files)
      * - _next/image (image optimization files)
-     * - favicon.ico
+     * - favicon.ico (favicon file)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };
