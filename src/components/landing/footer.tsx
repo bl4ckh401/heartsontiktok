@@ -12,7 +12,7 @@ export function Footer() {
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <Logo className="h-6 w-6 text-primary" />
-              <span className="text-lg font-bold">VeriFlow</span>
+              <span className="text-lg font-bold">hearts on tiktok</span>
             </div>
             <p className="text-sm text-muted-foreground">
               The mission control center for your creator career.
@@ -48,7 +48,7 @@ export function Footer() {
 
         <div className="mt-8 flex flex-col-reverse items-center justify-between border-t pt-6 sm:flex-row">
           <p className="mt-4 text-sm text-muted-foreground sm:mt-0">
-            &copy; {new Date().getFullYear()} VeriFlow Inc. All rights reserved.
+            &copy; {new Date().getFullYear()} hearts on tiktok Inc. All rights reserved.
           </p>
           <div className="flex space-x-4">
             <a href="#" className="text-muted-foreground hover:text-foreground"><TikTokIcon className="h-5 w-5" /></a>

@@ -19,7 +19,7 @@ const earningMethods = [
     icon: <Gift className="h-8 w-8 text-primary" />,
     title: 'Affiliate Program',
     description:
-      'Invite other creators to VeriFlow and earn a 10% commission on the views from every video they post. Build a recurring revenue stream with our multi-level referral system.',
+      'Invite other creators to hearts on tiktok and earn a 10% commission on the views from every video they post. Build a recurring revenue stream with our multi-level referral system.',
   },
   {
     icon: <Users className="h-8 w-8 text-primary" />,
@@ -41,7 +41,7 @@ export function EarningMethodsSection() {
             </span>
           </h2>
           <p className="text-xl text-muted-foreground mt-2">
-            VeriFlow provides a suite of tools to help you turn your creativity into a career.
+            hearts on tiktok provides a suite of tools to help you turn your creativity into a career.
           </p>
         </div>
 

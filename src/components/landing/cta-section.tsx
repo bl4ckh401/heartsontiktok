@@ -14,7 +14,7 @@ export function CtaSection() {
           ?
         </h2>
         <p className="text-xl text-muted-foreground mt-4 mb-8">
-          Join thousands of creators who are building sustainable careers with VeriFlow.
+          Join thousands of creators who are building sustainable careers with hearts on tiktok.
         </p>
 
         <Button asChild className="text-lg">

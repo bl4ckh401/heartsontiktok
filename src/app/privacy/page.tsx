@@ -9,7 +9,7 @@ export default function PrivacyPolicyPage() {
         <div className="container flex h-14 items-center">
           <Link href="/" className="flex items-center space-x-2">
             <Logo className="h-6 w-6 text-primary" />
-            <span className="font-bold sm:inline-block">VeriFlow</span>
+            <span className="font-bold sm:inline-block">hearts on tiktok</span>
           </Link>
         </div>
       </header>
@@ -20,7 +20,7 @@ export default function PrivacyPolicyPage() {
             <p className="text-muted-foreground mt-2">Last updated: August 26, 2025</p>
           </div>
 
-          <p>Welcome to VeriFlow. We are committed to protecting your personal information and your right to privacy. If you have any questions or concerns about our policy, or our practices with regards to your personal information, please contact us.</p>
+          <p>Welcome to hearts on tiktok. We are committed to protecting your personal information and your right to privacy. If you have any questions or concerns about our policy, or our practices with regards to your personal information, please contact us.</p>
 
           <p>When you visit our website and use our services, you trust us with your personal information. We take your privacy very seriously. In this privacy notice, we describe our privacy policy. We seek to explain to you in the clearest way possible what information we collect, how we use it, and what rights you have in relation to it.</p>
 
@@ -54,9 +54,9 @@ export default function PrivacyPolicyPage() {
           <p>We may update this privacy policy from time to time. The updated version will be indicated by an updated “Revised” date and the updated version will be effective as soon as it is accessible. We encourage you to review this privacy policy frequently to be informed of how we are protecting your information.</p>
           
           <h2>8. How Can You Contact Us About This Policy?</h2>
-          <p>If you have questions or comments about this policy, you may email us at [contact@veriflow.com] or by post to:</p>
+          <p>If you have questions or comments about this policy, you may email us at [contact@heartsontiktok.com] or by post to:</p>
           <address>
-            VeriFlow Inc.<br />
+            hearts on tiktok Inc.<br />
             123 Creator Lane<br />
             Innovate City, 12345
           </address>

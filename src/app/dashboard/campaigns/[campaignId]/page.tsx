@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useParams } from 'next/navigation';
@@ -150,13 +151,13 @@ const CampaignDetailsPage = () => {
                 <li className="flex items-start">
                   <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-1 flex-shrink-0" />
                   <span>
-                    <strong>Mention:</strong> Tag our official account @VeriFlow in the video caption.
+                    <strong>Mention:</strong> Tag our official account @heartsontiktok in the video caption.
                   </span>
                 </li>
                 <li className="flex items-start">
                   <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-1 flex-shrink-0" />
                   <span>
-                    <strong>Hashtag:</strong> Include the official campaign hashtag #VeriFlowCreator in your caption.
+                    <strong>Hashtag:</strong> Include the official campaign hashtag #HeartsOnTiktokCreator in your caption.
                   </span>
                 </li>
                 <li className="flex items-start">

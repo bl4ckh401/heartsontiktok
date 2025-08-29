@@ -138,7 +138,7 @@ export default function AffiliatesPage() {
         <CardHeader>
           <CardTitle>Your Referrals</CardTitle>
           <CardDescription>
-            A list of creators you've invited to VeriFlow.
+            A list of creators you've invited to hearts on tiktok.
           </CardDescription>
         </CardHeader>
         <CardContent>
