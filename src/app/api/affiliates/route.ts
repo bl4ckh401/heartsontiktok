@@ -19,6 +19,9 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: false, message: 'Could not determine authenticated user' }, { status: 401 });
     }
 
+    const appUrl = process.env.APP_URL || 'http://localhost:9002';
+    const referralLink = `${appUrl}/login?ref=${userId}`;
+
     // 1. Fetch users who were referred by the current user
     const referralsRef = db.firestore().collection('users').where('referredBy', '==', userId);
     const referralsSnapshot = await referralsRef.get();
@@ -30,7 +33,7 @@ export async function GET(request: Request) {
           referrals: [],
           totalReferrals: 0,
           totalAffiliateEarnings: 0,
-          referralLink: `https://veriflow.app/join?ref=${userId}`,
+          referralLink: referralLink,
         },
       });
     }
@@ -72,7 +75,7 @@ export async function GET(request: Request) {
         referrals: referralsData,
         totalReferrals: referralsData.length,
         totalAffiliateEarnings: totalAffiliateEarnings,
-        referralLink: `https://veriflow.app/join?ref=${userId}`,
+        referralLink: referralLink,
       },
     });
 
