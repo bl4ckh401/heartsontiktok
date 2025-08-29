@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -20,53 +20,28 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Users, DollarSign, UserPlus, Copy, Check } from 'lucide-react';
+import { Users, DollarSign, UserPlus, Copy, Check, Loader2, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
+import { Skeleton } from '@/components/ui/skeleton';
 
-const referrals = [
-    {
-      id: 'usr_1',
-      name: 'Alex "Tech" Rivera',
-      avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
-      joinDate: '2023-10-15',
-      status: 'Active',
-      earnings: 1250.75,
-    },
-    {
-      id: 'usr_2',
-      name: 'Sarah "Lifestyle" Chen',
-      avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704e',
-      joinDate: '2023-11-02',
-      status: 'Active',
-      earnings: 850.50,
-    },
-    {
-      id: 'usr_3',
-      name: 'Mike "Gamer" Lee',
-      avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704f',
-      joinDate: '2023-11-20',
-      status: 'Pending',
-      earnings: 0.00,
-    },
-    {
-      id: 'usr_4',
-      name: 'Emily "Foodie" Garcia',
-      avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704a',
-      joinDate: '2023-12-01',
-      status: 'Active',
-      earnings: 450.00,
-    },
-];
+interface Referral {
+  id: string;
+  name: string;
+  avatar: string;
+  joinDate: string;
+  status: 'Active' | 'Pending';
+  earnings: number;
+}
 
-const MetricCard = ({ title, value, icon: Icon }: {title: string, value: string | number, icon: React.ElementType}) => (
+const MetricCard = ({ title, value, icon: Icon, loading }: {title: string, value: string | number, icon: React.ElementType, loading?: boolean}) => (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <Icon className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        {loading ? <Skeleton className="h-8 w-24" /> : <div className="text-2xl font-bold">{value}</div>}
       </CardContent>
     </Card>
 );
@@ -75,9 +50,47 @@ const MetricCard = ({ title, value, icon: Icon }: {title: string, value: string 
 export default function AffiliatesPage() {
     const { toast } = useToast();
     const [copied, setCopied] = useState(false);
-    const referralLink = 'https://veriflow.app/join?ref=creator123';
+    const [referralLink, setReferralLink] = useState('');
+    const [referrals, setReferrals] = useState<Referral[]>([]);
+    const [totalReferrals, setTotalReferrals] = useState(0);
+    const [totalEarnings, setTotalEarnings] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchAffiliateData = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const response = await fetch('/api/affiliates');
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || 'Failed to fetch affiliate data.');
+                }
+                
+                setReferrals(result.data.referrals);
+                setTotalReferrals(result.data.totalReferrals);
+                setTotalEarnings(result.data.totalAffiliateEarnings);
+                setReferralLink(result.data.referralLink);
+
+            } catch (err: any) {
+                setError(err.message);
+                toast({
+                    title: 'Error',
+                    description: err.message,
+                    variant: 'destructive',
+                });
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAffiliateData();
+    }, [toast]);
     
     const handleCopy = () => {
+        if (!referralLink) return;
         navigator.clipboard.writeText(referralLink);
         setCopied(true);
         toast({
@@ -86,6 +99,8 @@ export default function AffiliatesPage() {
         });
         setTimeout(() => setCopied(false), 2000);
     };
+
+    const activeReferralsCount = referrals.filter(r => r.status === 'Active').length;
 
   return (
     <div className="container mx-auto py-6 space-y-8">
@@ -101,12 +116,12 @@ export default function AffiliatesPage() {
       <Card>
         <CardHeader>
             <CardTitle>Your Referral Link</CardTitle>
-            <CardDescription>Share this link to invite other creators. You earn 10% of their views and from the users they invite.</CardDescription>
+            <CardDescription>Share this link to invite other creators. You earn 2% of the total earnings from every video they post.</CardDescription>
         </CardHeader>
         <CardContent>
              <div className="flex w-full max-w-lg items-center space-x-2">
-                <Input type="text" value={referralLink} readOnly className="font-mono"/>
-                <Button type="button" size="icon" onClick={handleCopy}>
+                {loading ? <Skeleton className="h-10 flex-grow" /> : <Input type="text" value={referralLink} readOnly className="font-mono"/> }
+                <Button type="button" size="icon" onClick={handleCopy} disabled={loading}>
                     {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 </Button>
             </div>
@@ -114,9 +129,9 @@ export default function AffiliatesPage() {
       </Card>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <MetricCard title="Total Referrals" value={referrals.length} icon={Users} />
-        <MetricCard title="Active Referrals" value={referrals.filter(r => r.status === 'Active').length} icon={UserPlus} />
-        <MetricCard title="Total Affiliate Earnings" value={`KES ${referrals.reduce((sum, r) => sum + r.earnings, 0).toLocaleString()}`} icon={DollarSign} />
+        <MetricCard title="Total Referrals" value={totalReferrals} icon={Users} loading={loading}/>
+        <MetricCard title="Active Referrals" value={activeReferralsCount} icon={UserPlus} loading={loading} />
+        <MetricCard title="Total Affiliate Earnings" value={`KES ${totalEarnings.toLocaleString()}`} icon={DollarSign} loading={loading} />
       </div>
 
       <Card>
@@ -127,38 +142,55 @@ export default function AffiliatesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Creator</TableHead>
-                <TableHead>Join Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Earnings</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {referrals.map((referral) => (
-                <TableRow key={referral.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                        <Image src={referral.avatar} alt={referral.name} width={40} height={40} className="rounded-full" data-ai-hint="creator avatar" />
-                        <span className="font-medium">{referral.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{new Date(referral.joinDate).toLocaleDateString()}</TableCell>
-                  <TableCell>
-                    <Badge variant={referral.status === 'Active' ? 'default' : 'secondary'}>
-                      {referral.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">KES {referral.earnings.toLocaleString()}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+            {loading ? (
+                 <div className="space-y-4">
+                    {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+                 </div>
+            ) : error ? (
+                <div className="flex flex-col items-center justify-center text-center py-10">
+                    <AlertCircle className="w-12 h-12 text-destructive mb-4" />
+                    <p className="font-semibold">Failed to load referrals</p>
+                    <p className="text-muted-foreground text-sm">{error}</p>
+                </div>
+            ) : (
+                <Table>
+                    <TableHeader>
+                    <TableRow>
+                        <TableHead>Creator</TableHead>
+                        <TableHead>Join Date</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Earnings</TableHead>
+                    </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                    {referrals.length > 0 ? referrals.map((referral) => (
+                        <TableRow key={referral.id}>
+                        <TableCell>
+                            <div className="flex items-center gap-3">
+                                <Image src={referral.avatar || 'https://i.pravatar.cc/150'} alt={referral.name} width={40} height={40} className="rounded-full" data-ai-hint="creator avatar" />
+                                <span className="font-medium">{referral.name}</span>
+                            </div>
+                        </TableCell>
+                        <TableCell>{new Date(referral.joinDate).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                            <Badge variant={referral.status === 'Active' ? 'default' : 'secondary'}>
+                            {referral.status}
+                            </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">KES {referral.earnings.toLocaleString()}</TableCell>
+                        </TableRow>
+                    )) : (
+                        <TableRow>
+                            <TableCell colSpan={4} className="text-center h-24">
+                                You haven't referred any creators yet.
+                            </TableCell>
+                        </TableRow>
+                    )}
+                    </TableBody>
+                </Table>
+            )}
         </CardContent>
       </Card>
     </div>
   );
 }
-
