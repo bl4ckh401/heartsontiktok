@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
     Card,
     CardContent,
@@ -17,8 +17,22 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 
+interface EligibleVideo {
+    id: string;
+    title: string;
+    cover_image_url: string;
+    view_count: number;
+    like_count: number;
+    comment_count: number;
+    payoutStatus: 'ELIGIBLE' | 'SUBMITTED' | 'PENDING' | 'PAID' | 'FAILED';
+}
+
+// A constant for the payout rate (e.g., KES per 1000 views)
+// This should ideally come from backend config, but is fine here for display purposes.
+const PAYOUT_RATE_PER_1000_VIEWS = 10; // KES 10 per 1000 views
+
 export default function PayoutsPage() {
-    const [eligibleVideos, setEligibleVideos] = useState<any[]>([]);
+    const [eligibleVideos, setEligibleVideos] = useState<EligibleVideo[]>([]);
     const [selectedVideoIds, setSelectedVideoIds] = useState<string[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -26,40 +40,37 @@ export default function PayoutsPage() {
     const [payoutStatus, setPayoutStatus] = useState<'idle' | 'loading'>('idle');
 
     const { toast } = useToast();
-    const MIN_PAYOUT_VIEWS = 1000;
+
+    const fetchEligibleVideos = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch('/api/videos');
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to fetch videos.');
+            }
+            const data = await response.json();
+            if (data.videos) {
+                setEligibleVideos(data.videos);
+            } else if (data.error) {
+                throw new Error(data.error);
+            }
+        } catch (err: any) {
+            setError(err.message);
+            toast({
+                title: 'Error Fetching Videos',
+                description: err.message,
+                variant: 'destructive',
+            });
+        } finally {
+            setLoading(false);
+        }
+    }, [toast]);
 
     useEffect(() => {
-        const fetchEligibleVideos = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const response = await fetch('/api/videos');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch videos.');
-                }
-                const data = await response.json();
-                if (data.videos) {
-                    // In a real app, you might want to fetch payout status from your own backend
-                    // For now, we filter by views client-side.
-                    const filteredVideos = data.videos.filter((v: any) => (v.view_count || 0) >= MIN_PAYOUT_VIEWS);
-                    setEligibleVideos(filteredVideos);
-                } else if (data.error) {
-                    throw new Error(data.error);
-                }
-            } catch (err: any) {
-                setError(err.message);
-                toast({
-                    title: 'Error Fetching Videos',
-                    description: err.message,
-                    variant: 'destructive',
-                });
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchEligibleVideos();
-    }, [toast]);
+    }, [fetchEligibleVideos]);
 
     const handleSelectVideo = (videoId: string) => {
         setSelectedVideoIds((prevIds) =>
@@ -69,11 +80,12 @@ export default function PayoutsPage() {
         );
     };
     
-    const totalSelectedPayout = selectedVideoIds.reduce((total, id) => {
+    // This calculation is for DISPLAY PURPOSES ONLY.
+    // The authoritative calculation MUST happen on the backend.
+    const estimatedTotalPayout = selectedVideoIds.reduce((total, id) => {
         const video = eligibleVideos.find(v => v.id === id);
-        // Using a placeholder calculation (0.01 KES per view). 
-        // The backend will perform the definitive calculation.
-        const payout = (video?.view_count || 0) * 0.01; 
+        if (!video) return total;
+        const payout = (video.view_count / 1000) * PAYOUT_RATE_PER_1000_VIEWS; 
         return total + payout;
     }, 0);
 
@@ -98,16 +110,21 @@ export default function PayoutsPage() {
                 body: JSON.stringify({ 
                     videoIds: selectedVideoIds, 
                     phoneNumber: phoneNumber,
-                    amount: Math.floor(totalSelectedPayout) // Send integer amount
+                    // The 'amount' is no longer sent from the client for security.
+                    // The backend will calculate the definitive amount based on videoIds.
                 }),
             });
 
             const result = await response.json();
 
             if (result.success) {
-                toast({ title: 'Payout Request Successful!', description: `Your request for KES ${Math.floor(totalSelectedPayout)} has been submitted for processing.` });
+                toast({ 
+                    title: 'Payout Request Successful!', 
+                    description: `Your payout request has been submitted. You will receive an M-Pesa prompt shortly.` 
+                });
                 setSelectedVideoIds([]); // Clear selection on success
-                // Optionally, refresh video list to show pending status
+                setPhoneNumber(''); // Clear phone number
+                fetchEligibleVideos(); // Refresh the list of eligible videos
             } else {
                 throw new Error(result.message || 'Payout request failed.');
             }
@@ -148,7 +165,7 @@ export default function PayoutsPage() {
                         <CardHeader>
                             <CardTitle>Eligible Videos</CardTitle>
                             <CardDescription>
-                                Only videos with over {MIN_PAYOUT_VIEWS.toLocaleString()} views are shown here.
+                                Only videos that meet the minimum performance criteria and have not been paid out are shown here.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -168,7 +185,7 @@ export default function PayoutsPage() {
                                  <div className="text-center py-16 border-2 border-dashed rounded-lg">
                                     <Video className="mx-auto h-12 w-12 text-muted-foreground" />
                                     <h3 className="mt-2 text-sm font-semibold text-foreground">No Eligible Videos</h3>
-                                    <p className="mt-1 text-sm text-muted-foreground">Keep creating! Videos with over {MIN_PAYOUT_VIEWS.toLocaleString()} views will appear here.</p>
+                                    <p className="mt-1 text-sm text-muted-foreground">Keep creating! More videos will appear here once they meet the payout criteria.</p>
                                  </div>
                             )}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -220,7 +237,7 @@ export default function PayoutsPage() {
                             </div>
                              <div>
                                 <p className="text-sm text-muted-foreground">Estimated Payout</p>
-                                <p className="text-4xl font-bold text-primary">KES {totalSelectedPayout.toFixed(2)}</p>
+                                <p className="text-4xl font-bold text-primary">KES {estimatedTotalPayout.toFixed(2)}</p>
                                 <p className="text-xs text-muted-foreground">Final amount calculated on the backend.</p>
                             </div>
                             <div className="space-y-2">
