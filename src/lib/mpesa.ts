@@ -30,6 +30,10 @@ export async function getMpesaToken(): Promise<string> {
     }
   }
 
+  if (!MPESA_CONSUMER_KEY || !MPESA_CONSUMER_SECRET) {
+    throw new Error('M-Pesa consumer key or secret is not configured in environment variables.');
+  }
+
   const credentials = Buffer.from(`${MPESA_CONSUMER_KEY}:${MPESA_CONSUMER_SECRET}`).toString('base64');
   
   const response = await axios.get(`${MPESA_BASE_URL}/oauth/v1/generate?grant_type=client_credentials`, {
@@ -40,6 +44,7 @@ export async function getMpesaToken(): Promise<string> {
 
   const { access_token, expires_in } = response.data;
   
+  // Cache the token with an expiry time slightly less than the actual expiry to be safe
   const newExpiresAt = Date.now() + (parseInt(expires_in, 10) - 300) * 1000;
   await tokenRef.set({
     accessToken: access_token,
@@ -50,6 +55,8 @@ export async function getMpesaToken(): Promise<string> {
 }
 
 async function getSecurityCredential(): Promise<string> {
+    // In a real production environment, this should be an encrypted password.
+    // For sandbox, this is often a plaintext credential provided by Safaricom.
     return process.env.MPESA_SECURITY_CREDENTIAL || 'YOUR_ENCRYPTED_CREDENTIAL';
 }
 
@@ -108,6 +115,9 @@ export async function initiateSTKPush(
 
     const shortCode = MPESA_C2B_SHORTCODE;
     const passkey = MPESA_PASSKEY;
+    if (!shortCode || !passkey) {
+        throw new Error("M-Pesa C2B Shortcode or Passkey is not configured.");
+    }
 
     const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14);
     const password = Buffer.from(`${shortCode}${passkey}${timestamp}`).toString('base64');

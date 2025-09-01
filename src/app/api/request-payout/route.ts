@@ -73,6 +73,11 @@ export async function POST(request: Request) {
     // 3. Initiate B2C Payout
     const remarks = `Creator payout for ${eligibleVideoIdsToPayout.length} videos.`;
     const result = await initiateB2CPayout(accessToken, finalAmount, phoneNumber, remarks);
+    
+    if (result.ResponseCode !== '0') {
+      throw new Error(result.ResponseDescription || 'Failed to initiate M-Pesa payout request.');
+    }
+
 
     // 4. Log the payout request in Firestore for tracking
     const payoutRef = db.firestore().collection('payouts').doc();
