@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { TikTokIcon } from '@/components/tiktok-icon';
 import { useToast } from '@/hooks/use-toast';
@@ -11,7 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-export default function LoginPage() {
+function LoginContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { toast } = useToast();
@@ -41,6 +41,26 @@ export default function LoginPage() {
   };
 
   return (
+    <>
+      {error && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>{errorMessages[error] || 'Authentication Error'}</AlertTitle>
+          {errorDescription && <AlertDescription>{decodeURIComponent(errorDescription)}</AlertDescription>}
+        </Alert>
+      )}
+      <Button asChild className="w-full" size="lg">
+        <Link href="/api/auth/tiktok" className="flex items-center gap-3">
+          <TikTokIcon className="h-6 w-6" />
+          Continue with TikTok
+        </Link>
+      </Button>
+    </>
+  );
+}
+
+export default function LoginPage() {
+  return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center text-center mb-8">
@@ -49,19 +69,9 @@ export default function LoginPage() {
         </div>
         
         <div className="space-y-4">
-          {error && (
-            <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>{errorMessages[error] || 'Authentication Error'}</AlertTitle>
-              {errorDescription && <AlertDescription>{decodeURIComponent(errorDescription)}</AlertDescription>}
-            </Alert>
-          )}
-          <Button asChild className="w-full" size="lg">
-            <Link href="/api/auth/tiktok" className="flex items-center gap-3">
-              <TikTokIcon className="h-6 w-6" />
-              Continue with TikTok
-            </Link>
-          </Button>
+          <Suspense fallback={<Button className="w-full" size="lg" disabled>Loading...</Button>}>
+            <LoginContent />
+          </Suspense>
         </div>
         
         <p className="text-center text-xs text-muted-foreground mt-8">
