@@ -23,7 +23,7 @@ export default function PayoutsPage() {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [phoneNumber, setPhoneNumber] = useState('');
-    const [payoutStatus, setPayoutStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [payoutStatus, setPayoutStatus] = useState<'idle' | 'loading'>('idle');
 
     const { toast } = useToast();
     const MIN_PAYOUT_VIEWS = 1000;
@@ -39,6 +39,8 @@ export default function PayoutsPage() {
                 }
                 const data = await response.json();
                 if (data.videos) {
+                    // In a real app, you might want to fetch payout status from your own backend
+                    // For now, we filter by views client-side.
                     const filteredVideos = data.videos.filter((v: any) => (v.view_count || 0) >= MIN_PAYOUT_VIEWS);
                     setEligibleVideos(filteredVideos);
                 } else if (data.error) {
@@ -69,10 +71,11 @@ export default function PayoutsPage() {
     
     const totalSelectedPayout = selectedVideoIds.reduce((total, id) => {
         const video = eligibleVideos.find(v => v.id === id);
-        // Using a placeholder calculation. Replace with your actual payout logic.
+        // Using a placeholder calculation (0.01 KES per view). 
+        // The backend will perform the definitive calculation.
         const payout = (video?.view_count || 0) * 0.01; 
         return total + payout;
-    }, 0).toFixed(2);
+    }, 0);
 
 
     const triggerPayout = async () => {
@@ -80,8 +83,8 @@ export default function PayoutsPage() {
             toast({ title: 'No videos selected', description: 'Please select at least one video.', variant: 'destructive' });
             return;
         }
-        if (!phoneNumber.match(/^(07|01)\d{8}$/)) {
-            toast({ title: 'Invalid Phone Number', description: 'Please enter a valid M-Pesa number (e.g., 0712345678).', variant: 'destructive' });
+        if (!phoneNumber.match(/^(07|01|2547|2541)\d{8}$/)) {
+            toast({ title: 'Invalid Phone Number', description: 'Please enter a valid Safaricom number (e.g., 0712345678).', variant: 'destructive' });
             return;
         }
 
@@ -92,25 +95,27 @@ export default function PayoutsPage() {
             const response = await fetch('/api/request-payout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ videoIds: selectedVideoIds, phoneNumber }),
+                body: JSON.stringify({ 
+                    videoIds: selectedVideoIds, 
+                    phoneNumber: phoneNumber,
+                    amount: Math.floor(totalSelectedPayout) // Send integer amount
+                }),
             });
 
             const result = await response.json();
 
             if (result.success) {
-                setPayoutStatus('success');
-                toast({ title: 'Payout Request Successful!', description: `Your request for KES ${totalSelectedPayout} has been submitted.` });
-                setSelectedVideoIds([]);
-                setPhoneNumber('');
+                toast({ title: 'Payout Request Successful!', description: `Your request for KES ${Math.floor(totalSelectedPayout)} has been submitted for processing.` });
+                setSelectedVideoIds([]); // Clear selection on success
+                // Optionally, refresh video list to show pending status
             } else {
                 throw new Error(result.message || 'Payout request failed.');
             }
         } catch (err: any) {
-            setPayoutStatus('error');
             setError(err.message);
             toast({ title: 'Payout Failed', description: err.message, variant: 'destructive' });
         } finally {
-             setTimeout(() => setPayoutStatus('idle'), 3000);
+             setPayoutStatus('idle');
         }
     };
 
@@ -215,8 +220,8 @@ export default function PayoutsPage() {
                             </div>
                              <div>
                                 <p className="text-sm text-muted-foreground">Estimated Payout</p>
-                                <p className="text-4xl font-bold text-primary">KES {totalSelectedPayout}</p>
-                                <p className="text-xs text-muted-foreground">Final amount may vary. Calculation is an estimate.</p>
+                                <p className="text-4xl font-bold text-primary">KES {totalSelectedPayout.toFixed(2)}</p>
+                                <p className="text-xs text-muted-foreground">Final amount calculated on the backend.</p>
                             </div>
                             <div className="space-y-2">
                                 <label htmlFor="phoneNumber" className="text-sm font-medium">M-Pesa Number</label>
@@ -231,7 +236,7 @@ export default function PayoutsPage() {
                             </div>
                         </CardContent>
                         <CardContent>
-                             <Button onClick={triggerPayout} className="w-full" size="lg" disabled={selectedVideoIds.length === 0 || payoutStatus === 'loading' || !phoneNumber.match(/^(07|01)\d{8}$/)}>
+                             <Button onClick={triggerPayout} className="w-full" size="lg" disabled={selectedVideoIds.length === 0 || payoutStatus === 'loading' || !phoneNumber.match(/^(07|01|2547|2541)\d{8}$/)}>
                                 {payoutStatus === 'loading' ? <Loader2 className="animate-spin" /> : `Request Payout`}
                             </Button>
                         </CardContent>
@@ -241,5 +246,3 @@ export default function PayoutsPage() {
         </div>
     );
 }
-
-    
