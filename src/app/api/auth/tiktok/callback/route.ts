@@ -37,7 +37,9 @@ export async function GET(req: NextRequest) {
       throw new Error('TikTok client key or secret is not defined in environment variables.');
     }
     
-    const redirectUri = `${process.env.APP_URL}/api/auth/tiktok/callback`;
+    // Ensure no trailing slash on APP_URL
+    const appUrl = (process.env.APP_URL || '').replace(/\/$/, '');
+    const redirectUri = `${appUrl}/api/auth/tiktok/callback`;
 
     const tokenUrl = 'https://open.tiktokapis.com/v2/oauth/token/';
     const tokenParams = new URLSearchParams({

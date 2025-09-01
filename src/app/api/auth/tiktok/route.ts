@@ -16,7 +16,9 @@ export async function GET(req: NextRequest) {
   const cookieStore = cookies();
   (await cookieStore).set('csrfState', csrfState, { maxAge: 60 * 60, httpOnly: true, secure: process.env.NODE_ENV === 'production' });
 
-  const redirectUri = `${process.env.APP_URL}/api/auth/tiktok/callback`;
+  // Ensure no trailing slash on APP_URL
+  const appUrl = (process.env.APP_URL || '').replace(/\/$/, '');
+  const redirectUri = `${appUrl}/api/auth/tiktok/callback`;
   
   const scopes = [
     'user.info.basic',
