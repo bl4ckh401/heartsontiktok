@@ -15,7 +15,7 @@ const tiers = [
   {
     name: 'Gold',
     price: 'KES 500',
-    frequency: '/month',
+    frequency: '/lifetime',
     description: 'Perfect for starting your monetization journey.',
     features: [
       'Earn KES 0.005 per 1000 Likes',
@@ -31,7 +31,7 @@ const tiers = [
   {
     name: 'Platinum',
     price: 'KES 750',
-    frequency: '/month',
+    frequency: '/lifetime',
     description: 'For creators ready to accelerate their growth.',
     features: [
       'Earn KES 0.0075 per 1000 Likes',
@@ -47,7 +47,7 @@ const tiers = [
   {
     name: 'Diamond',
     price: 'KES 1000',
-    frequency: '/month',
+    frequency: '/lifetime',
     description: 'The ultimate toolkit for professional creators.',
     features: [
       'Earn KES 0.01 per 1000 Likes',

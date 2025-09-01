@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   const videoFile = formData.get('video') as File;
   const title = formData.get('title') as string;
   const hashtags = formData.get('hashtags') as string;
-  const paidPartnership = formData.get('paidPartnership') === 'on'; // Check if checkbox is 'on'
+  const paidPartnership = formData.get('paidPartnership') === 'true';
   const campaignId = formData.get('campaignId') as string;
 
   // Basic validation for required fields
