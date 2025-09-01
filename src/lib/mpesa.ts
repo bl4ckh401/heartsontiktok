@@ -8,8 +8,11 @@ const MPESA_CONSUMER_SECRET = process.env.MPESA_CONSUMER_SECRET;
 const MPESA_B2C_SHORTCODE = process.env.MPESA_B2C_SHORTCODE;
 const MPESA_B2C_INITIATOR_NAME = process.env.MPESA_B2C_INITIATOR_NAME;
 const MPESA_B2C_INITIATOR_PASSWORD = process.env.MPESA_B2C_INITIATOR_PASSWORD; // This needs to be encrypted
-const MPESA_B2C_RESULT_URL = process.env.MPESA_B2C_RESULT_URL;
-const MPESA_B2C_QUEUE_TIMEOUT_URL = process.env.MPESA_B2C_QUEUE_TIMEOUT_URL;
+const MPESA_B2C_RESULT_URL = `${process.env.APP_URL}/api/payouts/callback/result`;
+const MPESA_B2C_QUEUE_TIMEOUT_URL = `${process.env.APP_URL}/api/payouts/callback/timeout`;
+const MPESA_C2B_SHORTCODE = process.env.MPESA_C2B_SHORTCODE;
+const MPESA_C2B_CALLBACK_URL = `${process.env.APP_URL}/api/subscribe/callback`;
+const MPESA_PASSKEY = process.env.MPESA_PASSKEY;
 
 /**
  * Generates an M-Pesa OAuth2 Access Token.
@@ -27,7 +30,6 @@ export async function getMpesaToken(): Promise<string> {
     }
   }
 
-  // If token doesn't exist or is expired, fetch a new one
   const credentials = Buffer.from(`${MPESA_CONSUMER_KEY}:${MPESA_CONSUMER_SECRET}`).toString('base64');
   
   const response = await axios.get(`${MPESA_BASE_URL}/oauth/v1/generate?grant_type=client_credentials`, {
@@ -38,8 +40,7 @@ export async function getMpesaToken(): Promise<string> {
 
   const { access_token, expires_in } = response.data;
   
-  // Cache the new token in Firestore
-  const newExpiresAt = Date.now() + (parseInt(expires_in, 10) - 300) * 1000; // Subtract 5 mins for safety
+  const newExpiresAt = Date.now() + (parseInt(expires_in, 10) - 300) * 1000;
   await tokenRef.set({
     accessToken: access_token,
     expiresAt: newExpiresAt,
@@ -48,23 +49,12 @@ export async function getMpesaToken(): Promise<string> {
   return access_token;
 }
 
-// In a real production environment, this should be done on a secure server.
-// The SecurityCredential is an encrypted version of the Initiator Password.
-// Safaricom provides a guide on how to encrypt this. For sandbox, you can use a test credential.
 async function getSecurityCredential(): Promise<string> {
-    // For sandbox, you might get a pre-encrypted credential.
-    // For production, you must encrypt the initiator password using the provided certificate.
-    // This is a placeholder. Replace with actual encryption logic.
     return process.env.MPESA_SECURITY_CREDENTIAL || 'YOUR_ENCRYPTED_CREDENTIAL';
 }
 
-
 /**
  * Initiates a Business-to-Customer (B2C) Payout.
- * @param token - M-Pesa Access Token
- * @param amount - The amount to pay out (integer)
- * @param phoneNumber - The recipient's phone number (e.g., 2547...)
- * @param remarks - A short description of the transaction
  */
 export async function initiateB2CPayout(
   token: string,
@@ -77,7 +67,7 @@ export async function initiateB2CPayout(
   const payload = {
     InitiatorName: MPESA_B2C_INITIATOR_NAME,
     SecurityCredential: securityCredential,
-    CommandID: 'BusinessPayment', // Command ID for B2C payouts
+    CommandID: 'BusinessPayment',
     Amount: amount,
     PartyA: MPESA_B2C_SHORTCODE,
     PartyB: phoneNumber,
@@ -103,4 +93,53 @@ export async function initiateB2CPayout(
     console.error('M-Pesa B2C API Error:', error.response?.data || error.message);
     throw new Error(error.response?.data?.errorMessage || 'Failed to initiate M-Pesa payout.');
   }
+}
+
+/**
+ * Initiates an M-Pesa STK Push for C2B payments (e.g., subscriptions).
+ */
+export async function initiateSTKPush(
+    token: string,
+    phoneNumber: string,
+    amount: number,
+    accountReference: string,
+    transactionDesc: string
+): Promise<any> {
+
+    const shortCode = MPESA_C2B_SHORTCODE;
+    const passkey = MPESA_PASSKEY;
+
+    const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14);
+    const password = Buffer.from(`${shortCode}${passkey}${timestamp}`).toString('base64');
+    
+    const payload = {
+        BusinessShortCode: shortCode,
+        Password: password,
+        Timestamp: timestamp,
+        TransactionType: "CustomerPayBillOnline", // or "CustomerBuyGoodsOnline"
+        Amount: amount,
+        PartyA: phoneNumber,
+        PartyB: shortCode,
+        PhoneNumber: phoneNumber,
+        CallBackURL: MPESA_C2B_CALLBACK_URL,
+        AccountReference: accountReference,
+        TransactionDesc: transactionDesc
+    };
+
+    try {
+        const response = await axios.post(
+            `${MPESA_BASE_URL}/mpesa/stkpush/v1/processrequest`,
+            payload,
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+        return response.data;
+    } catch (error: any) {
+        console.error('M-Pesa STK Push API Error:', error.response?.data || error.message);
+        throw new Error(error.response?.data?.errorMessage || 'Failed to initiate M-Pesa STK Push.');
+    }
 }

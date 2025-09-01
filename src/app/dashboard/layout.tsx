@@ -16,6 +16,7 @@ import {
   User,
   LogOut,
   Users,
+  CreditCard,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -153,8 +154,15 @@ export default function DashboardLayout({
                 {user ? user.display_name : 'My Account'}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Link href="/api/auth/logout" className="flex items-center">
+               <DropdownMenuItem asChild>
+                <Link href="/dashboard/subscription" className="flex items-center cursor-pointer">
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  Subscription
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/api/auth/logout" className="flex items-center cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
                   Logout
                 </Link>
