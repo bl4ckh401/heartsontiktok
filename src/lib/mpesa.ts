@@ -7,7 +7,6 @@ const MPESA_CONSUMER_KEY = process.env.MPESA_CONSUMER_KEY;
 const MPESA_CONSUMER_SECRET = process.env.MPESA_CONSUMER_SECRET;
 const MPESA_B2C_SHORTCODE = process.env.MPESA_B2C_SHORTCODE;
 const MPESA_B2C_INITIATOR_NAME = process.env.MPESA_B2C_INITIATOR_NAME;
-const MPESA_B2C_INITIATOR_PASSWORD = process.env.MPESA_B2C_INITIATOR_PASSWORD; // This needs to be encrypted
 const MPESA_B2C_RESULT_URL = `${process.env.APP_URL}/api/payouts/callback/result`;
 const MPESA_B2C_QUEUE_TIMEOUT_URL = `${process.env.APP_URL}/api/payouts/callback/timeout`;
 const MPESA_C2B_SHORTCODE = process.env.MPESA_C2B_SHORTCODE;
@@ -36,28 +35,38 @@ export async function getMpesaToken(): Promise<string> {
 
   const credentials = Buffer.from(`${MPESA_CONSUMER_KEY}:${MPESA_CONSUMER_SECRET}`).toString('base64');
   
-  const response = await axios.get(`${MPESA_BASE_URL}/oauth/v1/generate?grant_type=client_credentials`, {
-    headers: {
-      'Authorization': `Basic ${credentials}`,
-    },
-  });
+  try {
+    const response = await axios.get(`${MPESA_BASE_URL}/oauth/v1/generate?grant_type=client_credentials`, {
+      headers: {
+        'Authorization': `Basic ${credentials}`,
+      },
+    });
 
-  const { access_token, expires_in } = response.data;
-  
-  // Cache the token with an expiry time slightly less than the actual expiry to be safe
-  const newExpiresAt = Date.now() + (parseInt(expires_in, 10) - 300) * 1000;
-  await tokenRef.set({
-    accessToken: access_token,
-    expiresAt: newExpiresAt,
-  });
+    const { access_token, expires_in } = response.data;
+    
+    // Cache the token with an expiry time slightly less than the actual expiry to be safe
+    const newExpiresAt = Date.now() + (parseInt(expires_in, 10) - 300) * 1000;
+    await tokenRef.set({
+      accessToken: access_token,
+      expiresAt: newExpiresAt,
+    });
 
-  return access_token;
+    return access_token;
+  } catch (error: any) {
+    console.error('Error fetching M-Pesa token:', error.response?.data || error.message);
+    throw new Error('Failed to generate M-Pesa access token.');
+  }
 }
 
 async function getSecurityCredential(): Promise<string> {
     // In a real production environment, this should be an encrypted password.
     // For sandbox, this is often a plaintext credential provided by Safaricom.
-    return process.env.MPESA_SECURITY_CREDENTIAL || 'YOUR_ENCRYPTED_CREDENTIAL';
+    // IMPORTANT: You must generate this using the "Security Credential" tool on the Daraja portal and place the result in your .env file
+    const securityCredential = process.env.MPESA_SECURITY_CREDENTIAL;
+    if (!securityCredential) {
+        throw new Error('MPESA_SECURITY_CREDENTIAL is not set in environment variables. Please generate one from the Daraja portal.');
+    }
+    return securityCredential;
 }
 
 /**
