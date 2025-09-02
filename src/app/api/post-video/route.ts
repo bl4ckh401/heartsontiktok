@@ -33,6 +33,7 @@ export async function POST(request: Request) {
   try {
     const userInfo = JSON.parse(userInfoCookie);
 
+    // Hardcoded for unaudited app compliance
     const postInfo: any = {
       title: hashtags ? `${title} ${hashtags}` : title,
       privacy_level: 'SELF_ONLY',
@@ -68,13 +69,13 @@ export async function POST(request: Request) {
     }
 
     const { publish_id, upload_url } = initData.data;
-    console.log(`Uploading video for publishId: ${publish_id} to URL: ${upload_url}`);
 
     const uploadResponse = await fetch(upload_url, {
       method: 'PUT',
-      headers: { 
+      headers: {
         'Content-Type': videoFile.type,
         'Content-Length': String(videoFile.size),
+        'Content-Range': `bytes 0-${videoFile.size - 1}/${videoFile.size}`
        },
       body: videoFile.stream(),
       // @ts-ignore
