@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     if (initData.error?.code !== 'ok') {
       console.error('TikTok Post Init Error:', initData.error);
       const userMessage = `TikTok API Error: ${initData.error.message}. Please ensure your TikTok account is set to private and try again.`;
-      return NextResponse.json({ success: false, message: userMessage }, { status: 400 });
+      return NextResponse.json({ success: false, message: userMessage, status: 400, error: initData.error });
     }
 
     const { publish_id, upload_url } = initData.data;
@@ -73,6 +73,8 @@ export async function POST(request: Request) {
       method: 'PUT',
       headers: { 'Content-Type': videoFile.type, },
       body: videoFile.stream(),
+      // @ts-ignore
+      duplex: 'half',
     });
 
     if (!uploadResponse.ok) {
@@ -107,5 +109,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, message: error.message || 'An unexpected error occurred.' }, { status: 500 });
   }
 }
-
-    
