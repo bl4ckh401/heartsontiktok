@@ -2,7 +2,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,6 +21,7 @@ import {
   UploadCloud,
   Loader2,
   Info,
+  Clock,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
@@ -29,7 +30,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-// Assuming a basic Campaign interface; expand as needed
 interface Campaign {
   id: string;
   name: string;
@@ -37,7 +37,7 @@ interface Campaign {
   budget: number;
   brandAssetsUrl?: string;
   createdAt: any;
-  requirements?: string; // Add requirements field
+  requirements?: string;
 }
 
 const CampaignDetailsPage = () => {
@@ -47,7 +47,55 @@ const CampaignDetailsPage = () => {
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'uploading' | 'processing' | 'success'>('idle');
+  const [formKey, setFormKey] = useState(Date.now()); // Used to reset the form
+
+  const pollPublishStatus = useCallback(async (publishId: string, submissionId: string) => {
+    setSubmissionStatus('processing');
+    let attempts = 0;
+    const maxAttempts = 20; // Poll for a maximum of 2 minutes (20 * 6s)
+    const interval = 6000; // 6 seconds
+
+    while (attempts < maxAttempts) {
+      try {
+        const response = await fetch('/api/publish-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ publishId, submissionId }),
+        });
+        const result = await response.json();
+
+        if (result.success && result.status === 'PUBLISHED') {
+          setSubmissionStatus('success');
+          toast({
+            title: 'Submission Complete!',
+            description: 'Your video has been successfully published to TikTok.',
+          });
+          setFormKey(Date.now()); // Reset the form by changing its key
+          return;
+        } else if (result.error) {
+           throw new Error(result.message || 'Polling failed.');
+        }
+        // If status is still pending, wait and try again
+      } catch (err: any) {
+         setSubmissionStatus('idle');
+         toast({ title: 'Processing Error', description: err.message, variant: 'destructive' });
+         return;
+      }
+
+      attempts++;
+      await new Promise(resolve => setTimeout(resolve, interval));
+    }
+    
+    setSubmissionStatus('idle');
+    toast({
+        title: 'Processing Timed Out',
+        description: "Your video is still being processed by TikTok. We'll update its status in the background.",
+        variant: 'destructive',
+    });
+
+  }, [toast]);
+
 
   useEffect(() => {
     if (!campaignId) return;
@@ -63,7 +111,7 @@ const CampaignDetailsPage = () => {
         }
         const data = await response.json();
         setCampaign(data);
-      } catch (err: any) {
+      } catch (err: any) => {
         setError(err.message);
       } finally {
         setLoading(false);
@@ -75,10 +123,16 @@ const CampaignDetailsPage = () => {
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    setSubmissionStatus('uploading');
 
     const formData = new FormData(e.currentTarget);
-    formData.append('campaignId', campaign.id);
+    if (campaign?.id) {
+        formData.append('campaignId', campaign.id);
+    } else {
+        toast({ title: 'Error', description: 'Campaign ID is missing.', variant: 'destructive'});
+        setSubmissionStatus('idle');
+        return;
+    }
 
     try {
       const response = await fetch('/api/post-video', {
@@ -89,10 +143,11 @@ const CampaignDetailsPage = () => {
 
       if (response.ok && result.success) {
         toast({
-            title: 'Submission Successful!',
-            description: "Your video has been submitted and is processing. It will be posted privately to your TikTok account.",
+            title: 'Upload Successful!',
+            description: "Your video has been uploaded. Now verifying publication status with TikTok...",
         });
-        (e.target as HTMLFormElement).reset();
+        // Start polling for the final status
+        pollPublishStatus(result.publishId, result.submissionId);
       } else {
         throw new Error(result.message || 'Video submission failed. Please ensure your TikTok account is set to private and try again.');
       }
@@ -102,10 +157,11 @@ const CampaignDetailsPage = () => {
             description: err.message,
             variant: 'destructive'
         });
-    } finally {
-      setIsSubmitting(false);
+        setSubmissionStatus('idle');
     }
   }
+
+  const isSubmitting = submissionStatus === 'uploading' || submissionStatus === 'processing';
 
   if (loading) {
     return <CampaignDetailsSkeleton />;
@@ -130,6 +186,21 @@ const CampaignDetailsPage = () => {
   if (!campaign) {
     return <p>Campaign not found.</p>;
   }
+  
+  const getButtonState = () => {
+    switch (submissionStatus) {
+        case 'uploading':
+            return { text: 'Uploading...', icon: <Loader2 className="mr-2 h-4 w-4 animate-spin" /> };
+        case 'processing':
+            return { text: 'Processing...', icon: <Clock className="mr-2 h-4 w-4 animate-spin" /> };
+        case 'success':
+            return { text: 'Submission Complete!', icon: <CheckCircle className="mr-2 h-4 w-4" /> };
+        default:
+            return { text: 'Submit to TikTok', icon: <UploadCloud className="mr-2 h-4 w-4" /> };
+    }
+  };
+
+  const { text: buttonText, icon: buttonIcon } = getButtonState();
 
   return (
     <div className="container mx-auto py-6 space-y-8">
@@ -233,6 +304,7 @@ const CampaignDetailsPage = () => {
                 </AlertDescription>
               </Alert>
               <form
+                key={formKey}
                 onSubmit={handleFormSubmit}
                 className="space-y-4"
               >
@@ -262,9 +334,9 @@ const CampaignDetailsPage = () => {
                   By submitting, you agree to post this content to your TikTok account. It will be posted privately.
                 </p>
 
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
-                  {isSubmitting ? 'Submitting...' : 'Submit to TikTok'}
+                <Button type="submit" className="w-full" disabled={isSubmitting || submissionStatus === 'success'}>
+                    {buttonIcon}
+                    {buttonText}
                 </Button>
               </form>
             </CardContent>
@@ -274,7 +346,7 @@ const CampaignDetailsPage = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Brand Assets</CardTitle>
-              </CardHeader>
+              </Header>
               <CardContent>
                 <Button variant="outline" asChild className="w-full">
                   <a
@@ -353,5 +425,3 @@ const CampaignDetailsSkeleton = () => (
 );
 
 export default CampaignDetailsPage;
-
-    

@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import db from '@/lib/firebase-admin';
+import * as admin from 'firebase-admin';
 
 export async function POST(request: Request) {
   const cookieStore = cookies();
@@ -32,14 +33,13 @@ export async function POST(request: Request) {
   try {
     const userInfo = JSON.parse(userInfoCookie);
 
-    // Per TikTok's guidelines for unaudited apps, all posts must be private.
     const postInfo: any = {
       title: hashtags ? `${title} ${hashtags}` : title,
       privacy_level: 'SELF_ONLY',
       disable_duet: false,
       disable_comment: false,
       disable_stitch: false,
-      brand_content_toggle: false, // Must be false for unaudited apps
+      brand_content_toggle: false,
     };
 
     const initResponse = await fetch('https://open.tiktokapis.com/v2/post/publish/video/init/', {
@@ -92,20 +92,18 @@ export async function POST(request: Request) {
       title: title,
       hashtags: hashtags,
       tiktokPublishId: publish_id,
-      status: 'SUBMITTED', // Initial status, should be checked later
-      submittedAt: new Date().toISOString(),
+      status: 'SUBMITTED', // Initial status, will be polled for completion.
+      submittedAt: admin.firestore.FieldValue.serverTimestamp(),
+      payoutStatus: 'ELIGIBLE', // Assume eligible until paid.
     };
 
-    await db.firestore().collection('submissions').add(submissionData);
+    const submissionRef = await db.firestore().collection('submissions').add(submissionData);
     
-    // In a real production app, you would now start polling the publish status endpoint
-    // or handle webhooks to confirm the video is published before updating the status
-    // in Firestore to 'PUBLISHED'.
-
     return NextResponse.json({
       success: true,
-      message: 'Video upload initiated. Processing will continue in the background.',
+      message: 'Video upload initiated. We will now verify the publication status.',
       publishId: publish_id,
+      submissionId: submissionRef.id,
     });
 
   } catch (error: any) {
