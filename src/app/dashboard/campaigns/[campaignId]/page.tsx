@@ -16,26 +16,18 @@ import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertTriangle,
   ArrowLeft,
-  CheckSquare,
   CheckCircle,
   Download,
   UploadCloud,
   Loader2,
+  Info,
 } from 'lucide-react';
 import Link from 'next/link';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 // Assuming a basic Campaign interface; expand as needed
 interface Campaign {
@@ -51,9 +43,11 @@ interface Campaign {
 const CampaignDetailsPage = () => {
   const params = useParams();
   const campaignId = params.campaignId as string;
+  const { toast } = useToast();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!campaignId) return;
@@ -78,6 +72,40 @@ const CampaignDetailsPage = () => {
 
     fetchCampaignDetails();
   }, [campaignId]);
+
+  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const formData = new FormData(e.currentTarget);
+    formData.append('campaignId', campaign.id);
+
+    try {
+      const response = await fetch('/api/post-video', {
+        method: 'POST',
+        body: formData,
+      });
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        toast({
+            title: 'Submission Successful!',
+            description: "Your video has been submitted and is processing. It will be posted privately to your TikTok account.",
+        });
+        (e.target as HTMLFormElement).reset();
+      } else {
+        throw new Error(result.message || 'Video submission failed. Please ensure your TikTok account is set to private and try again.');
+      }
+    } catch (err: any) {
+        toast({
+            title: 'Submission Failed',
+            description: err.message,
+            variant: 'destructive'
+        });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   if (loading) {
     return <CampaignDetailsSkeleton />;
@@ -189,38 +217,23 @@ const CampaignDetailsPage = () => {
             </CardContent>
           </Card>
 
-          {/* New Section for Content Submission */}
           <Card>
             <CardHeader>
-              <CardTitle>Submit Your Content for This Campaign</CardTitle>
+              <CardTitle>Submit Your Content</CardTitle>
               <CardDescription>
-                Upload your video and provide details to post it to TikTok.
+                Upload your video to post it to your TikTok profile.
               </CardDescription>
             </CardHeader>
             <CardContent>
+              <Alert variant="destructive" className="mb-4">
+                <Info className="h-4 w-4" />
+                <AlertTitle>Action Required</AlertTitle>
+                <AlertDescription>
+                  Before submitting, please go to your TikTok app and set your account to **Private**. This is a temporary requirement for our app.
+                </AlertDescription>
+              </Alert>
               <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  const formData = new FormData(e.currentTarget);
-                  formData.append('campaignId', campaign.id); // Associate with campaign
-                  // Add isPaidPartnership to formData
-                  const isPaidPartnership = (e.currentTarget.elements.namedItem('paidPartnership') as HTMLInputElement)?.checked;
-                  formData.append('isPaidPartnership', isPaidPartnership.toString());
-
-                  // Handle submission to /api/post-video
-                  const response = await fetch('/api/post-video', {
-                    method: 'POST',
-                    body: formData,
-                  });
-                  const result = await response.json();
-                  if (response.ok && result.success) {
-                    alert('Video submission successful!');
-                    // Optionally reset form
-                    (e.target as HTMLFormElement).reset();
-                  } else {
-                    alert(`Video submission failed: ${result.message || 'Unknown error'}`);
-                  }
-                }}
+                onSubmit={handleFormSubmit}
                 className="space-y-4"
               >
                 <div className="space-y-2">
@@ -230,26 +243,29 @@ const CampaignDetailsPage = () => {
                   <Input
                     id="videoFile"
                     type="file"
-                    name="video" // Add name attribute
+                    name="video"
                     accept="video/*"
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="title">Video Title <span className="text-red-500">*</span></Label>
-                  <Textarea id="title" name="title" placeholder="Write a compelling title..." required />
+                  <Textarea id="title" name="title" placeholder="Write a compelling title..." required disabled={isSubmitting}/>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="hashtags">Hashtags</Label>
-                  <Input id="hashtags" name="hashtags" placeholder="#campaignhashtag #relevant" />
+                  <Input id="hashtags" name="hashtags" placeholder="#campaignhashtag #relevant" disabled={isSubmitting}/>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <input type="checkbox" id="paidPartnership" name="paidPartnership" className="form-checkbox h-4 w-4 text-primary rounded" />
-                  <Label htmlFor="paidPartnership" className="text-sm font-medium leading-none">
-                    Mark as Paid Partnership
-                  </Label>
-                </div>
-                <Button type="submit" className="w-full">Submit to TikTok</Button>
+                
+                <p className="text-xs text-muted-foreground">
+                  By submitting, you agree to post this content to your TikTok account. It will be posted privately.
+                </p>
+
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
+                  {isSubmitting ? 'Submitting...' : 'Submit to TikTok'}
+                </Button>
               </form>
             </CardContent>
           </Card>
@@ -337,3 +353,5 @@ const CampaignDetailsSkeleton = () => (
 );
 
 export default CampaignDetailsPage;
+
+    
