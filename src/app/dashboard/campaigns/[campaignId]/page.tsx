@@ -74,24 +74,24 @@ const CampaignDetailsPage = () => {
           setFormKey(Date.now()); // Reset the form by changing its key
           return;
         } else if (result.error) {
-           throw new Error(result.message || 'Polling failed.');
+          throw new Error(result.message || 'Polling failed.');
         }
         // If status is still pending, wait and try again
       } catch (err: any) {
-         setSubmissionStatus('idle');
-         toast({ title: 'Processing Error', description: err.message, variant: 'destructive' });
-         return;
+        setSubmissionStatus('idle');
+        toast({ title: 'Processing Error', description: err.message, variant: 'destructive' });
+        return;
       }
 
       attempts++;
       await new Promise(resolve => setTimeout(resolve, interval));
     }
-    
+
     setSubmissionStatus('idle');
     toast({
-        title: 'Processing Timed Out',
-        description: "Your video is still being processed by TikTok. We'll update its status in the background.",
-        variant: 'destructive',
+      title: 'Processing Timed Out',
+      description: "Your video is still being processed by TikTok. We'll update its status in the background.",
+      variant: 'destructive',
     });
 
   }, [toast]);
@@ -127,11 +127,11 @@ const CampaignDetailsPage = () => {
 
     const formData = new FormData(e.currentTarget);
     if (campaign?.id) {
-        formData.append('campaignId', campaign.id);
+      formData.append('campaignId', campaign.id);
     } else {
-        toast({ title: 'Error', description: 'Campaign ID is missing.', variant: 'destructive'});
-        setSubmissionStatus('idle');
-        return;
+      toast({ title: 'Error', description: 'Campaign ID is missing.', variant: 'destructive' });
+      setSubmissionStatus('idle');
+      return;
     }
 
     try {
@@ -143,8 +143,8 @@ const CampaignDetailsPage = () => {
 
       if (response.ok && result.success) {
         toast({
-            title: 'Upload Successful!',
-            description: "Your video has been uploaded. Now verifying publication status with TikTok...",
+          title: 'Upload Successful!',
+          description: "Your video has been uploaded. Now verifying publication status with TikTok...",
         });
         // Start polling for the final status
         pollPublishStatus(result.publishId, result.submissionId);
@@ -152,12 +152,12 @@ const CampaignDetailsPage = () => {
         throw new Error(result.message || 'Video submission failed. Please ensure your TikTok account is set to private and try again.');
       }
     } catch (err: any) {
-        toast({
-            title: 'Submission Failed',
-            description: err.message,
-            variant: 'destructive'
-        });
-        setSubmissionStatus('idle');
+      toast({
+        title: 'Submission Failed',
+        description: err.message,
+        variant: 'destructive'
+      });
+      setSubmissionStatus('idle');
     }
   }
 
@@ -186,17 +186,17 @@ const CampaignDetailsPage = () => {
   if (!campaign) {
     return <p>Campaign not found.</p>;
   }
-  
+
   const getButtonState = () => {
     switch (submissionStatus) {
-        case 'uploading':
-            return { text: 'Uploading...', icon: <Loader2 className="mr-2 h-4 w-4 animate-spin" /> };
-        case 'processing':
-            return { text: 'Processing...', icon: <Clock className="mr-2 h-4 w-4 animate-spin" /> };
-        case 'success':
-            return { text: 'Submission Complete!', icon: <CheckCircle className="mr-2 h-4 w-4" /> };
-        default:
-            return { text: 'Submit to TikTok', icon: <UploadCloud className="mr-2 h-4 w-4" /> };
+      case 'uploading':
+        return { text: 'Uploading...', icon: <Loader2 className="mr-2 h-4 w-4 animate-spin" /> };
+      case 'processing':
+        return { text: 'Processing...', icon: <Clock className="mr-2 h-4 w-4 animate-spin" /> };
+      case 'success':
+        return { text: 'Submission Complete!', icon: <CheckCircle className="mr-2 h-4 w-4" /> };
+      default:
+        return { text: 'Submit to TikTok', icon: <UploadCloud className="mr-2 h-4 w-4" /> };
     }
   };
 
@@ -323,20 +323,20 @@ const CampaignDetailsPage = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="title">Video Title <span className="text-red-500">*</span></Label>
-                  <Textarea id="title" name="title" placeholder="Write a compelling title..." required disabled={isSubmitting}/>
+                  <Textarea id="title" name="title" placeholder="Write a compelling title..." required disabled={isSubmitting} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="hashtags">Hashtags</Label>
-                  <Input id="hashtags" name="hashtags" placeholder="#campaignhashtag #relevant" disabled={isSubmitting}/>
+                  <Input id="hashtags" name="hashtags" placeholder="#campaignhashtag #relevant" disabled={isSubmitting} />
                 </div>
-                
+
                 <p className="text-xs text-muted-foreground">
                   By submitting, you agree to post this content to your TikTok account. It will be posted privately.
                 </p>
 
                 <Button type="submit" className="w-full" disabled={isSubmitting || submissionStatus === 'success'}>
-                    {buttonIcon}
-                    {buttonText}
+                  {buttonIcon}
+                  {buttonText}
                 </Button>
               </form>
             </CardContent>
@@ -346,7 +346,7 @@ const CampaignDetailsPage = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Brand Assets</CardTitle>
-              </Header>
+              </CardHeader>
               <CardContent>
                 <Button variant="outline" asChild className="w-full">
                   <a
