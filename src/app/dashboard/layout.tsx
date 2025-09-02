@@ -81,29 +81,34 @@ export default function DashboardLayout({
     if (userInfoCookie) {
       const parsedUser = JSON.parse(userInfoCookie);
       setUser(parsedUser);
-      // Directly check subscription status from a separate cookie or user object property if available.
-      // For a robust check, this should ideally be an API call.
-      // Simulating fetch for now.
-      const fetchSubStatus = async () => {
-        const res = await fetch('/api/user/status'); // This endpoint needs to be created
+    }
+    
+    const fetchSubStatus = async () => {
+      try {
+        const res = await fetch('/api/user/status');
         if (res.ok) {
             const data = await res.json();
             setSubscriptionStatus(data.subscriptionStatus === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE');
         } else {
             setSubscriptionStatus('INACTIVE');
         }
-      };
-      fetchSubStatus();
-    } else {
-       setSubscriptionStatus('INACTIVE');
-    }
+      } catch (error) {
+        console.error("Failed to fetch user status", error);
+        setSubscriptionStatus('INACTIVE');
+      }
+    };
+    fetchSubStatus();
   }, []);
 
   const isSubscribed = subscriptionStatus === 'ACTIVE';
   const showSubscriptionGate = !isSubscribed && pathname !== '/dashboard/subscription';
 
   useEffect(() => {
-    if (subscriptionStatus !== 'LOADING' && !isSubscribed && pathname !== '/dashboard/subscription') {
+    if (subscriptionStatus === 'LOADING') {
+        return; // Don't redirect while we're still checking the status
+    }
+    
+    if (!isSubscribed && pathname !== '/dashboard/subscription') {
       router.push('/dashboard/subscription');
     }
   }, [subscriptionStatus, isSubscribed, pathname, router]);
@@ -197,8 +202,26 @@ export default function DashboardLayout({
 
   if (subscriptionStatus === 'LOADING') {
       return (
-         <div className="flex items-center justify-center min-h-screen">
-            <Skeleton className="w-full h-full" />
+         <div className="fixed inset-0 flex items-center justify-center bg-background z-50">
+            <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+                <div className="hidden border-r bg-muted/40 md:block">
+                    <div className="flex h-full max-h-screen flex-col gap-2 p-2">
+                        <Skeleton className="h-14" />
+                        <Skeleton className="h-full" />
+                    </div>
+                </div>
+                <div className="flex flex-col">
+                    <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
+                        <Skeleton className="h-8 w-8" />
+                         <div className="w-full flex-1" />
+                        <Skeleton className="h-8 w-8" />
+                        <Skeleton className="h-8 w-8 rounded-full" />
+                    </header>
+                    <main className="flex-1 p-6">
+                        <Skeleton className="w-full h-full" />
+                    </main>
+                </div>
+            </div>
          </div>
       )
   }

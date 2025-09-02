@@ -1,7 +1,6 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import db from '@/lib/firebase-admin';
 
 export async function middleware(request: NextRequest) {
   const session = request.cookies.get('session')?.value;
@@ -23,40 +22,26 @@ export async function middleware(request: NextRequest) {
 
   // For all other routes (assumed to be protected), check for session
   if (!session) {
-    return NextResponse.redirect(new URL('/login', request.url));
+    // If trying to access a dashboard page without a session, redirect to login
+    // but preserve any plan selection in the query params.
+    const url = new URL('/login', request.url);
+    if (request.nextUrl.searchParams.has('plan')) {
+      url.searchParams.set('plan', request.nextUrl.searchParams.get('plan')!);
+    }
+    return NextResponse.redirect(url);
   }
 
-  // If there's a session, verify subscription status for dashboard pages
-  if (pathname.startsWith('/dashboard')) {
-      try {
-        const userRef = db.firestore().collection('users').doc(session);
-        const userDoc = await userRef.get();
-
-        if (userDoc.exists) {
-            const userData = userDoc.data();
-            const isSubscribed = userData?.subscriptionStatus === 'ACTIVE';
-
-            if (!isSubscribed && pathname !== '/dashboard/subscription') {
-                return NextResponse.redirect(new URL('/dashboard/subscription', request.url));
-            }
-        } else {
-             // User document doesn't exist, treat as unsubscribed
-             return NextResponse.redirect(new URL('/dashboard/subscription', request.url));
-        }
-
-      } catch (error) {
-          console.error("Middleware Firestore error:", error);
-          // Fallback: if DB check fails, redirect to login to be safe
-          return NextResponse.redirect(new URL('/login?error=session_error', request.url));
-      }
-  }
-
+  // If there's a session, we let the request proceed.
+  // The subscription status check will be handled within the dashboard layout component,
+  // which is a more robust pattern as it can perform this check on the client-side
+  // or server-side without running database logic in the edge middleware.
 
   return NextResponse.next();
 }
 
 export const config = {
   matcher: [
+    // Match all paths except for static files and image optimization files
     '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };
