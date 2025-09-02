@@ -7,7 +7,6 @@ import db from '@/lib/firebase-admin';
 import { getMpesaToken, initiateB2CPayout } from '@/lib/mpesa';
 import * as admin from 'firebase-admin';
 
-// Define payout rates per 1000 likes for each plan
 const PAYOUT_RATES_PER_1000_LIKES = {
   Gold: 15,
   Platinum: 35,
@@ -22,7 +21,7 @@ export async function POST(request: Request) {
   if (!session) {
     return NextResponse.json({ success: false, message: 'User not authenticated' }, { status: 401 });
   }
-  const userId = session; // The Firebase UID is in the session cookie
+  const userId = session;
 
   try {
     const { videoIds, phoneNumber } = await request.json();
@@ -31,7 +30,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'Missing video IDs or phone number' }, { status: 400 });
     }
 
-    // --- Secure Backend Calculation and Validation ---
     const userRef = db.firestore().collection('users').doc(userId);
     const userDoc = await userRef.get();
     if (!userDoc.exists) {
@@ -47,11 +45,12 @@ export async function POST(request: Request) {
 
     const payoutRate = PAYOUT_RATES_PER_1000_LIKES[plan];
     
-    let calculatedAmount = 0;
-    const eligibleSubmissionIds: string[] = [];
+    let totalCalculatedAmount = 0;
+    const eligibleSubmissions: { id: string; payout: number; newLikeCount: number, campaignId: string }[] = [];
     
-    // Fetch submissions from Firestore to check their status and view count from our source of truth.
-    const submissionsRef = db.firestore().collection('submissions').where('userId', '==', userId).where('tiktokVideoId', 'in', videoIds);
+    const submissionsRef = db.firestore().collection('submissions')
+        .where('userId', '==', userId)
+        .where('tiktokVideoId', 'in', videoIds);
     const submissionsSnapshot = await submissionsRef.get();
 
     if (submissionsSnapshot.empty) {
@@ -62,58 +61,85 @@ export async function POST(request: Request) {
         const submission = doc.data();
         
         if (submission.payoutStatus !== 'ELIGIBLE') {
-            console.warn(`Attempt to payout already processed or ineligible video ${submission.tiktokVideoId}. Skipping.`);
+            console.warn(`Attempt to payout for non-eligible video ${submission.tiktokVideoId}. Status: ${submission.payoutStatus}. Skipping.`);
             continue;
         }
 
-        const likeCount = submission.like_count || 0;
-        calculatedAmount += (likeCount / 1000) * payoutRate;
-        eligibleSubmissionIds.push(doc.id); // Use the Firestore document ID for tracking
+        const currentLikeCount = submission.like_count || 0;
+        const lastPaidLikeCount = submission.lastPaidLikeCount || 0;
+        
+        if (currentLikeCount <= lastPaidLikeCount) {
+            continue; // No new likes to pay out
+        }
+
+        const newLikes = currentLikeCount - lastPaidLikeCount;
+        const payoutAmount = (newLikes / 1000) * payoutRate;
+        
+        if (payoutAmount > 0) {
+            totalCalculatedAmount += payoutAmount;
+            eligibleSubmissions.push({ 
+                id: doc.id, 
+                payout: payoutAmount, 
+                newLikeCount: currentLikeCount,
+                campaignId: submission.campaignId,
+            });
+        }
     }
 
-
-    if (calculatedAmount <= 0) {
-        return NextResponse.json({ success: false, message: 'No eligible videos for payout or amount is zero.' }, { status: 400 });
+    if (totalCalculatedAmount <= 0) {
+        return NextResponse.json({ success: false, message: 'No new likes to payout or amount is zero.' }, { status: 400 });
     }
     
-    const finalAmount = Math.floor(calculatedAmount); // M-Pesa only accepts integers
-    if (finalAmount < 10) { // M-Pesa has a minimum B2C amount
-        return NextResponse.json({ success: false, message: `Payout amount (KES ${finalAmount}) is below the minimum required (KES 10).` }, { status: 400 });
+    const finalAmount = Math.floor(totalCalculatedAmount);
+    if (finalAmount < 10) {
+        return NextResponse.json({ success: false, message: `Total payout amount (KES ${finalAmount}) is below the minimum required (KES 10).` }, { status: 400 });
     }
 
+    // --- Campaign Budget Check ---
+    const campaignId = eligibleSubmissions[0]?.campaignId;
+    if (!campaignId) {
+        return NextResponse.json({ success: false, message: 'Could not determine campaign for payout.' }, { status: 400 });
+    }
+    const campaignRef = db.firestore().collection('campaigns').doc(campaignId);
+    const campaignDoc = await campaignRef.get();
+    if (!campaignDoc.exists || (campaignDoc.data()?.budget || 0) < finalAmount) {
+         return NextResponse.json({ success: false, message: 'Campaign budget is insufficient to cover this payout.' }, { status: 400 });
+    }
 
-    // Get M-Pesa Auth Token
     const accessToken = await getMpesaToken();
-
-    // Initiate B2C Payout
-    const remarks = `VeriFlow payout for ${eligibleSubmissionIds.length} videos.`;
+    const remarks = `VeriFlow payout for ${eligibleSubmissions.length} videos.`;
     const result = await initiateB2CPayout(accessToken, finalAmount, phoneNumber, remarks);
     
     if (result.ResponseCode !== '0') {
       throw new Error(result.ResponseDescription || 'Failed to initiate M-Pesa payout request.');
     }
 
-
-    // Log the payout request in Firestore for tracking
     const payoutRef = db.firestore().collection('payouts').doc();
     await payoutRef.set({
       payoutId: payoutRef.id,
       userId: userId,
       amount: finalAmount,
       phoneNumber: phoneNumber,
-      submissionIds: eligibleSubmissionIds,
+      submissionIds: eligibleSubmissions.map(s => s.id),
       status: 'PENDING_CONFIRMATION',
       safaricomConversationID: result.ConversationID,
       safaricomOriginatorConversationID: result.OriginatorConversationID,
       requestTimestamp: admin.firestore.FieldValue.serverTimestamp(),
     });
     
-    // Update the video submissions to mark them as pending payout to prevent double-payout
     const batch = db.firestore().batch();
-    eligibleSubmissionIds.forEach((submissionId: string) => {
-        const submissionDocRef = db.firestore().collection('submissions').doc(submissionId);
-        batch.update(submissionDocRef, { payoutStatus: 'PENDING', payoutId: payoutRef.id });
+    eligibleSubmissions.forEach(sub => {
+        const submissionDocRef = db.firestore().collection('submissions').doc(sub.id);
+        batch.update(submissionDocRef, { 
+            payoutStatus: 'PENDING', 
+            payoutId: payoutRef.id,
+            lastPaidLikeCount: sub.newLikeCount // IMPORTANT: Update the last paid count
+        });
     });
+
+    // Atomically decrement campaign budget
+    batch.update(campaignRef, { budget: admin.firestore.FieldValue.increment(-finalAmount) });
+
     await batch.commit();
 
     return NextResponse.json({ success: true, message: 'Payout initiated successfully.', data: result });

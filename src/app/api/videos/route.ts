@@ -14,10 +14,27 @@ export async function GET(req: NextRequest) {
   if (!accessToken || !session) {
     return NextResponse.json({ error: 'User not authenticated' }, { status: 401 });
   }
-  const userId = session; // Firebase UID from session
+  const userId = session;
 
   try {
-    // 1. Fetch user's videos from TikTok
+    // 1. Fetch all ELIGIBLE submissions from Firestore for the user
+    const submissionsRef = db.firestore().collection('submissions')
+      .where('userId', '==', userId)
+      .where('payoutStatus', '==', 'ELIGIBLE');
+    const submissionsSnapshot = await submissionsRef.get();
+
+    if (submissionsSnapshot.empty) {
+        return NextResponse.json({ videos: [] });
+    }
+
+    const submissionData = submissionsSnapshot.docs.map(doc => doc.data());
+    const tiktokVideoIds = submissionData.map(sub => sub.tiktokVideoId).filter(id => id);
+
+    if (tiktokVideoIds.length === 0) {
+        return NextResponse.json({ videos: [] });
+    }
+
+    // 2. Fetch up-to-date video details from TikTok for the eligible videos
     const videoFields = 'id,title,cover_image_url,embed_link,like_count,comment_count,share_count,view_count';
     const videoListResponse = await fetch(`https://open.tiktokapis.com/v2/video/list/?fields=${videoFields}`, {
       method: 'POST',
@@ -25,7 +42,7 @@ export async function GET(req: NextRequest) {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ max_count: 20 }), // Consider pagination for > 20 videos
+      body: JSON.stringify({ video_ids: tiktokVideoIds }),
     });
 
     const videoListData = await videoListResponse.json();
@@ -35,33 +52,37 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: `TikTok API Error: ${videoListData.error.message}` }, { status: 500 });
     }
     
-    if (!videoListData.data?.videos || videoListData.data.videos.length === 0) {
-        return NextResponse.json({ videos: [] });
-    }
+    const tiktokVideosMap = new Map((videoListData.data?.videos || []).map((v: any) => [v.id, v]));
 
-    // 2. Get payout status for these videos from our backend (Firestore)
-    const tiktokVideoIds = videoListData.data.videos.map((v: any) => v.id);
-    const submissionsRef = db.firestore().collection('submissions').where('tiktokVideoId', 'in', tiktokVideoIds).where('userId', '==', userId);
-    const submissionsSnapshot = await submissionsRef.get();
-    
-    const videoStatusMap: { [key: string]: { payoutStatus: string; like_count: number } } = {};
-    submissionsSnapshot.forEach(doc => {
-        const data = doc.data();
-        if (data.tiktokVideoId) {
-            videoStatusMap[data.tiktokVideoId] = {
-                payoutStatus: data.payoutStatus || 'ELIGIBLE',
-                like_count: data.like_count || 0
-            };
+    // 3. Augment our submission data with the latest metrics from TikTok
+    const batch = db.firestore().batch();
+    const videosWithStatus = submissionData.map(submission => {
+        const tiktokVideo = tiktokVideosMap.get(submission.tiktokVideoId);
+        const updatedLikeCount = tiktokVideo?.like_count || submission.like_count || 0;
+
+        // If the like count has changed, update it in Firestore
+        if (tiktokVideo && updatedLikeCount !== submission.like_count) {
+             const submissionDocRef = db.firestore().collection('submissions').doc(submissionsSnapshot.docs.find(doc => doc.id === submission.id)?.id || '');
+             if(submissionDocRef.path) {
+                batch.update(submissionDocRef, { like_count: updatedLikeCount });
+             }
         }
+        
+        return {
+            id: submission.tiktokVideoId,
+            submissionId: submissionsSnapshot.docs.find(doc => doc.data().tiktokVideoId === submission.tiktokVideoId)?.id,
+            title: tiktokVideo?.title || submission.title,
+            cover_image_url: tiktokVideo?.cover_image_url || 'https://placehold.co/400x225.png',
+            view_count: tiktokVideo?.view_count || 0,
+            like_count: updatedLikeCount,
+            comment_count: tiktokVideo?.comment_count || 0,
+            payoutStatus: submission.payoutStatus,
+            lastPaidLikeCount: submission.lastPaidLikeCount || 0,
+        };
     });
 
-    // 3. Augment video data with our internal status and latest metrics from Firestore
-    // This is important because the video list API might not have real-time stats
-     const videosWithStatus = videoListData.data.videos.map((video: any) => ({
-        ...video,
-        payoutStatus: videoStatusMap[video.id]?.payoutStatus || 'ELIGIBLE', // Default to ELIGIBLE if not in our DB
-        like_count: videoStatusMap[video.id]?.like_count || video.like_count || 0 // Prefer our stored like count
-    })).filter((video: any) => video.payoutStatus === 'ELIGIBLE'); // Only return eligible videos
+    // Commit the batch update for like counts
+    await batch.commit();
 
     return NextResponse.json({ videos: videosWithStatus });
 

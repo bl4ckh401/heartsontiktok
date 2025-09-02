@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
     Card,
     CardContent,
@@ -11,21 +11,22 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { Eye, Heart, MessageCircle, Video, Loader2, AlertCircle } from 'lucide-react';
+import { Eye, Heart, MessageCircle, Video, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import Cookies from 'js-cookie';
 
 interface EligibleVideo {
-    id: string;
+    id: string; // tiktokVideoId
+    submissionId: string;
     title: string;
     cover_image_url: string;
     view_count: number;
     like_count: number;
     comment_count: number;
-    payoutStatus: 'ELIGIBLE';
+    payoutStatus: 'ELIGIBLE' | 'PENDING' | 'PAID' | 'UNPAID';
+    lastPaidLikeCount: number;
 }
 
 const PAYOUT_RATES_PER_1000_LIKES: { [key: string]: number } = {
@@ -45,19 +46,16 @@ export default function PayoutsPage() {
 
     const { toast } = useToast();
 
-    useEffect(() => {
-        const fetchUserStatus = async () => {
-            try {
-                const res = await fetch('/api/user/status');
-                const data = await res.json();
-                if (data.success && data.subscriptionPlan) {
-                    setUserPlan(data.subscriptionPlan);
-                }
-            } catch (err) {
-                console.error("Failed to fetch user plan", err);
+    const fetchUserPlan = useCallback(async () => {
+        try {
+            const res = await fetch('/api/user/status');
+            const data = await res.json();
+            if (data.success && data.subscriptionPlan) {
+                setUserPlan(data.subscriptionPlan);
             }
-        };
-        fetchUserStatus();
+        } catch (err) {
+            console.error("Failed to fetch user plan", err);
+        }
     }, []);
 
     const fetchEligibleVideos = useCallback(async () => {
@@ -88,8 +86,9 @@ export default function PayoutsPage() {
     }, [toast]);
 
     useEffect(() => {
+        fetchUserPlan();
         fetchEligibleVideos();
-    }, [fetchEligibleVideos]);
+    }, [fetchUserPlan, fetchEligibleVideos]);
 
     const handleSelectVideo = (videoId: string) => {
         setSelectedVideoIds((prevIds) =>
@@ -99,13 +98,16 @@ export default function PayoutsPage() {
         );
     };
     
-    const estimatedTotalPayout = selectedVideoIds.reduce((total, id) => {
-        const video = eligibleVideos.find(v => v.id === id);
-        if (!video || !userPlan || !PAYOUT_RATES_PER_1000_LIKES[userPlan]) return total;
-        const rate = PAYOUT_RATES_PER_1000_LIKES[userPlan];
-        const payout = (video.like_count / 1000) * rate; 
-        return total + payout;
-    }, 0);
+    const estimatedTotalPayout = useMemo(() => {
+        return selectedVideoIds.reduce((total, id) => {
+            const video = eligibleVideos.find(v => v.id === id);
+            if (!video || !userPlan || !PAYOUT_RATES_PER_1000_LIKES[userPlan]) return total;
+            const rate = PAYOUT_RATES_PER_1000_LIKES[userPlan];
+            const newLikes = video.like_count - video.lastPaidLikeCount;
+            const payout = (newLikes / 1000) * rate; 
+            return total + (payout > 0 ? payout : 0);
+        }, 0);
+    }, [selectedVideoIds, eligibleVideos, userPlan]);
 
 
     const triggerPayout = async () => {
@@ -171,8 +173,12 @@ export default function PayoutsPage() {
              <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Request Payout</h1>
-                    <p className="text-muted-foreground mt-1">Select eligible videos and get paid based on likes.</p>
+                    <p className="text-muted-foreground mt-1">Select eligible videos and get paid based on new likes.</p>
                 </div>
+                 <Button variant="outline" size="sm" onClick={fetchEligibleVideos} disabled={loading}>
+                    <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                    Refresh Videos
+                </Button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
@@ -181,7 +187,7 @@ export default function PayoutsPage() {
                         <CardHeader>
                             <CardTitle>Eligible Videos</CardTitle>
                             <CardDescription>
-                                Only videos with payout status 'ELIGIBLE' are shown here. Payouts are based on your <span className="font-bold text-primary">{userPlan || '...'}</span> plan rates.
+                                Only videos submitted through our platform that are ready for payout are shown. Payouts are based on your <span className="font-bold text-primary">{userPlan || '...'}</span> plan rates.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -201,7 +207,7 @@ export default function PayoutsPage() {
                                  <div className="text-center py-16 border-2 border-dashed rounded-lg">
                                     <Video className="mx-auto h-12 w-12 text-muted-foreground" />
                                     <h3 className="mt-2 text-sm font-semibold text-foreground">No Eligible Videos</h3>
-                                    <p className="mt-1 text-sm text-muted-foreground">Keep creating! More videos will appear here once they meet the payout criteria.</p>
+                                    <p className="mt-1 text-sm text-muted-foreground">Keep creating! Videos submitted for campaigns will appear here once published.</p>
                                  </div>
                             )}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -233,6 +239,7 @@ export default function PayoutsPage() {
                                                 <div className="flex items-center gap-1.5"><Heart className="h-4 w-4" /> {video.like_count?.toLocaleString() || 0}</div>
                                                 <div className="flex items-center gap-1.5"><MessageCircle className="h-4 w-4" /> {video.comment_count?.toLocaleString() || 0}</div>
                                             </div>
+                                            <p className="text-xs text-muted-foreground mt-2">Likes paid for: {video.lastPaidLikeCount.toLocaleString()}</p>
                                         </CardContent>
                                     </Card>
                                 ))}
@@ -252,7 +259,7 @@ export default function PayoutsPage() {
                                 <p className="text-2xl font-bold">{selectedVideoIds.length}</p>
                             </div>
                              <div>
-                                <p className="text-sm text-muted-foreground">Estimated Payout (from Likes)</p>
+                                <p className="text-sm text-muted-foreground">Estimated Payout (from New Likes)</p>
                                 <p className="text-4xl font-bold text-primary">KES {estimatedTotalPayout.toFixed(2)}</p>
                                 <p className="text-xs text-muted-foreground">Final amount calculated on the backend.</p>
                             </div>

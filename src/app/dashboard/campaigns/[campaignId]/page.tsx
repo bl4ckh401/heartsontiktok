@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,7 @@ import {
   Loader2,
   Info,
   Clock,
+  RefreshCw,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
@@ -38,23 +39,25 @@ interface Campaign {
   brandAssetsUrl?: string;
   createdAt: any;
   requirements?: string;
+  status?: 'ACTIVE' | 'INACTIVE';
 }
 
 const CampaignDetailsPage = () => {
   const params = useParams();
+  const router = useRouter();
   const campaignId = params.campaignId as string;
   const { toast } = useToast();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'uploading' | 'processing' | 'success'>('idle');
-  const [formKey, setFormKey] = useState(Date.now()); // Used to reset the form
+  const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'uploading' | 'processing' | 'success' | 'polling'>('idle');
+  const [formKey, setFormKey] = useState(Date.now());
 
   const pollPublishStatus = useCallback(async (publishId: string, submissionId: string) => {
-    setSubmissionStatus('processing');
+    setSubmissionStatus('polling');
     let attempts = 0;
-    const maxAttempts = 20; // Poll for a maximum of 2 minutes (20 * 6s)
-    const interval = 6000; // 6 seconds
+    const maxAttempts = 20; 
+    const interval = 6000; 
 
     while (attempts < maxAttempts) {
       try {
@@ -71,12 +74,12 @@ const CampaignDetailsPage = () => {
             title: 'Submission Complete!',
             description: 'Your video has been successfully published to TikTok.',
           });
-          setFormKey(Date.now()); // Reset the form by changing its key
+          setFormKey(Date.now());
+          router.push('/dashboard/payouts');
           return;
-        } else if (result.error) {
-          throw new Error(result.message || 'Polling failed.');
+        } else if (!result.success && result.status === 'FAILED') {
+           throw new Error(result.message || 'TikTok reported that the video publish failed.');
         }
-        // If status is still pending, wait and try again
       } catch (err: any) {
         setSubmissionStatus('idle');
         toast({ title: 'Processing Error', description: err.message, variant: 'destructive' });
@@ -91,10 +94,11 @@ const CampaignDetailsPage = () => {
     toast({
       title: 'Processing Timed Out',
       description: "Your video is still being processed by TikTok. We'll update its status in the background.",
-      variant: 'destructive',
+      variant: 'default',
     });
+     router.push('/dashboard/payouts');
 
-  }, [toast]);
+  }, [toast, router]);
 
 
   useEffect(() => {
@@ -144,12 +148,11 @@ const CampaignDetailsPage = () => {
       if (response.ok && result.success) {
         toast({
           title: 'Upload Successful!',
-          description: "Your video has been uploaded. Now verifying publication status with TikTok...",
+          description: "Verifying publication status with TikTok...",
         });
-        // Start polling for the final status
         pollPublishStatus(result.publishId, result.submissionId);
       } else {
-        throw new Error(result.message || 'Video submission failed. Please ensure your TikTok account is set to private and try again.');
+        throw new Error(result.message || 'Video submission failed. Please try again.');
       }
     } catch (err: any) {
       toast({
@@ -161,7 +164,23 @@ const CampaignDetailsPage = () => {
     }
   }
 
-  const isSubmitting = submissionStatus === 'uploading' || submissionStatus === 'processing';
+  const isSubmitting = submissionStatus === 'uploading' || submissionStatus === 'polling';
+  const isCampaignInactive = campaign?.status === 'INACTIVE' || (campaign?.budget !== undefined && campaign.budget <= 0);
+
+  const getButtonState = () => {
+    switch (submissionStatus) {
+      case 'uploading':
+        return { text: 'Uploading...', icon: <Loader2 className="mr-2 h-4 w-4 animate-spin" /> };
+      case 'polling':
+        return { text: 'Processing...', icon: <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> };
+      case 'success':
+        return { text: 'Submission Complete!', icon: <CheckCircle className="mr-2 h-4 w-4" /> };
+      default:
+        return { text: 'Submit to TikTok', icon: <UploadCloud className="mr-2 h-4 w-4" /> };
+    }
+  };
+
+  const { text: buttonText, icon: buttonIcon } = getButtonState();
 
   if (loading) {
     return <CampaignDetailsSkeleton />;
@@ -169,7 +188,7 @@ const CampaignDetailsPage = () => {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center">
+      <div className="flex flex-col items-center justify-center h-full text-center p-4">
         <AlertTriangle className="w-16 h-16 text-destructive mb-4" />
         <h2 className="text-2xl font-bold mb-2">Something Went Wrong</h2>
         <p className="text-muted-foreground">{error}</p>
@@ -186,21 +205,6 @@ const CampaignDetailsPage = () => {
   if (!campaign) {
     return <p>Campaign not found.</p>;
   }
-
-  const getButtonState = () => {
-    switch (submissionStatus) {
-      case 'uploading':
-        return { text: 'Uploading...', icon: <Loader2 className="mr-2 h-4 w-4 animate-spin" /> };
-      case 'processing':
-        return { text: 'Processing...', icon: <Clock className="mr-2 h-4 w-4 animate-spin" /> };
-      case 'success':
-        return { text: 'Submission Complete!', icon: <CheckCircle className="mr-2 h-4 w-4" /> };
-      default:
-        return { text: 'Submit to TikTok', icon: <UploadCloud className="mr-2 h-4 w-4" /> };
-    }
-  };
-
-  const { text: buttonText, icon: buttonIcon } = getButtonState();
 
   return (
     <div className="container mx-auto py-6 space-y-8">
@@ -221,6 +225,7 @@ const CampaignDetailsPage = () => {
               width={1200}
               height={600}
               className="w-full h-64 object-cover"
+              priority
               data-ai-hint="social media marketing"
             />
             <CardHeader>
@@ -280,10 +285,10 @@ const CampaignDetailsPage = () => {
                 <span className="text-4xl font-bold">
                   KES {campaign.budget.toLocaleString()}
                 </span>
-                <span className="text-muted-foreground">Fixed Rate</span>
+                <span className="text-muted-foreground">Remaining Budget</span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Paid upon successful review of the content.
+                Payouts are based on likes and deducted from this total.
               </p>
             </CardContent>
           </Card>
@@ -296,49 +301,61 @@ const CampaignDetailsPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Alert variant="destructive" className="mb-4">
-                <Info className="h-4 w-4" />
-                <AlertTitle>Action Required</AlertTitle>
-                <AlertDescription>
-                  Before submitting, please go to your TikTok app and set your account to **Private**. This is a temporary requirement for our app.
-                </AlertDescription>
-              </Alert>
-              <form
-                key={formKey}
-                onSubmit={handleFormSubmit}
-                className="space-y-4"
-              >
-                <div className="space-y-2">
-                  <Label htmlFor="videoFile">
-                    Video File <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="videoFile"
-                    type="file"
-                    name="video"
-                    accept="video/*"
-                    required
-                    disabled={isSubmitting}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="title">Video Title <span className="text-red-500">*</span></Label>
-                  <Textarea id="title" name="title" placeholder="Write a compelling title..." required disabled={isSubmitting} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="hashtags">Hashtags</Label>
-                  <Input id="hashtags" name="hashtags" placeholder="#campaignhashtag #relevant" disabled={isSubmitting} />
-                </div>
+               {isCampaignInactive ? (
+                 <Alert variant="destructive">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle>Campaign Inactive</AlertTitle>
+                    <AlertDescription>
+                        This campaign has ended or its budget is depleted. No new submissions are being accepted.
+                    </AlertDescription>
+                 </Alert>
+               ) : (
+                <>
+                  <Alert variant="destructive" className="mb-4">
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>Action Required</AlertTitle>
+                    <AlertDescription>
+                      Before submitting, please go to your TikTok app and set your account to **Private**. This is a temporary requirement for our app.
+                    </AlertDescription>
+                  </Alert>
+                  <form
+                    key={formKey}
+                    onSubmit={handleFormSubmit}
+                    className="space-y-4"
+                  >
+                    <div className="space-y-2">
+                      <Label htmlFor="videoFile">
+                        Video File <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="videoFile"
+                        type="file"
+                        name="video"
+                        accept="video/*"
+                        required
+                        disabled={isSubmitting}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="title">Video Title <span className="text-red-500">*</span></Label>
+                      <Textarea id="title" name="title" placeholder="Write a compelling title..." required disabled={isSubmitting} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="hashtags">Hashtags</Label>
+                      <Input id="hashtags" name="hashtags" placeholder="#campaignhashtag #relevant" disabled={isSubmitting} />
+                    </div>
 
-                <p className="text-xs text-muted-foreground">
-                  By submitting, you agree to post this content to your TikTok account. It will be posted privately.
-                </p>
+                    <p className="text-xs text-muted-foreground">
+                      By submitting, you agree to post this content to your TikTok account. It will be posted privately.
+                    </p>
 
-                <Button type="submit" className="w-full" disabled={isSubmitting || submissionStatus === 'success'}>
-                  {buttonIcon}
-                  {buttonText}
-                </Button>
-              </form>
+                    <Button type="submit" className="w-full" disabled={isSubmitting || submissionStatus === 'success'}>
+                      {buttonIcon}
+                      {buttonText}
+                    </Button>
+                  </form>
+                </>
+               )}
             </CardContent>
           </Card>
 

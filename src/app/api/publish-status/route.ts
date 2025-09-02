@@ -38,27 +38,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: errorMessage, error: statusData.error }, { status: 400 });
     }
     
-    const { status, publicaly_available_post_id } = statusData.data;
+    const { status, publicaly_available_post_id, failed_reason } = statusData.data;
 
     const submissionRef = db.firestore().collection('submissions').doc(submissionId);
 
-    // Update Firestore if the video is live
     if (status === 'PUBLISH_COMPLETE') {
       await submissionRef.update({
         status: 'PUBLISHED',
         tiktokVideoId: publicaly_available_post_id,
+        payoutStatus: 'ELIGIBLE', // Video is now published and eligible for first payout
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
-      return NextResponse.json({ success: true, status: 'PUBLISHED' });
+      return NextResponse.json({ success: true, status: 'PUBLISHED', videoId: publicaly_available_post_id });
     }
     
-    // Handle other statuses
     if (status === 'PUBLISH_FAILED') {
          await submissionRef.update({
             status: 'FAILED',
+            failureReason: failed_reason,
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
-        return NextResponse.json({ success: false, status: 'FAILED', message: 'TikTok reported that the video publish failed.' });
+        return NextResponse.json({ success: false, status: 'FAILED', message: `TikTok reported that the video publish failed: ${failed_reason}` });
     }
 
     // If still processing, just return the current status

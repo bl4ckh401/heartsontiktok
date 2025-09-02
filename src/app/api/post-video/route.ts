@@ -6,22 +6,35 @@ import { cookies } from 'next/headers';
 import db from '@/lib/firebase-admin';
 import * as admin from 'firebase-admin';
 
-// Define campaign limits per plan
 const CAMPAIGN_LIMITS = {
   Gold: 3,
   Platinum: 8,
   Diamond: Infinity,
 };
 
-async function canSubmitToCampaign(userId: string): Promise<{ canSubmit: boolean; message: string }> {
+async function canSubmitToCampaign(userId: string, campaignId: string): Promise<{ canSubmit: boolean; message: string }> {
   const userRef = db.firestore().collection('users').doc(userId);
-  const userDoc = await userRef.get();
+  const campaignRef = db.firestore().collection('campaigns').doc(campaignId);
+
+  const [userDoc, campaignDoc] = await Promise.all([userRef.get(), campaignRef.get()]);
 
   if (!userDoc.exists) {
     return { canSubmit: false, message: 'User profile not found.' };
   }
+  if (!campaignDoc.exists) {
+    return { canSubmit: false, message: 'Campaign not found.' };
+  }
 
   const userData = userDoc.data();
+  const campaignData = campaignDoc.data();
+
+  if (campaignData?.status === 'INACTIVE') {
+      return { canSubmit: false, message: 'This campaign is no longer active and cannot accept new submissions.' };
+  }
+  if ((campaignData?.budget || 0) <= 0) {
+      return { canSubmit: false, message: 'This campaign has depleted its budget and is no longer active.' };
+  }
+
   const plan = userData?.subscriptionPlan;
 
   if (!plan || !CAMPAIGN_LIMITS[plan as keyof typeof CAMPAIGN_LIMITS]) {
@@ -62,7 +75,6 @@ export async function POST(request: Request) {
   const userInfoCookie = cookieStore.get('user_info')?.value;
   const session = cookieStore.get('session')?.value;
 
-
   if (!accessToken || !userInfoCookie || !session) {
     return NextResponse.json({ success: false, message: 'User not authenticated' }, { status: 401 });
   }
@@ -86,15 +98,13 @@ export async function POST(request: Request) {
 
   try {
     const userInfo = JSON.parse(userInfoCookie);
-    const userId = session; // Using Firebase UID from session
+    const userId = session; 
 
-    // Enforce campaign submission limits
-    const submissionCheck = await canSubmitToCampaign(userId);
+    const submissionCheck = await canSubmitToCampaign(userId, campaignId);
     if (!submissionCheck.canSubmit) {
       return NextResponse.json({ success: false, message: submissionCheck.message }, { status: 403 });
     }
 
-    // Hardcoded for unaudited app compliance
     const postInfo: any = {
       title: hashtags ? `${title} ${hashtags}` : title,
       privacy_level: 'SELF_ONLY',
@@ -144,20 +154,23 @@ export async function POST(request: Request) {
     });
 
     if (!uploadResponse.ok) {
-        console.error('TikTok Video Upload HTTP Error:', uploadResponse.status, await uploadResponse.text());
+        const errorText = await uploadResponse.text();
+        console.error('TikTok Video Upload HTTP Error:', uploadResponse.status, errorText);
         throw new Error(`TikTok video upload failed with status: ${uploadResponse.status}`);
     }
 
     const submissionData = {
       campaignId: campaignId,
-      userId: userId, // Store Firebase UID
-      tiktokOpenId: userInfo.open_id, // Also store open_id for reference
+      userId: userId, 
+      tiktokOpenId: userInfo.open_id,
       title: title,
       hashtags: hashtags,
       tiktokPublishId: publish_id,
-      status: 'SUBMITTED', // Initial status, will be polled for completion.
+      status: 'SUBMITTED', 
       submittedAt: admin.firestore.FieldValue.serverTimestamp(),
-      payoutStatus: 'ELIGIBLE', // Assume eligible until paid.
+      payoutStatus: 'UNPAID', // Initial status is UNPAID, becomes ELIGIBLE after metrics update
+      like_count: 0,
+      lastPaidLikeCount: 0, // Initialize tracking for incremental payouts
     };
 
     const submissionRef = await db.firestore().collection('submissions').add(submissionData);
