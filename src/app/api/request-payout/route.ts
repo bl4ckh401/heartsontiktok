@@ -10,7 +10,7 @@ import * as admin from 'firebase-admin';
 // This function will be triggered when a user requests a payout.
 export async function POST(request: Request) {
   const cookieStore = cookies();
-  const userInfoCookie = cookieStore.get('user_info')?.value;
+  const userInfoCookie = (await cookieStore).get('user_info')?.value;
 
   if (!userInfoCookie) {
     return NextResponse.json({ success: false, message: 'User not authenticated' }, { status: 401 });

@@ -108,7 +108,7 @@ export async function GET(req: NextRequest) {
             displayName: tiktokUserData.display_name,
             photoURL: tiktokUserData.avatar_url,
             open_id: tiktokUserData.open_id,
-            createdAt: new Date().toISOString(),
+            createdAt: new Date(),
             subscriptionPlan: null,
             subscriptionStatus: 'INACTIVE',
         };

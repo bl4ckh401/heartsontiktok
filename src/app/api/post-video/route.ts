@@ -6,8 +6,8 @@ import * as admin from 'firebase-admin';
 
 export async function POST(request: Request) {
   const cookieStore = cookies();
-  const accessToken = cookieStore.get('tiktok_access_token')?.value;
-  const userInfoCookie = cookieStore.get('user_info')?.value;
+  const accessToken = (await cookieStore).get('tiktok_access_token')?.value;
+  const userInfoCookie = (await cookieStore).get('user_info')?.value;
 
   if (!accessToken || !userInfoCookie) {
     return NextResponse.json({ success: false, message: 'User not authenticated' }, { status: 401 });
