@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import db from '@/lib/firebase-admin';
 
 export async function GET(request: Request) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const session = cookieStore.get('session')?.value;
 
   if (!session) {

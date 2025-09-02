@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   const errorDescription = searchParams.get('error_description');
   const plan = searchParams.get('plan'); // Capture the plan from the redirect
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const csrfState = cookieStore.get('csrfState')?.value;
 
   if (error) {

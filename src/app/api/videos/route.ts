@@ -6,8 +6,20 @@ import { cookies } from 'next/headers';
 import type { NextRequest } from 'next/server';
 import db from '@/lib/firebase-admin';
 
+// Define the structure for a Submission document from Firestore
+interface Submission {
+    id?: string;
+    userId: string;
+    payoutStatus: 'ELIGIBLE' | 'PENDING' | 'PAID' | 'UNPAID';
+    tiktokVideoId?: string;
+    title?: string;
+    like_count?: number;
+    lastPaidLikeCount?: number;
+    // Add any other fields you expect from the submission document
+}
+
 export async function GET(req: NextRequest) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const accessToken = cookieStore.get('tiktok_access_token')?.value;
   const session = cookieStore.get('session')?.value;
 
@@ -27,8 +39,8 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ videos: [] });
     }
 
-    const submissionData = submissionsSnapshot.docs.map(doc => doc.data());
-    const tiktokVideoIds = submissionData.map(sub => sub.tiktokVideoId).filter(id => id);
+    const submissionData = submissionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Submission));
+    const tiktokVideoIds = submissionData.map(sub => sub.tiktokVideoId).filter((id): id is string => !!id);
 
     if (tiktokVideoIds.length === 0) {
         return NextResponse.json({ videos: [] });
@@ -57,12 +69,12 @@ export async function GET(req: NextRequest) {
     // 3. Augment our submission data with the latest metrics from TikTok
     const batch = db.firestore().batch();
     const videosWithStatus = submissionData.map(submission => {
-        const tiktokVideo = tiktokVideosMap.get(submission.tiktokVideoId);
+        const tiktokVideo = tiktokVideosMap.get(submission.tiktokVideoId!);
         const updatedLikeCount = tiktokVideo?.like_count || submission.like_count || 0;
 
         // If the like count has changed, update it in Firestore
         if (tiktokVideo && updatedLikeCount !== submission.like_count) {
-             const submissionDocRef = db.firestore().collection('submissions').doc(submissionsSnapshot.docs.find(doc => doc.id === submission.id)?.id || '');
+             const submissionDocRef = db.firestore().collection('submissions').doc(submission.id!);
              if(submissionDocRef.path) {
                 batch.update(submissionDocRef, { like_count: updatedLikeCount });
              }
@@ -70,7 +82,7 @@ export async function GET(req: NextRequest) {
         
         return {
             id: submission.tiktokVideoId,
-            submissionId: submissionsSnapshot.docs.find(doc => doc.data().tiktokVideoId === submission.tiktokVideoId)?.id,
+            submissionId: submission.id,
             title: tiktokVideo?.title || submission.title,
             cover_image_url: tiktokVideo?.cover_image_url || 'https://placehold.co/400x225.png',
             view_count: tiktokVideo?.view_count || 0,
@@ -82,8 +94,10 @@ export async function GET(req: NextRequest) {
     });
 
     // Commit the batch update for like counts
-    await batch.commit();
-
+    if (batch) {
+      await batch.commit();
+    }
+    
     return NextResponse.json({ videos: videosWithStatus });
 
   } catch (error) {

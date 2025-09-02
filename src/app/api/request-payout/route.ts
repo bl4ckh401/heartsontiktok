@@ -15,7 +15,7 @@ const PAYOUT_RATES_PER_1000_LIKES = {
 
 // This function will be triggered when a user requests a payout.
 export async function POST(request: Request) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const session = cookieStore.get('session')?.value;
 
   if (!session) {
