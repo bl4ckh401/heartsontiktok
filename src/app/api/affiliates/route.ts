@@ -25,25 +25,26 @@ export async function GET(request: Request) {
     // 1. Find Direct Referrals (Level 1)
     const directReferralsRef = db.firestore().collection('users').where('referredBy', '==', userId);
     const directReferralsSnapshot = await directReferralsRef.get();
-    const directReferralIds = directReferralsSnapshot.docs.map(doc => doc.id);
-
+    
     let allReferralsData: any[] = [];
     let totalAffiliateEarnings = 0;
-
-    // 2. Process Direct Referrals and find Indirect Referrals (Level 2)
     const indirectReferralIds: string[] = [];
+
+    // 2. Process Direct Referrals and find their referrals (which are our Indirect Referrals - Level 2)
     if (!directReferralsSnapshot.empty) {
         for (const doc of directReferralsSnapshot.docs) {
             const affiliate = doc.data();
             const affiliateId = doc.id; // The user ID of the referred person (L1)
 
             // Find subscriptions from this direct affiliate
-            const subscriptionsRef = db.firestore().collection('subscriptions').where('userId', '==', affiliateId).where('status', '==', 'COMPLETED');
-            const subscriptionsSnapshot = await subscriptionsRef.get();
+            const subsSnapshot = await db.firestore().collection('subscriptions')
+                .where('userId', '==', affiliateId)
+                .where('status', '==', 'COMPLETED')
+                .get();
             
             let commissionFromThisAffiliate = 0;
-            if (!subscriptionsSnapshot.empty) {
-                const totalSubscribedAmount = subscriptionsSnapshot.docs.reduce((sum, subDoc) => sum + (subDoc.data().amount || 0), 0);
+            if (!subsSnapshot.empty) {
+                const totalSubscribedAmount = subsSnapshot.docs.reduce((sum, subDoc) => sum + (subDoc.data().amount || 0), 0);
                 commissionFromThisAffiliate = totalSubscribedAmount * DIRECT_COMMISSION_RATE;
             }
             
@@ -77,12 +78,14 @@ export async function GET(request: Request) {
            const affiliate = userDoc.data()!;
            
            // Find subscriptions from this indirect affiliate
-           const subscriptionsRef = db.firestore().collection('subscriptions').where('userId', '==', indirectId).where('status', '==', 'COMPLETED');
-           const subscriptionsSnapshot = await subscriptionsRef.get();
-           
+            const subsSnapshot = await db.firestore().collection('subscriptions')
+                .where('userId', '==', indirectId)
+                .where('status', '==', 'COMPLETED')
+                .get();
+
            let commissionFromThisAffiliate = 0;
-           if (!subscriptionsSnapshot.empty) {
-               const totalSubscribedAmount = subscriptionsSnapshot.docs.reduce((sum, subDoc) => sum + (subDoc.data().amount || 0), 0);
+           if (!subsSnapshot.empty) {
+               const totalSubscribedAmount = subsSnapshot.docs.reduce((sum, subDoc) => sum + (subDoc.data().amount || 0), 0);
                commissionFromThisAffiliate = totalSubscribedAmount * INDIRECT_COMMISSION_RATE;
            }
 

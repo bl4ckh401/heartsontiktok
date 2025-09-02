@@ -3,6 +3,10 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import db from '@/lib/firebase-admin';
 
+// Define commission rates
+const DIRECT_COMMISSION_RATE = 0.10; // 10%
+const INDIRECT_COMMISSION_RATE = 0.02; // 2%
+
 export async function GET(request: Request) {
   const cookieStore = cookies();
   const session = cookieStore.get('session')?.value; 
@@ -20,34 +24,45 @@ export async function GET(request: Request) {
 
     let totalEarnings = 0;
     let totalConversions = 0;
+    const indirectReferralIds: string[] = [];
 
-    // --- Fetching Total Conversions (Direct Referrals) & Affiliate Earnings ---
+    // --- Fetching Total Conversions (Direct Referrals) & Direct Affiliate Earnings ---
     const directReferralsRef = db.firestore().collection('users').where('referredBy', '==', userId);
     const directReferralsSnapshot = await directReferralsRef.get();
     
     totalConversions = directReferralsSnapshot.size;
 
-    // In a real application, total earnings would be a sum of direct and indirect commissions.
-    // For this summary, we will simplify and use the same logic as the main affiliates endpoint.
-    // A more optimized approach would be to store a running total of affiliate earnings on the user document.
+    if (!directReferralsSnapshot.empty) {
+        for (const doc of directReferralsSnapshot.docs) {
+            const affiliateId = doc.id;
+            const subsSnapshot = await db.firestore().collection('subscriptions')
+              .where('userId', '==', affiliateId)
+              .where('status', '==', 'COMPLETED')
+              .get();
+            const totalSubscribedAmount = subsSnapshot.docs.reduce((sum, doc) => sum + (doc.data().amount || 0), 0);
+            totalEarnings += totalSubscribedAmount * DIRECT_COMMISSION_RATE;
 
-    let directCommission = 0;
-    const directReferralIds = directReferralsSnapshot.docs.map(doc => doc.id);
-
-    if (directReferralIds.length > 0) {
-      for (const refId of directReferralIds) {
-        const subsSnapshot = await db.firestore().collection('subscriptions')
-          .where('userId', '==', refId)
-          .where('status', '==', 'COMPLETED')
-          .get();
-        const totalSubscribedAmount = subsSnapshot.docs.reduce((sum, doc) => sum + (doc.data().amount || 0), 0);
-        directCommission += totalSubscribedAmount * 0.10; // 10%
-      }
+            // Find indirect referrals for this direct referral
+            const indirectReferralsRef = db.firestore().collection('users').where('referredBy', '==', affiliateId);
+            const indirectReferralsSnapshot = await indirectReferralsRef.get();
+            indirectReferralsSnapshot.forEach(indirectDoc => indirectReferralIds.push(indirectDoc.id));
+        }
     }
     
-    // For simplicity, this summary does not calculate indirect commissions. 
-    // The main affiliate page provides the full breakdown.
-    totalEarnings = directCommission;
+    // --- Fetching Indirect Affiliate Earnings ---
+    if (indirectReferralIds.length > 0) {
+        const uniqueIndirectIds = [...new Set(indirectReferralIds)];
+        for(const indirectId of uniqueIndirectIds) {
+            const subsSnapshot = await db.firestore().collection('subscriptions')
+                .where('userId', '==', indirectId)
+                .where('status', '==', 'COMPLETED')
+                .get();
+            const totalSubscribedAmount = subsSnapshot.docs.reduce((sum, doc) => sum + (doc.data().amount || 0), 0);
+            totalEarnings += totalSubscribedAmount * INDIRECT_COMMISSION_RATE;
+        }
+        totalConversions += uniqueIndirectIds.length;
+    }
+
 
     return NextResponse.json({
       success: true,
