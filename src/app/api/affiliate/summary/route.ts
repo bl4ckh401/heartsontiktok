@@ -12,9 +12,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    // The session cookie contains the Firebase UID, which is tiktok:<open_id>
-    // We can extract the open_id from it.
-    const userId = session.replace('tiktok:', '');
+    const userId = session; // The session cookie contains the Firebase UID
 
     if (!userId) {
          return NextResponse.json({ success: false, message: 'Could not determine authenticated user from session' }, { status: 401 });
@@ -23,18 +21,33 @@ export async function GET(request: Request) {
     let totalEarnings = 0;
     let totalConversions = 0;
 
-    // --- Fetching Total Conversions & Earnings ---
-    // Query the 'submissions' collection where the userId matches.
-    const submissionsRef = db.firestore().collection('submissions').where('userId', '==', userId).where('status', '==', 'PUBLISHED');
-    const submissionsSnapshot = await submissionsRef.get();
+    // --- Fetching Total Conversions (Direct Referrals) & Affiliate Earnings ---
+    const directReferralsRef = db.firestore().collection('users').where('referredBy', '==', userId);
+    const directReferralsSnapshot = await directReferralsRef.get();
     
-    totalConversions = submissionsSnapshot.size;
+    totalConversions = directReferralsSnapshot.size;
 
-    // In a real application, earnings calculation would depend on your payout model.
-    // For now, we'll simulate a simple earning per published video.
-    // This should match the logic used elsewhere (e.g., payouts page) for consistency.
-    const PAYOUT_RATE_PER_SUBMISSION = 500; // Example: KES 500 per published video.
-    totalEarnings = totalConversions * PAYOUT_RATE_PER_SUBMISSION; 
+    // In a real application, total earnings would be a sum of direct and indirect commissions.
+    // For this summary, we will simplify and use the same logic as the main affiliates endpoint.
+    // A more optimized approach would be to store a running total of affiliate earnings on the user document.
+
+    let directCommission = 0;
+    const directReferralIds = directReferralsSnapshot.docs.map(doc => doc.id);
+
+    if (directReferralIds.length > 0) {
+      for (const refId of directReferralIds) {
+        const subsSnapshot = await db.firestore().collection('subscriptions')
+          .where('userId', '==', refId)
+          .where('status', '==', 'COMPLETED')
+          .get();
+        const totalSubscribedAmount = subsSnapshot.docs.reduce((sum, doc) => sum + (doc.data().amount || 0), 0);
+        directCommission += totalSubscribedAmount * 0.10; // 10%
+      }
+    }
+    
+    // For simplicity, this summary does not calculate indirect commissions. 
+    // The main affiliate page provides the full breakdown.
+    totalEarnings = directCommission;
 
     return NextResponse.json({
       success: true,
