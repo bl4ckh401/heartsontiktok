@@ -18,6 +18,8 @@ function LoginContent() {
 
   const error = searchParams.get('error');
   const errorDescription = searchParams.get('error_description');
+  const plan = searchParams.get('plan');
+  const ref = searchParams.get('ref');
 
   useEffect(() => {
     if (errorDescription) {
@@ -26,11 +28,18 @@ function LoginContent() {
         description: decodeURIComponent(errorDescription),
         variant: 'destructive',
       });
-      // Clear the error from the URL
       router.replace('/login', { scroll: false });
     }
   }, [errorDescription, toast, router]);
 
+  useEffect(() => {
+    if (ref) {
+      // Set a cookie to store the referral ID
+      document.cookie = `referral_id=${ref}; path=/; max-age=86400`; // Expires in 1 day
+    }
+  }, [ref]);
+
+  const authUrl = plan ? `/api/auth/tiktok?plan=${plan}` : '/api/auth/tiktok';
 
   const errorMessages: { [key: string]: string } = {
     tiktok_auth_failed: 'Authentication with TikTok failed. Please try again.',
@@ -43,14 +52,14 @@ function LoginContent() {
   return (
     <>
       {error && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="mb-4">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>{errorMessages[error] || 'Authentication Error'}</AlertTitle>
           {errorDescription && <AlertDescription>{decodeURIComponent(errorDescription)}</AlertDescription>}
         </Alert>
       )}
       <Button asChild className="w-full" size="lg">
-        <Link href="/api/auth/tiktok" className="flex items-center gap-3">
+        <Link href={authUrl} className="flex items-center gap-3">
           <TikTokIcon className="h-6 w-6" />
           Continue with TikTok
         </Link>

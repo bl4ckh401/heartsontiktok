@@ -1,7 +1,8 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -26,6 +27,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const tiers = [
   {
+    id: 'Gold',
     name: 'Gold',
     price: 500,
     frequency: '/lifetime',
@@ -41,6 +43,7 @@ const tiers = [
     popular: false,
   },
   {
+    id: 'Platinum',
     name: 'Platinum',
     price: 750,
     frequency: '/lifetime',
@@ -56,6 +59,7 @@ const tiers = [
     popular: true,
   },
   {
+    id: 'Diamond',
     name: 'Diamond',
     price: 1000,
     frequency: '/lifetime',
@@ -76,10 +80,42 @@ type Plan = (typeof tiers)[0];
 
 export default function SubscriptionPage() {
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+
+  useEffect(() => {
+    const planId = searchParams.get('plan');
+    if (planId) {
+      const planFromUrl = tiers.find(t => t.id.toLowerCase() === planId.toLowerCase());
+      if (planFromUrl) {
+        handleChoosePlan(planFromUrl);
+      }
+      // Clean the URL
+      router.replace('/dashboard/subscription', { scroll: false });
+    }
+  }, [searchParams, router]);
+
+  useEffect(() => {
+    // Fetch user's current subscription status
+    const fetchUserStatus = async () => {
+        try {
+            const response = await fetch('/api/user/status');
+            const data = await response.json();
+            if (data.success && data.subscriptionStatus === 'ACTIVE') {
+                setCurrentPlan(data.subscriptionPlan);
+            }
+        } catch (error) {
+            console.error("Failed to fetch user status", error);
+        }
+    };
+    fetchUserStatus();
+  }, []);
 
   const handleChoosePlan = (plan: Plan) => {
     setSelectedPlan(plan);
@@ -135,10 +171,10 @@ export default function SubscriptionPage() {
     <div className="container mx-auto py-6">
       <div className="text-center mb-12">
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-          Choose Your Path to Success
+          {currentPlan ? `You are on the ${currentPlan} Plan` : 'Choose Your Path to Success'}
         </h1>
         <p className="text-xl text-muted-foreground mt-2">
-          Upgrade your plan to unlock more features and earning potential.
+          {currentPlan ? 'Manage your subscription or upgrade to a different plan.' : 'Upgrade your plan to unlock more features and earning potential.'}
         </p>
       </div>
 
@@ -150,6 +186,8 @@ export default function SubscriptionPage() {
               tier.popular
                 ? 'border-primary shadow-2xl scale-105'
                 : 'border-border'
+            } ${
+              currentPlan === tier.name ? 'ring-2 ring-offset-2 ring-offset-background ring-green-500' : ''
             }`}
           >
             <CardHeader className="relative">
@@ -158,7 +196,12 @@ export default function SubscriptionPage() {
                   Most Popular
                 </div>
               )}
-              <CardTitle className="text-2xl">{tier.name}</CardTitle>
+               {currentPlan === tier.name && (
+                <div className="absolute top-0 left-6 -translate-y-1/2 bg-green-500 text-white px-3 py-1 text-sm font-semibold rounded-full shadow-lg">
+                  Current Plan
+                </div>
+              )}
+              <CardTitle className="text-2xl pt-4">{tier.name}</CardTitle>
               <div className="flex items-baseline">
                 <span className="text-4xl font-bold">KES {tier.price}</span>
                 {tier.frequency && (
@@ -184,8 +227,9 @@ export default function SubscriptionPage() {
                 className="w-full"
                 variant={tier.popular ? 'default' : 'outline'}
                 onClick={() => handleChoosePlan(tier)}
+                disabled={currentPlan === tier.name}
               >
-                {tier.cta}
+                {currentPlan === tier.name ? 'Your Current Plan' : tier.cta}
               </Button>
             </CardFooter>
           </Card>
@@ -212,7 +256,7 @@ export default function SubscriptionPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsModalOpen(false)} disabled={isLoading}>Cancel</Button>
-            <Button onClick={handleSubscribe} disabled={isLoading}>
+            <Button onClick={handleSubscribe} disabled={isLoading || !phoneNumber}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isLoading ? 'Processing...' : `Subscribe for KES ${selectedPlan?.price}`}
             </Button>

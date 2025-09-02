@@ -2,17 +2,18 @@
 import {NextResponse} from 'next/server';
 import {cookies} from 'next/headers';
 import type {NextRequest} from 'next/server';
+import db, { auth as adminAuth } from '@/lib/firebase-admin';
 
-import { auth as adminAuth } from '@/lib/firebase-admin';
 export async function GET(req: NextRequest) {
   const {searchParams} = new URL(req.url);
   const code = searchParams.get('code');
   const state = searchParams.get('state');
   const error = searchParams.get('error');
   const errorDescription = searchParams.get('error_description');
+  const plan = searchParams.get('plan'); // Capture the plan from the redirect
 
   const cookieStore = cookies();
-  const csrfState = (await cookieStore).get('csrfState')?.value;
+  const csrfState = cookieStore.get('csrfState')?.value;
 
   if (error) {
     console.error(`TikTok Auth Error: ${error}`);
@@ -23,7 +24,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL('/login?error=invalid_state&error_description=Invalid+state.+The+request+could+not+be+verified.', req.url));
   }
   
-  (await cookieStore).delete('csrfState');
+  cookieStore.delete('csrfState');
 
   if (!code) {
     return NextResponse.redirect(new URL('/login?error=missing_code&error_description=The+authorization+code+was+not+provided+by+TikTok.', req.url));
@@ -37,7 +38,6 @@ export async function GET(req: NextRequest) {
       throw new Error('TikTok client key or secret is not defined in environment variables.');
     }
     
-    // Ensure no trailing slash on APP_URL
     const appUrl = (process.env.APP_URL || '').replace(/\/$/, '');
     const redirectUri = `${appUrl}/api/auth/tiktok/callback`;
 
@@ -66,7 +66,6 @@ export async function GET(req: NextRequest) {
 
     const accessToken = tokenData.access_token;
     
-    // Fetch user info
     const userFields = 'open_id,union_id,avatar_url,display_name,bio_description,is_verified,follower_count,following_count,likes_count,video_count';
     const userRes = await fetch(`https://open.tiktokapis.com/v2/user/info/?fields=${userFields}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
@@ -80,39 +79,61 @@ export async function GET(req: NextRequest) {
         throw new Error(`Failed to fetch user info from TikTok: ${errorMessage}`);
     }
     
-    const response = NextResponse.redirect(new URL('/dashboard', req.url));
-
     const tiktokUserData = userData.data.user;
     const firebaseUid = `tiktok:${tiktokUserData.open_id}`;
+    
+    const referralCookie = cookieStore.get('referral_id');
+    const referredBy = referralCookie ? referralCookie.value : null;
 
-    // Authenticate with Firebase
     try {
       await adminAuth.getUser(firebaseUid);
-      // User exists, update their information
       await adminAuth.updateUser(firebaseUid, {
         displayName: tiktokUserData.display_name,
         photoURL: tiktokUserData.avatar_url,
-        // Add any other relevant TikTok user data you want to store
       });
+      await db.firestore().collection('users').doc(firebaseUid).set({
+        displayName: tiktokUserData.display_name,
+        photoURL: tiktokUserData.avatar_url,
+        open_id: tiktokUserData.open_id,
+        updatedAt: new Date().toISOString(),
+      }, { merge: true });
     } catch (error: any) {
       if (error.code === 'auth/user-not-found') {
-        // User does not exist, create a new one
         await adminAuth.createUser({
           uid: firebaseUid,
           displayName: tiktokUserData.display_name,
           photoURL: tiktokUserData.avatar_url,
-          // Add any other relevant TikTok user data you want to store
         });
+        const userDoc: any = {
+            displayName: tiktokUserData.display_name,
+            photoURL: tiktokUserData.avatar_url,
+            open_id: tiktokUserData.open_id,
+            createdAt: new Date().toISOString(),
+            subscriptionPlan: null,
+            subscriptionStatus: 'INACTIVE',
+        };
+        if (referredBy) {
+            userDoc.referredBy = referredBy;
+        }
+        await db.firestore().collection('users').doc(firebaseUid).set(userDoc);
       } else {
-        throw error; // Re-throw other Firebase errors
+        throw error;
       }
     }
 
     const expiresIn = tokenData.expires_in;
     
+    // Redirect to subscription page with plan pre-selected, or dashboard if no plan
+    const redirectPath = plan ? `/dashboard/subscription?plan=${plan}` : '/dashboard';
+    const response = NextResponse.redirect(new URL(redirectPath, req.url));
+
     response.cookies.set('tiktok_access_token', accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: expiresIn });
     response.cookies.set('user_info', JSON.stringify(userData.data.user), { maxAge: expiresIn });
-    response.cookies.set('session', 'true', { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: expiresIn });
+    response.cookies.set('session', firebaseUid, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: expiresIn });
+    
+    if (referralCookie) {
+        response.cookies.delete('referral_id');
+    }
 
     return response;
 

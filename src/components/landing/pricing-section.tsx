@@ -25,7 +25,7 @@ const tiers = [
       'Community support',
     ],
     cta: 'Choose Gold',
-    href: '/login',
+    href: '/login?plan=Gold',
     popular: false,
   },
   {
@@ -41,7 +41,7 @@ const tiers = [
       'Dedicated email support',
     ],
     cta: 'Choose Platinum',
-    href: '/login',
+    href: '/login?plan=Platinum',
     popular: true,
   },
   {
@@ -57,7 +57,7 @@ const tiers = [
       'Dedicated account manager',
     ],
     cta: 'Choose Diamond',
-    href: '/login',
+    href: '/login?plan=Diamond',
     popular: false,
   },
 ];
