@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import Cookies from 'js-cookie';
 
 interface EligibleVideo {
     id: string;
@@ -24,12 +25,14 @@ interface EligibleVideo {
     view_count: number;
     like_count: number;
     comment_count: number;
-    payoutStatus: 'ELIGIBLE' | 'SUBMITTED' | 'PENDING' | 'PAID' | 'FAILED';
+    payoutStatus: 'ELIGIBLE';
 }
 
-// A constant for the payout rate (e.g., KES per 1000 views)
-// This should ideally come from backend config, but is fine here for display purposes.
-const PAYOUT_RATE_PER_1000_VIEWS = 10; // KES 10 per 1000 views
+const PAYOUT_RATES_PER_1000_LIKES: { [key: string]: number } = {
+  Gold: 15,
+  Platinum: 35,
+  Diamond: 50,
+};
 
 export default function PayoutsPage() {
     const [eligibleVideos, setEligibleVideos] = useState<EligibleVideo[]>([]);
@@ -38,8 +41,24 @@ export default function PayoutsPage() {
     const [error, setError] = useState<string | null>(null);
     const [phoneNumber, setPhoneNumber] = useState('');
     const [payoutStatus, setPayoutStatus] = useState<'idle' | 'loading'>('idle');
+    const [userPlan, setUserPlan] = useState<string | null>(null);
 
     const { toast } = useToast();
+
+    useEffect(() => {
+        const fetchUserStatus = async () => {
+            try {
+                const res = await fetch('/api/user/status');
+                const data = await res.json();
+                if (data.success && data.subscriptionPlan) {
+                    setUserPlan(data.subscriptionPlan);
+                }
+            } catch (err) {
+                console.error("Failed to fetch user plan", err);
+            }
+        };
+        fetchUserStatus();
+    }, []);
 
     const fetchEligibleVideos = useCallback(async () => {
         setLoading(true);
@@ -52,7 +71,7 @@ export default function PayoutsPage() {
             }
             const data = await response.json();
             if (data.videos) {
-                setEligibleVideos(data.videos);
+                setEligibleVideos(data.videos.filter((v: any) => v.payoutStatus === 'ELIGIBLE'));
             } else if (data.error) {
                 throw new Error(data.error);
             }
@@ -80,12 +99,11 @@ export default function PayoutsPage() {
         );
     };
     
-    // This calculation is for DISPLAY PURPOSES ONLY.
-    // The authoritative calculation MUST happen on the backend.
     const estimatedTotalPayout = selectedVideoIds.reduce((total, id) => {
         const video = eligibleVideos.find(v => v.id === id);
-        if (!video) return total;
-        const payout = (video.view_count / 1000) * PAYOUT_RATE_PER_1000_VIEWS; 
+        if (!video || !userPlan || !PAYOUT_RATES_PER_1000_LIKES[userPlan]) return total;
+        const rate = PAYOUT_RATES_PER_1000_LIKES[userPlan];
+        const payout = (video.like_count / 1000) * rate; 
         return total + payout;
     }, 0);
 
@@ -95,8 +113,8 @@ export default function PayoutsPage() {
             toast({ title: 'No videos selected', description: 'Please select at least one video.', variant: 'destructive' });
             return;
         }
-        if (!phoneNumber.match(/^(07|01|2547|2541)\d{8}$/)) {
-            toast({ title: 'Invalid Phone Number', description: 'Please enter a valid Safaricom number (e.g., 0712345678).', variant: 'destructive' });
+        if (!phoneNumber.match(/^(254)\d{9}$/)) {
+            toast({ title: 'Invalid Phone Number', description: 'Please use the format 254XXXXXXXXX (e.g., 254712345678).', variant: 'destructive' });
             return;
         }
 
@@ -110,8 +128,6 @@ export default function PayoutsPage() {
                 body: JSON.stringify({ 
                     videoIds: selectedVideoIds, 
                     phoneNumber: phoneNumber,
-                    // The 'amount' is no longer sent from the client for security.
-                    // The backend will calculate the definitive amount based on videoIds.
                 }),
             });
 
@@ -120,11 +136,11 @@ export default function PayoutsPage() {
             if (result.success) {
                 toast({ 
                     title: 'Payout Request Successful!', 
-                    description: `Your payout request has been submitted. You will receive an M-Pesa prompt shortly.` 
+                    description: `Your payout request has been submitted. You may receive an M-Pesa prompt.` 
                 });
-                setSelectedVideoIds([]); // Clear selection on success
-                setPhoneNumber(''); // Clear phone number
-                fetchEligibleVideos(); // Refresh the list of eligible videos
+                setSelectedVideoIds([]);
+                setPhoneNumber('');
+                fetchEligibleVideos();
             } else {
                 throw new Error(result.message || 'Payout request failed.');
             }
@@ -155,7 +171,7 @@ export default function PayoutsPage() {
              <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Request Payout</h1>
-                    <p className="text-muted-foreground mt-1">Select eligible videos and get paid for your content.</p>
+                    <p className="text-muted-foreground mt-1">Select eligible videos and get paid based on likes.</p>
                 </div>
             </div>
 
@@ -165,7 +181,7 @@ export default function PayoutsPage() {
                         <CardHeader>
                             <CardTitle>Eligible Videos</CardTitle>
                             <CardDescription>
-                                Only videos that meet the minimum performance criteria and have not been paid out are shown here.
+                                Only videos with payout status 'ELIGIBLE' are shown here. Payouts are based on your <span className="font-bold text-primary">{userPlan || '...'}</span> plan rates.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -236,7 +252,7 @@ export default function PayoutsPage() {
                                 <p className="text-2xl font-bold">{selectedVideoIds.length}</p>
                             </div>
                              <div>
-                                <p className="text-sm text-muted-foreground">Estimated Payout</p>
+                                <p className="text-sm text-muted-foreground">Estimated Payout (from Likes)</p>
                                 <p className="text-4xl font-bold text-primary">KES {estimatedTotalPayout.toFixed(2)}</p>
                                 <p className="text-xs text-muted-foreground">Final amount calculated on the backend.</p>
                             </div>
@@ -247,13 +263,13 @@ export default function PayoutsPage() {
                                     type="tel"
                                     value={phoneNumber}
                                     onChange={(e) => setPhoneNumber(e.target.value)}
-                                    placeholder="e.g., 0712345678"
+                                    placeholder="e.g., 254712345678"
                                     disabled={payoutStatus === 'loading' || selectedVideoIds.length === 0}
                                 />
                             </div>
                         </CardContent>
                         <CardContent>
-                             <Button onClick={triggerPayout} className="w-full" size="lg" disabled={selectedVideoIds.length === 0 || payoutStatus === 'loading' || !phoneNumber.match(/^(07|01|2547|2541)\d{8}$/)}>
+                             <Button onClick={triggerPayout} className="w-full" size="lg" disabled={selectedVideoIds.length === 0 || payoutStatus === 'loading' || !phoneNumber.match(/^(254)\d{9}$/)}>
                                 {payoutStatus === 'loading' ? <Loader2 className="animate-spin" /> : `Request Payout`}
                             </Button>
                         </CardContent>

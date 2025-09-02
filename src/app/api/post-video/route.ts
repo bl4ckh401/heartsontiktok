@@ -1,15 +1,69 @@
 
+'use server';
+
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import db from '@/lib/firebase-admin';
 import * as admin from 'firebase-admin';
 
+// Define campaign limits per plan
+const CAMPAIGN_LIMITS = {
+  Gold: 3,
+  Platinum: 8,
+  Diamond: Infinity,
+};
+
+async function canSubmitToCampaign(userId: string): Promise<{ canSubmit: boolean; message: string }> {
+  const userRef = db.firestore().collection('users').doc(userId);
+  const userDoc = await userRef.get();
+
+  if (!userDoc.exists) {
+    return { canSubmit: false, message: 'User profile not found.' };
+  }
+
+  const userData = userDoc.data();
+  const plan = userData?.subscriptionPlan;
+
+  if (!plan || !CAMPAIGN_LIMITS[plan as keyof typeof CAMPAIGN_LIMITS]) {
+    return { canSubmit: false, message: 'Invalid or no active subscription plan found.' };
+  }
+
+  const limit = CAMPAIGN_LIMITS[plan as keyof typeof CAMPAIGN_LIMITS];
+  if (limit === Infinity) {
+    return { canSubmit: true, message: '' };
+  }
+
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  const endOfMonth = new Date(startOfMonth);
+  endOfMonth.setMonth(startOfMonth.getMonth() + 1);
+
+  const submissionsQuery = db.firestore().collection('submissions')
+    .where('userId', '==', userId)
+    .where('submittedAt', '>=', startOfMonth)
+    .where('submittedAt', '<', endOfMonth);
+    
+  const submissionsSnapshot = await submissionsQuery.get();
+  const uniqueCampaignIds = new Set(submissionsSnapshot.docs.map(doc => doc.data().campaignId));
+
+  if (uniqueCampaignIds.size >= limit) {
+    return { canSubmit: false, message: `You have reached your monthly limit of ${limit} campaign submissions for the ${plan} plan.` };
+  }
+
+  return { canSubmit: true, message: '' };
+}
+
+
 export async function POST(request: Request) {
   const cookieStore = cookies();
-  const accessToken = (await cookieStore).get('tiktok_access_token')?.value;
-  const userInfoCookie = (await cookieStore).get('user_info')?.value;
+  const accessToken = cookieStore.get('tiktok_access_token')?.value;
+  const userInfoCookie = cookieStore.get('user_info')?.value;
+  const session = cookieStore.get('session')?.value;
 
-  if (!accessToken || !userInfoCookie) {
+
+  if (!accessToken || !userInfoCookie || !session) {
     return NextResponse.json({ success: false, message: 'User not authenticated' }, { status: 401 });
   }
 
@@ -32,6 +86,13 @@ export async function POST(request: Request) {
 
   try {
     const userInfo = JSON.parse(userInfoCookie);
+    const userId = session; // Using Firebase UID from session
+
+    // Enforce campaign submission limits
+    const submissionCheck = await canSubmitToCampaign(userId);
+    if (!submissionCheck.canSubmit) {
+      return NextResponse.json({ success: false, message: submissionCheck.message }, { status: 403 });
+    }
 
     // Hardcoded for unaudited app compliance
     const postInfo: any = {
@@ -89,7 +150,8 @@ export async function POST(request: Request) {
 
     const submissionData = {
       campaignId: campaignId,
-      userId: userInfo.open_id,
+      userId: userId, // Store Firebase UID
+      tiktokOpenId: userInfo.open_id, // Also store open_id for reference
       title: title,
       hashtags: hashtags,
       tiktokPublishId: publish_id,

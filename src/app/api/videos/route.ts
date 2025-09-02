@@ -9,16 +9,14 @@ import db from '@/lib/firebase-admin';
 export async function GET(req: NextRequest) {
   const cookieStore = cookies();
   const accessToken = cookieStore.get('tiktok_access_token')?.value;
-  const userInfoCookie = cookieStore.get('user_info')?.value;
+  const session = cookieStore.get('session')?.value;
 
-  if (!accessToken || !userInfoCookie) {
+  if (!accessToken || !session) {
     return NextResponse.json({ error: 'User not authenticated' }, { status: 401 });
   }
+  const userId = session; // Firebase UID from session
 
   try {
-    const userInfo = JSON.parse(userInfoCookie);
-    const userId = userInfo.open_id;
-
     // 1. Fetch user's videos from TikTok
     const videoFields = 'id,title,cover_image_url,embed_link,like_count,comment_count,share_count,view_count';
     const videoListResponse = await fetch(`https://open.tiktokapis.com/v2/video/list/?fields=${videoFields}`, {
@@ -46,32 +44,24 @@ export async function GET(req: NextRequest) {
     const submissionsRef = db.firestore().collection('submissions').where('tiktokVideoId', 'in', tiktokVideoIds).where('userId', '==', userId);
     const submissionsSnapshot = await submissionsRef.get();
     
-    const videoPayoutStatuses: { [key: string]: string } = {};
+    const videoStatusMap: { [key: string]: { payoutStatus: string; like_count: number } } = {};
     submissionsSnapshot.forEach(doc => {
         const data = doc.data();
         if (data.tiktokVideoId) {
-            // Statuses could be: SUBMITTED, PENDING, PAID, FAILED
-            videoPayoutStatuses[data.tiktokVideoId] = data.payoutStatus || 'ELIGIBLE';
+            videoStatusMap[data.tiktokVideoId] = {
+                payoutStatus: data.payoutStatus || 'ELIGIBLE',
+                like_count: data.like_count || 0
+            };
         }
     });
 
-    // 3. Filter for eligible videos
-    const MIN_PAYOUT_VIEWS = 1000;
-    const eligibleVideos = videoListData.data.videos.filter((video: any) => {
-        const isEligibleByViews = (video.view_count || 0) >= MIN_PAYOUT_VIEWS;
-        // A video is eligible if it has enough views AND does not have a 'PENDING' or 'PAID' status in our DB.
-        const payoutStatus = videoPayoutStatuses[video.id];
-        const isEligibleByStatus = payoutStatus !== 'PENDING' && payoutStatus !== 'PAID';
-
-        return isEligibleByViews && isEligibleByStatus;
-    });
-
-    // 4. Augment video data with our internal status for the frontend if needed
-     const videosWithStatus = eligibleVideos.map((video: any) => ({
+    // 3. Augment video data with our internal status and latest metrics from Firestore
+    // This is important because the video list API might not have real-time stats
+     const videosWithStatus = videoListData.data.videos.map((video: any) => ({
         ...video,
-        payoutStatus: videoPayoutStatuses[video.id] || 'ELIGIBLE' // Add our status
-    }));
-
+        payoutStatus: videoStatusMap[video.id]?.payoutStatus || 'ELIGIBLE', // Default to ELIGIBLE if not in our DB
+        like_count: videoStatusMap[video.id]?.like_count || video.like_count || 0 // Prefer our stored like count
+    })).filter((video: any) => video.payoutStatus === 'ELIGIBLE'); // Only return eligible videos
 
     return NextResponse.json({ videos: videosWithStatus });
 
