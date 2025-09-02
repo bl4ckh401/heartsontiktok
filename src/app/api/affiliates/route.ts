@@ -8,7 +8,7 @@ const DIRECT_COMMISSION_RATE = 0.10; // 10%
 const INDIRECT_COMMISSION_RATE = 0.02; // 2%
 
 export async function GET(request: Request) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const session = cookieStore.get('session')?.value;
 
   if (!session) {
