@@ -9,9 +9,9 @@ import * as admin from 'firebase-admin';
 
 // Define plan details to prevent tampering from the client-side
 const PLANS = {
-  Gold: { name: 'Gold', amount: 500 },
-  Platinum: { name: 'Platinum', amount: 750 },
-  Diamond: { name: 'Diamond', amount: 1000 },
+  Gold: { name: 'Gold', amount: 1 },
+  Platinum: { name: 'Platinum', amount: 2 },
+  Diamond: { name: 'Diamond', amount: 3 },
 };
 
 export async function POST(request: Request) {

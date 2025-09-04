@@ -2,7 +2,7 @@
 import axios from 'axios';
 import db from '@/lib/firebase-admin';
 
-const MPESA_BASE_URL = 'https://sandbox.safaricom.co.ke';
+const MPESA_BASE_URL = 'https://api.safaricom.co.ke';
 const MPESA_CONSUMER_KEY = process.env.MPESA_CONSUMER_KEY;
 const MPESA_CONSUMER_SECRET = process.env.MPESA_CONSUMER_SECRET;
 const MPESA_B2C_SHORTCODE = process.env.MPESA_B2C_SHORTCODE;
