@@ -130,10 +130,15 @@ export default function DashboardPage() {
         if (!response.ok) {
           throw new Error(`Failed to fetch affiliate summary: ${response.statusText}`);
         }
-        const data: AffiliateSummary = await response.json();
-        setAffiliateSummary(data);
+        const result = await response.json();
+        if (result.success) {
+            setAffiliateSummary(result.data);
+        } else {
+            throw new Error(result.message || 'Could not fetch affiliate summary');
+        }
       } catch (error) {
         console.error('Error fetching affiliate summary:', error);
+        setAffiliateSummary({ totalEarnings: 0, totalConversions: 0 }); // Set a default on error
       } finally {
         setLoadingAffiliateSummary(false);
       }
@@ -188,7 +193,7 @@ export default function DashboardPage() {
             <MetricCard title="Videos Posted" value={userProfile.video_count?.toLocaleString() || '0'} icon={Video} />
             <MetricCard
               title="Total Earnings"
-              value={loadingAffiliateSummary ? 'Loading...' : affiliateSummary?.totalEarnings.toFixed(2) || '0.00'}
+              value={loadingAffiliateSummary ? 'Loading...' : `KES ${affiliateSummary?.totalEarnings.toFixed(2) || '0.00'}`}
               icon={TrendingUp}
             />
             <MetricCard
@@ -265,4 +270,5 @@ export default function DashboardPage() {
       </Card>
     </div>
   );
-}
+
+    
