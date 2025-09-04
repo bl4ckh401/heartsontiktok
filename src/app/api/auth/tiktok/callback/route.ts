@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
         displayName: tiktokUserData.display_name,
         photoURL: tiktokUserData.avatar_url,
         open_id: tiktokUserData.open_id,
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date(),
       }, { merge: true });
     } catch (error: any) {
       if (error.code === 'auth/user-not-found') {

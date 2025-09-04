@@ -16,16 +16,15 @@ const PLANS = {
 
 export async function POST(request: Request) {
   const cookieStore = cookies();
-  const userInfoCookie = (await cookieStore).get('user_info')?.value;
+  const session = (await cookieStore).get('session')?.value;
 
-  if (!userInfoCookie) {
+  if (!session) {
     return NextResponse.json({ success: false, message: 'User not authenticated' }, { status: 401 });
   }
 
   try {
     const { plan, phoneNumber } = await request.json();
-    const userInfo = JSON.parse(userInfoCookie);
-    const userId = userInfo.open_id;
+    const userId = session; // The full Firebase UID (e.g., "tiktok:xxxx")
 
     if (!plan || !PLANS[plan as keyof typeof PLANS]) {
       return NextResponse.json({ success: false, message: 'Invalid subscription plan selected.' }, { status: 400 });
@@ -54,7 +53,7 @@ export async function POST(request: Request) {
     const subscriptionRef = db.firestore().collection('subscriptions').doc();
     await subscriptionRef.set({
       subscriptionId: subscriptionRef.id,
-      userId: userId,
+      userId: userId, // Use the full Firebase UID
       plan: selectedPlan.name,
       amount: amount,
       phoneNumber: phoneNumber,
