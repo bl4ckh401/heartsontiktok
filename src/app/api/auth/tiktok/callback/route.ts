@@ -10,17 +10,19 @@ export async function GET(req: NextRequest) {
   const state = searchParams.get('state');
   const error = searchParams.get('error');
   const errorDescription = searchParams.get('error_description');
-  const plan = searchParams.get('plan'); // Capture the plan from the redirect
-
+  
   const cookieStore = await cookies();
   const csrfState = cookieStore.get('csrfState')?.value;
+  // Retrieve the plan from the state parameter
+  const plan = state ? new URLSearchParams(state).get('plan') : null;
+
 
   if (error) {
     console.error(`TikTok Auth Error: ${error}`);
     return NextResponse.redirect(new URL(`/login?error=${error}&error_description=${encodeURIComponent(errorDescription || 'Unknown error.')}`, req.url));
   }
   
-  if (!state || state !== csrfState) {
+  if (!state || state.split('&')[0] !== csrfState) {
     return NextResponse.redirect(new URL('/login?error=invalid_state&error_description=Invalid+state.+The+request+could+not+be+verified.', req.url));
   }
   

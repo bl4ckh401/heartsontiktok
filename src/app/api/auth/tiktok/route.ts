@@ -12,7 +12,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Server configuration error: Missing TikTok Client Key.' }, { status: 500 });
   }
 
+  const { searchParams } = new URL(req.url);
+  const plan = searchParams.get('plan');
+
   const csrfState = crypto.randomBytes(16).toString('hex');
+  // Embed the plan in the state, so we can retrieve it after the callback
+  const stateWithPlan = plan ? `${csrfState}&plan=${plan}` : csrfState;
+
   const cookieStore = cookies();
   (await cookieStore).set('csrfState', csrfState, { maxAge: 60 * 60, httpOnly: true, secure: process.env.NODE_ENV === 'production' });
 
@@ -35,7 +41,7 @@ export async function GET(req: NextRequest) {
     scope: scopes,
     response_type: 'code',
     redirect_uri: redirectUri,
-    state: csrfState,
+    state: stateWithPlan,
   });
 
   url += `?${params.toString()}`;

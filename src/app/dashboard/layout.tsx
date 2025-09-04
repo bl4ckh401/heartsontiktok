@@ -32,7 +32,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/icons';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Cookies from 'js-cookie';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -76,14 +76,7 @@ export default function DashboardLayout({
   const [user, setUser] = useState<any>(null);
   const [subscriptionStatus, setSubscriptionStatus] = useState<'LOADING' | 'ACTIVE' | 'INACTIVE'>('LOADING');
 
-  useEffect(() => {
-    const userInfoCookie = Cookies.get('user_info');
-    if (userInfoCookie) {
-      const parsedUser = JSON.parse(userInfoCookie);
-      setUser(parsedUser);
-    }
-    
-    const fetchSubStatus = async () => {
+  const fetchSubStatus = useCallback(async () => {
       try {
         const res = await fetch('/api/user/status');
         if (res.ok) {
@@ -96,9 +89,27 @@ export default function DashboardLayout({
         console.error("Failed to fetch user status", error);
         setSubscriptionStatus('INACTIVE');
       }
-    };
+    }, []);
+
+
+  useEffect(() => {
+    const userInfoCookie = Cookies.get('user_info');
+    if (userInfoCookie) {
+      const parsedUser = JSON.parse(userInfoCookie);
+      setUser(parsedUser);
+    }
+    
     fetchSubStatus();
-  }, []);
+  }, [fetchSubStatus]);
+  
+  // Poll for subscription status changes
+  useEffect(() => {
+    if (subscriptionStatus === 'INACTIVE') {
+      const intervalId = setInterval(fetchSubStatus, 5000); // Poll every 5 seconds
+      return () => clearInterval(intervalId);
+    }
+  }, [subscriptionStatus, fetchSubStatus]);
+
 
   const isSubscribed = subscriptionStatus === 'ACTIVE';
   const showSubscriptionGate = !isSubscribed && pathname !== '/dashboard/subscription';
