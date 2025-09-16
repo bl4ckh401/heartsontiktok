@@ -28,16 +28,24 @@ export default function TermsOfServicePage() {
           <p>By accessing HeartsOnTikTok ("Platform", "Service", "we", "us"), you agree to these Terms. If you disagree, do not use our service. You must be 18+ and legally capable of entering contracts.</p>
 
           <h2>2. PLATFORM DESCRIPTION & DISCLAIMERS</h2>
-          <p><strong>HeartsOnTikTok is ONLY a marketplace platform connecting creators and sponsors. WE ARE NOT RESPONSIBLE FOR:</strong></p>
+          <p><strong>HeartsOnTikTok is ONLY a marketplace platform with the following features:</strong></p>
+          <ul>
+            <li><strong>Video Payouts:</strong> KES 50 per 1,000 likes on campaign videos</li>
+            <li><strong>Affiliate System:</strong> 30% direct + 5% indirect commissions (4 levels)</li>
+            <li><strong>Plan Limits:</strong> Gold (3), Platinum (5), Diamond (10) campaigns/month</li>
+            <li><strong>Daily Limits:</strong> KES 10K/15K/20K payout limits per plan</li>
+            <li><strong>Pricing:</strong> KES 1,000/3,000/5,500 monthly subscriptions</li>
+          </ul>
+          <p><strong>WE ARE NOT RESPONSIBLE FOR:</strong></p>
           <ul>
             <li>TikTok account suspensions, bans, or policy violations</li>
             <li>Content removal or community guideline strikes</li>
-            <li>Payment disputes between users</li>
-            <li>Campaign performance or results</li>
-            <li>Content quality, accuracy, or compliance</li>
+            <li>Payment processing failures or delays</li>
+            <li>Campaign performance or engagement results</li>
+            <li>Subscription plan changes or feature modifications</li>
             <li>Third-party platform changes or policies</li>
-            <li>Lost earnings or business opportunities</li>
-            <li>Technical issues or platform downtime</li>
+            <li>Lost earnings, missed opportunities, or business losses</li>
+            <li>Technical issues, bugs, or platform downtime</li>
           </ul>
 
           <h2>3. USER RESPONSIBILITIES</h2>
@@ -76,13 +84,27 @@ export default function TermsOfServicePage() {
           </ul>
 
           <h2>6. PAYMENT & FINANCIAL TERMS</h2>
+          <p><strong>Subscription Pricing (Monthly, Non-Refundable):</strong></p>
           <ul>
-            <li>All payments processed by third-party providers (we are not liable for payment issues)</li>
-            <li>Platform fees are non-refundable under all circumstances</li>
+            <li>Gold Plan: KES 1,000/month - 3 campaigns, KES 10,000 daily limit</li>
+            <li>Platinum Plan: KES 3,000/month - 5 campaigns, KES 15,000 daily limit</li>
+            <li>Diamond Plan: KES 5,500/month - 10 campaigns, KES 20,000 daily limit</li>
+          </ul>
+          <p><strong>Payout Structure:</strong></p>
+          <ul>
+            <li>Video earnings: KES 50 per 1,000 likes (all plans)</li>
+            <li>Affiliate commissions: 30% direct, 5% indirect (4 levels)</li>
+            <li>Daily payout limits enforced automatically</li>
+            <li>All payments via M-Pesa through Swapuzi (third-party processor)</li>
+          </ul>
+          <p><strong>Financial Disclaimers:</strong></p>
+          <ul>
+            <li>All subscription fees are non-refundable under any circumstances</li>
             <li>Users solely responsible for tax reporting and compliance</li>
-            <li>Payout limits based on subscription plans (subject to change)</li>
-            <li>We may suspend payouts for any reason without notice</li>
-            <li>No guarantee of payment processing or timing</li>
+            <li>We may modify pricing, limits, or features without notice</li>
+            <li>We may suspend payouts for violations or technical issues</li>
+            <li>No guarantee of payment processing timing or success</li>
+            <li>Minimum payout: KES 10, maximum per transaction: plan limits</li>
           </ul>
 
           <h2>7. PROHIBITED ACTIVITIES</h2>
