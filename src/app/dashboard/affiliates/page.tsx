@@ -215,7 +215,7 @@ export default function AffiliatesPage() {
         <Card>
           <CardHeader>
               <CardTitle>Your Referral Link</CardTitle>
-              <CardDescription>Share this link. You earn 30% from direct referrals and 5% from levels 2-4 in your referral tree.</CardDescription>
+              <CardDescription>Share this link. Earn 30% commission from direct referrals' subscriptions and 5% from 4 levels of indirect referrals' subscriptions.</CardDescription>
           </CardHeader>
           <CardContent>
                <div className="flex w-full max-w-lg items-center space-x-2">

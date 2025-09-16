@@ -35,9 +35,11 @@ export default function PrivacyPolicyPage() {
           
           <h3>Payment Information:</h3>
           <ul>
-            <li>M-Pesa phone numbers for payouts</li>
-            <li>Transaction history and payout records</li>
-            <li>Subscription plan and billing information</li>
+            <li>M-Pesa phone numbers for payouts (KES 50 per 1,000 likes)</li>
+            <li>Transaction history and payout records (daily limits: KES 10K-20K)</li>
+            <li>Subscription plan data (Gold/Platinum/Diamond: KES 1K-5.5K/month)</li>
+            <li>Affiliate commission records (30% direct, 5% indirect, 4 levels)</li>
+            <li>Campaign participation tracking (3-10 campaigns per month)</li>
           </ul>
 
           <h3>Usage Data:</h3>
@@ -51,12 +53,16 @@ export default function PrivacyPolicyPage() {
           <h2>2. HOW WE USE YOUR INFORMATION</h2>
           <p><strong>We use collected information to:</strong></p>
           <ul>
-            <li>Provide platform services and facilitate campaign matching</li>
-            <li>Process payments and manage affiliate commissions</li>
-            <li>Monitor platform usage and prevent fraud</li>
-            <li>Communicate about account status and platform updates</li>
+            <li>Calculate and process video payouts (KES 50 per 1,000 likes)</li>
+            <li>Manage affiliate commissions (30% direct, 5% indirect up to 4 levels)</li>
+            <li>Enforce campaign participation limits (3-10 per month based on plan)</li>
+            <li>Apply daily payout limits (KES 10,000-20,000 based on subscription)</li>
+            <li>Process monthly subscription billing (KES 1,000-5,500)</li>
+            <li>Track TikTok video performance and engagement metrics</li>
+            <li>Facilitate M-Pesa payments through Swapuzi integration</li>
+            <li>Monitor platform usage and prevent fraud or abuse</li>
+            <li>Communicate about account status, limits, and platform updates</li>
             <li>Comply with legal obligations and enforce our terms</li>
-            <li>Improve platform functionality and user experience</li>
           </ul>
 
           <h2>3. INFORMATION SHARING & DISCLOSURE</h2>
@@ -88,9 +94,11 @@ export default function PrivacyPolicyPage() {
           <p><strong>We retain information:</strong></p>
           <ul>
             <li>Account data: Until account deletion or 2 years of inactivity</li>
-            <li>Transaction records: 7 years for tax and legal compliance</li>
+            <li>Payment records: 7 years (video payouts, affiliate commissions, subscriptions)</li>
+            <li>TikTok performance data: 2 years for payout calculations</li>
+            <li>Campaign participation history: 2 years for limit enforcement</li>
             <li>Usage logs: 12 months for platform optimization</li>
-            <li>Legal compliance data: As required by applicable laws</li>
+            <li>Legal compliance data: As required by Kenyan and international laws</li>
           </ul>
 
           <h2>6. COOKIES & TRACKING</h2>

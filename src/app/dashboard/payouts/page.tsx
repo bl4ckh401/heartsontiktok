@@ -299,7 +299,7 @@ export default function PayoutsPage() {
                                 <CardHeader>
                                     <CardTitle>Eligible Videos</CardTitle>
                                     <CardDescription>
-                                        Only videos submitted through our platform that are ready for payout are shown. Payouts are based on your <span className="font-bold text-primary">{userPlan || '...'}</span> plan rates.
+                                        Videos ready for payout. Earn KES 50 per 1,000 likes on all plans. Daily limits: <span className="font-bold text-primary">{userPlan === 'Gold' ? 'KES 10,000' : userPlan === 'Platinum' ? 'KES 15,000' : userPlan === 'Diamond' ? 'KES 20,000' : '...'}</span>
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">

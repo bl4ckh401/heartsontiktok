@@ -11,21 +11,21 @@ import { DollarSign, Gift, Users } from 'lucide-react';
 const earningMethods = [
   {
     icon: <DollarSign className="h-8 w-8 text-primary" />,
-    title: 'Direct Campaign Payouts',
+    title: 'Video Performance Payouts',
     description:
-      'Participate in campaigns from top brands and get paid directly for your content based on fixed rates or performance metrics.',
+      'Earn KES 50 for every 1,000 likes on your campaign videos. Get paid based on actual engagement with daily payout limits based on your plan.',
   },
   {
     icon: <Gift className="h-8 w-8 text-primary" />,
-    title: 'Affiliate Program',
+    title: '4-Level Affiliate Program',
     description:
-      'Invite other creators to hearts on tiktok and earn a 10% commission on the views from every video they post. Build a recurring revenue stream with our multi-level referral system.',
+      'Earn 30% commission from direct referrals and 5% from 4 levels of indirect referrals. Build recurring income from subscription payments of your referral network.',
   },
   {
     icon: <Users className="h-8 w-8 text-primary" />,
-    title: 'Performance Bonuses',
+    title: 'Campaign Participation',
     description:
-      'Unlock special bonuses and rewards for top-performing content that exceeds campaign goals and drives exceptional engagement.',
+      'Join multiple campaigns per month based on your plan (3-10 campaigns). Participate in brand campaigns and monetize your TikTok content effectively.',
   },
 ];
 
