@@ -20,11 +20,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Users, DollarSign, UserPlus, Copy, Check, Loader2, AlertCircle, GitMerge } from 'lucide-react';
+import { Users, DollarSign, UserPlus, Copy, Check, Loader2, AlertCircle, GitMerge, Wallet } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 interface Referral {
   id: string;
@@ -33,7 +35,7 @@ interface Referral {
   joinDate: string;
   status: 'Active' | 'Pending';
   commission: number;
-  level: 1 | 2;
+  level: 1 | 2 | 3 | 4;
 }
 
 const MetricCard = ({ title, value, icon: Icon, loading }: {title: string, value: string | number, icon: React.ElementType, loading?: boolean}) => (
@@ -58,6 +60,10 @@ export default function AffiliatesPage() {
     const [totalEarnings, setTotalEarnings] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [selectedReferrals, setSelectedReferrals] = useState<string[]>([]);
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [payoutLoading, setPayoutLoading] = useState(false);
+    const [showPayoutDialog, setShowPayoutDialog] = useState(false);
 
     useEffect(() => {
         const fetchAffiliateData = async () => {
@@ -103,7 +109,61 @@ export default function AffiliatesPage() {
     };
 
     const directReferralsCount = referrals.filter(r => r.level === 1).length;
-    const indirectReferralsCount = referrals.filter(r => r.level === 2).length;
+    const indirectReferralsCount = referrals.filter(r => r.level > 1).length;
+    
+    const handleSelectReferral = (referralId: string) => {
+        setSelectedReferrals(prev => 
+            prev.includes(referralId) 
+                ? prev.filter(id => id !== referralId)
+                : [...prev, referralId]
+        );
+    };
+    
+    const selectedCommission = selectedReferrals.reduce((total, id) => {
+        const referral = referrals.find(r => r.id === id);
+        return total + (referral?.commission || 0);
+    }, 0);
+    
+    const handlePayoutRequest = async () => {
+        if (selectedReferrals.length === 0) {
+            toast({ title: 'No referrals selected', description: 'Please select at least one referral.', variant: 'destructive' });
+            return;
+        }
+        if (!phoneNumber.match(/^(254)\d{9}$/)) {
+            toast({ title: 'Invalid Phone Number', description: 'Please use the format 254XXXXXXXXX (e.g., 254712345678).', variant: 'destructive' });
+            return;
+        }
+        
+        setPayoutLoading(true);
+        try {
+            const response = await fetch('/api/request-affiliate-payout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    referralIds: selectedReferrals, 
+                    phoneNumber: phoneNumber,
+                }),
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                toast({ 
+                    title: 'Payout Request Successful!', 
+                    description: 'Your affiliate payout request has been submitted. You may receive an M-Pesa prompt.' 
+                });
+                setSelectedReferrals([]);
+                setPhoneNumber('');
+                setShowPayoutDialog(false);
+            } else {
+                throw new Error(result.message || 'Payout request failed.');
+            }
+        } catch (err: any) {
+            toast({ title: 'Payout Failed', description: err.message, variant: 'destructive' });
+        } finally {
+            setPayoutLoading(false);
+        }
+    };
 
   return (
     <TooltipProvider>
@@ -115,12 +175,47 @@ export default function AffiliatesPage() {
               Track your referrals and grow your earnings.
             </p>
           </div>
+          <Dialog open={showPayoutDialog} onOpenChange={setShowPayoutDialog}>
+            <DialogTrigger asChild>
+              <Button disabled={totalEarnings <= 0}>
+                <Wallet className="mr-2 h-4 w-4" />
+                Request Payout
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Request Affiliate Payout</DialogTitle>
+                <DialogDescription>
+                  Select referrals and enter your M-Pesa number to receive commission payments.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium mb-2">Selected Commission: KES {selectedCommission.toFixed(2)}</p>
+                  <Input
+                    type="tel"
+                    placeholder="254712345678"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                  />
+                </div>
+                <Button 
+                  onClick={handlePayoutRequest} 
+                  disabled={selectedReferrals.length === 0 || payoutLoading || !phoneNumber.match(/^(254)\d{9}$/)}
+                  className="w-full"
+                >
+                  {payoutLoading ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
+                  Request Payout
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
         
         <Card>
           <CardHeader>
               <CardTitle>Your Referral Link</CardTitle>
-              <CardDescription>Share this link. You earn 10% from your direct referrals' subscriptions and 2% from their referrals' subscriptions.</CardDescription>
+              <CardDescription>Share this link. You earn 30% from direct referrals and 5% from levels 2-4 in your referral tree.</CardDescription>
           </CardHeader>
           <CardContent>
                <div className="flex w-full max-w-lg items-center space-x-2">
@@ -135,7 +230,7 @@ export default function AffiliatesPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <MetricCard title="Total Referrals" value={totalReferrals} icon={Users} loading={loading}/>
           <MetricCard title="Direct Referrals" value={directReferralsCount} icon={UserPlus} loading={loading} />
-          <MetricCard title="Indirect Referrals" value={indirectReferralsCount} icon={GitMerge} loading={loading} />
+          <MetricCard title="Indirect Referrals (L2-L4)" value={indirectReferralsCount} icon={GitMerge} loading={loading} />
           <MetricCard title="Total Affiliate Earnings" value={`KES ${totalEarnings.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} icon={DollarSign} loading={loading} />
         </div>
 
@@ -169,9 +264,14 @@ export default function AffiliatesPage() {
                       </TableHeader>
                       <TableBody>
                       {referrals.length > 0 ? referrals.map((referral) => (
-                          <TableRow key={referral.id}>
+                          <TableRow key={referral.id} className={selectedReferrals.includes(referral.id) ? 'bg-muted/50' : ''}>
                           <TableCell>
                               <div className="flex items-center gap-3">
+                                  <Checkbox 
+                                    checked={selectedReferrals.includes(referral.id)}
+                                    onCheckedChange={() => handleSelectReferral(referral.id)}
+                                    disabled={referral.commission <= 0}
+                                  />
                                   <Image src={referral.avatar || 'https://i.pravatar.cc/150'} alt={referral.name} width={40} height={40} className="rounded-full" data-ai-hint="creator avatar" />
                                   <span className="font-medium">{referral.name}</span>
                               </div>
@@ -184,7 +284,7 @@ export default function AffiliatesPage() {
                                 </Badge>
                               </TooltipTrigger>
                               <TooltipContent>
-                                {referral.level === 1 ? 'Direct Referral (10% commission)' : 'Indirect Referral (2% commission)'}
+                                {referral.level === 1 ? 'Direct Referral (30% commission)' : `Level ${referral.level} Referral (5% commission)`}
                               </TooltipContent>
                             </Tooltip>
                           </TableCell>

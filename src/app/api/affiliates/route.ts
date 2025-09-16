@@ -4,8 +4,9 @@ import { cookies } from 'next/headers';
 import db from '@/lib/firebase-admin';
 
 // Define commission rates
-const DIRECT_COMMISSION_RATE = 0.10; // 10%
-const INDIRECT_COMMISSION_RATE = 0.02; // 2%
+const DIRECT_COMMISSION_RATE = 0.30; // 30%
+const INDIRECT_COMMISSION_RATE = 0.05; // 5%
+const MAX_COMMISSION_LEVELS = 4; // Maximum 4 levels of commission
 
 export async function GET(request: Request) {
   const cookieStore = await cookies();
