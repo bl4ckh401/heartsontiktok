@@ -8,8 +8,8 @@ import { initiateB2CTransfer, getPayoutBalance } from '@/lib/swapuzi';
 import * as admin from 'firebase-admin';
 
 const PAYOUT_RATES_PER_1000_LIKES = {
-  Gold: 15,
-  Platinum: 35,
+  Gold: 50,
+  Platinum: 50,
   Diamond: 50,
 };
 

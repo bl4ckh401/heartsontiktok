@@ -18,20 +18,40 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'Missing externalId' }, { status: 400 });
     }
 
-    // Find payout by externalId
-    const payoutsQuery = db.firestore()
+    // Find payout by externalId (check both video and affiliate payouts)
+    let payoutDoc: any = null;
+    let payoutData: any = null;
+    let isAffiliatePayout = false;
+    
+    // Check video payouts first
+    const videoPayoutsQuery = db.firestore()
       .collection('payouts')
       .where('externalId', '==', externalId);
     
-    const querySnapshot = await payoutsQuery.get();
+    const videoQuerySnapshot = await videoPayoutsQuery.get();
+    
+    if (!videoQuerySnapshot.empty) {
+      payoutDoc = videoQuerySnapshot.docs[0];
+      payoutData = payoutDoc.data();
+    } else {
+      // Check affiliate payouts
+      const affiliatePayoutsQuery = db.firestore()
+        .collection('affiliate_payouts')
+        .where('externalId', '==', externalId);
+      
+      const affiliateQuerySnapshot = await affiliatePayoutsQuery.get();
+      
+      if (!affiliateQuerySnapshot.empty) {
+        payoutDoc = affiliateQuerySnapshot.docs[0];
+        payoutData = payoutDoc.data();
+        isAffiliatePayout = true;
+      }
+    }
 
-    if (querySnapshot.empty) {
+    if (!payoutDoc) {
       console.error(`No payout found for externalId: ${externalId}`);
       return NextResponse.json({ success: false, message: 'Payout not found' }, { status: 404 });
     }
-
-    const payoutDoc = querySnapshot.docs[0];
-    const payoutData = payoutDoc.data();
     
     // Determine final status
     let finalStatus: string;
@@ -61,17 +81,22 @@ export async function POST(request: Request) {
 
     await payoutDoc.ref.update(updateData);
 
-    // If successful, update submission statuses
-    if (finalStatus === 'COMPLETED' && payoutData.submissionIds) {
-      const batch = db.firestore().batch();
-      
-      payoutData.submissionIds.forEach((submissionId: string) => {
-        const submissionRef = db.firestore().collection('submissions').doc(submissionId);
-        batch.update(submissionRef, { payoutStatus: 'PAID' });
-      });
-      
-      await batch.commit();
-      console.log(`Updated ${payoutData.submissionIds.length} submissions to PAID status`);
+    // If successful, update related records
+    if (finalStatus === 'COMPLETED') {
+      if (!isAffiliatePayout && payoutData.submissionIds) {
+        // Update video submission statuses
+        const batch = db.firestore().batch();
+        
+        payoutData.submissionIds.forEach((submissionId: string) => {
+          const submissionRef = db.firestore().collection('submissions').doc(submissionId);
+          batch.update(submissionRef, { payoutStatus: 'PAID' });
+        });
+        
+        await batch.commit();
+        console.log(`Updated ${payoutData.submissionIds.length} submissions to PAID status`);
+      } else if (isAffiliatePayout) {
+        console.log(`Affiliate payout completed for ${payoutData.referralIds?.length || 0} referrals`);
+      }
     }
 
     return NextResponse.json({ success: true, message: 'Callback processed' });
