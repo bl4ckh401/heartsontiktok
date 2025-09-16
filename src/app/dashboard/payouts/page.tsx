@@ -40,11 +40,7 @@ interface Referral {
     level: 1 | 2 | 3 | 4;
 }
 
-const PAYOUT_RATES_PER_1000_LIKES: { [key: string]: number } = {
-  Gold: 15,
-  Platinum: 35,
-  Diamond: 50,
-};
+import { PLAN_CONFIG } from '@/lib/plan-config';
 
 export default function PayoutsPage() {
     const [eligibleVideos, setEligibleVideos] = useState<EligibleVideo[]>([]);
@@ -151,8 +147,8 @@ export default function PayoutsPage() {
     const estimatedTotalPayout = useMemo(() => {
         return selectedVideoIds.reduce((total, id) => {
             const video = eligibleVideos.find(v => v.id === id);
-            if (!video || !userPlan || !PAYOUT_RATES_PER_1000_LIKES[userPlan]) return total;
-            const rate = PAYOUT_RATES_PER_1000_LIKES[userPlan];
+            if (!video || !userPlan || !PLAN_CONFIG[userPlan]) return total;
+            const rate = PLAN_CONFIG[userPlan].payoutRatePer1000Likes;
             const newLikes = video.like_count - video.lastPaidLikeCount;
             const payout = (newLikes / 1000) * rate; 
             return total + (payout > 0 ? payout : 0);

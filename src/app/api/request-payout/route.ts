@@ -6,12 +6,7 @@ import { cookies } from 'next/headers';
 import db from '@/lib/firebase-admin';
 import { initiateB2CTransfer, getPayoutBalance } from '@/lib/swapuzi';
 import * as admin from 'firebase-admin';
-
-const PAYOUT_RATES_PER_1000_LIKES = {
-  Gold: 50,
-  Platinum: 50,
-  Diamond: 50,
-};
+import { PLAN_CONFIG, PlanType } from '@/lib/plan-config';
 
 // This function will be triggered when a user requests a payout.
 export async function POST(request: Request) {
@@ -37,13 +32,13 @@ export async function POST(request: Request) {
     }
 
     const userData = userDoc.data();
-    const plan = userData?.subscriptionPlan as keyof typeof PAYOUT_RATES_PER_1000_LIKES;
+    const plan = userData?.subscriptionPlan as PlanType;
 
-    if (!plan || !PAYOUT_RATES_PER_1000_LIKES[plan]) {
+    if (!plan || !PLAN_CONFIG[plan]) {
         return NextResponse.json({ success: false, message: 'User has no valid subscription plan for payouts.' }, { status: 403 });
     }
 
-    const payoutRate = PAYOUT_RATES_PER_1000_LIKES[plan];
+    const payoutRate = PLAN_CONFIG[plan].payoutRatePer1000Likes;
     
     let totalCalculatedAmount = 0;
     const eligibleSubmissions: { id: string; payout: number; newLikeCount: number, campaignId: string }[] = [];
@@ -93,6 +88,41 @@ export async function POST(request: Request) {
     const finalAmount = Math.floor(totalCalculatedAmount);
     if (finalAmount < 10) {
         return NextResponse.json({ success: false, message: `Total payout amount (KES ${finalAmount}) is below the minimum required (KES 10).` }, { status: 400 });
+    }
+    
+    // Check daily payout limit
+    const maxDailyPayout = PLAN_CONFIG[plan].maxDailyPayout;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    // Get today's payouts (both video and affiliate)
+    const [videoPayoutsToday, affiliatePayoutsToday] = await Promise.all([
+        db.firestore().collection('payouts')
+            .where('userId', '==', userId)
+            .where('status', '==', 'COMPLETED')
+            .where('requestTimestamp', '>=', today)
+            .where('requestTimestamp', '<', tomorrow)
+            .get(),
+        db.firestore().collection('affiliate_payouts')
+            .where('userId', '==', userId)
+            .where('status', '==', 'COMPLETED')
+            .where('requestTimestamp', '>=', today)
+            .where('requestTimestamp', '<', tomorrow)
+            .get()
+    ]);
+    
+    const todaysTotalPayouts = [
+        ...videoPayoutsToday.docs.map(doc => doc.data().amount || 0),
+        ...affiliatePayoutsToday.docs.map(doc => doc.data().amount || 0)
+    ].reduce((sum, amount) => sum + amount, 0);
+    
+    if (todaysTotalPayouts + finalAmount > maxDailyPayout) {
+        return NextResponse.json({ 
+            success: false, 
+            message: `Daily payout limit exceeded. Limit: KES ${maxDailyPayout}, Used today: KES ${todaysTotalPayouts}, Requested: KES ${finalAmount}` 
+        }, { status: 400 });
     }
 
     // --- Campaign Budget Check ---
