@@ -4,7 +4,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import db from '@/lib/firebase-admin';
-import { getMpesaToken, initiateB2CPayout } from '@/lib/mpesa';
+import { initiateB2CTransfer, getPayoutBalance } from '@/lib/swapuzi';
 import * as admin from 'firebase-admin';
 
 const PAYOUT_RATES_PER_1000_LIKES = {
@@ -106,12 +106,22 @@ export async function POST(request: Request) {
          return NextResponse.json({ success: false, message: 'Campaign budget is insufficient to cover this payout.' }, { status: 400 });
     }
 
-    const accessToken = await getMpesaToken();
-    const remarks = `VeriFlow payout for ${eligibleSubmissions.length} videos.`;
-    const result = await initiateB2CPayout(accessToken, finalAmount, phoneNumber, remarks);
+    // Check balance before initiating payout
+    const balance = await getPayoutBalance();
+    if (balance.balance < finalAmount) {
+      return NextResponse.json({ 
+        success: false, 
+        message: `Insufficient balance. Available: KES ${balance.balance}, Required: KES ${finalAmount}` 
+      }, { status: 400 });
+    }
+
+    const externalId = `payout_${Date.now()}_${userId.slice(-6)}`;
+    const callbackUrl = `${process.env.APP_URL}/api/payouts/callback/swapuzi`;
     
-    if (result.ResponseCode !== '0') {
-      throw new Error(result.ResponseDescription || 'Failed to initiate M-Pesa payout request.');
+    const result = await initiateB2CTransfer(finalAmount, phoneNumber, externalId, callbackUrl);
+    
+    if (!result.success) {
+      throw new Error(result.message || 'Failed to initiate payout');
     }
 
     const payoutRef = db.firestore().collection('payouts').doc();
@@ -121,9 +131,9 @@ export async function POST(request: Request) {
       amount: finalAmount,
       phoneNumber: phoneNumber,
       submissionIds: eligibleSubmissions.map(s => s.id),
-      status: 'PENDING_CONFIRMATION',
-      safaricomConversationID: result.ConversationID,
-      safaricomOriginatorConversationID: result.OriginatorConversationID,
+      status: 'PENDING',
+      externalId: externalId,
+      swapuziTransactionId: result.transactionId,
       requestTimestamp: admin.firestore.FieldValue.serverTimestamp(),
     });
     
