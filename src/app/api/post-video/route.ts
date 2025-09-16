@@ -5,12 +5,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import db from '@/lib/firebase-admin';
 import * as admin from 'firebase-admin';
-
-const CAMPAIGN_LIMITS = {
-  Gold: 3,
-  Platinum: 8,
-  Diamond: Infinity,
-};
+import { PLAN_CONFIG, PlanType } from '@/lib/plan-config';
 
 async function canSubmitToCampaign(userId: string, campaignId: string): Promise<{ canSubmit: boolean; message: string }> {
   const userRef = db.firestore().collection('users').doc(userId);
@@ -35,16 +30,13 @@ async function canSubmitToCampaign(userId: string, campaignId: string): Promise<
       return { canSubmit: false, message: 'This campaign has depleted its budget and is no longer active.' };
   }
 
-  const plan = userData?.subscriptionPlan;
+  const plan = userData?.subscriptionPlan as PlanType;
 
-  if (!plan || !CAMPAIGN_LIMITS[plan as keyof typeof CAMPAIGN_LIMITS]) {
+  if (!plan || !PLAN_CONFIG[plan]) {
     return { canSubmit: false, message: 'Invalid or no active subscription plan found.' };
   }
 
-  const limit = CAMPAIGN_LIMITS[plan as keyof typeof CAMPAIGN_LIMITS];
-  if (limit === Infinity) {
-    return { canSubmit: true, message: '' };
-  }
+  const limit = PLAN_CONFIG[plan].maxCampaignParticipationPerMonth;
 
   const startOfMonth = new Date();
   startOfMonth.setDate(1);
@@ -62,7 +54,7 @@ async function canSubmitToCampaign(userId: string, campaignId: string): Promise<
   const uniqueCampaignIds = new Set(submissionsSnapshot.docs.map(doc => doc.data().campaignId));
 
   if (uniqueCampaignIds.size >= limit) {
-    return { canSubmit: false, message: `You have reached your monthly limit of ${limit} campaign submissions for the ${plan} plan.` };
+    return { canSubmit: false, message: `You have reached your monthly limit of ${limit} campaign participations for the ${plan} plan.` };
   }
 
   return { canSubmit: true, message: '' };

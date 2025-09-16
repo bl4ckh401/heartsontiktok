@@ -2,11 +2,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import db from '@/lib/firebase-admin';
-
-// Define commission rates
-const DIRECT_COMMISSION_RATE = 0.30; // 30%
-const INDIRECT_COMMISSION_RATE = 0.05; // 5%
-const MAX_COMMISSION_LEVELS = 4; // Maximum 4 levels of commission
+import { COMMISSION_RATES } from '@/lib/plan-config';
 
 export async function GET(request: Request) {
   const cookieStore = await cookies();
@@ -46,7 +42,7 @@ export async function GET(request: Request) {
             let commissionFromThisAffiliate = 0;
             if (!subsSnapshot.empty) {
                 const totalSubscribedAmount = subsSnapshot.docs.reduce((sum, subDoc) => sum + (subDoc.data().amount || 0), 0);
-                commissionFromThisAffiliate = totalSubscribedAmount * DIRECT_COMMISSION_RATE;
+                commissionFromThisAffiliate = totalSubscribedAmount * COMMISSION_RATES.DIRECT;
             }
             
             totalAffiliateEarnings += commissionFromThisAffiliate;
@@ -87,7 +83,7 @@ export async function GET(request: Request) {
            let commissionFromThisAffiliate = 0;
            if (!subsSnapshot.empty) {
                const totalSubscribedAmount = subsSnapshot.docs.reduce((sum, subDoc) => sum + (subDoc.data().amount || 0), 0);
-               commissionFromThisAffiliate = totalSubscribedAmount * INDIRECT_COMMISSION_RATE;
+               commissionFromThisAffiliate = totalSubscribedAmount * COMMISSION_RATES.INDIRECT;
            }
 
            totalAffiliateEarnings += commissionFromThisAffiliate;

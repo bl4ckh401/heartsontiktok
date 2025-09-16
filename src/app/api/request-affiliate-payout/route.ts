@@ -5,9 +5,7 @@ import { cookies } from 'next/headers';
 import db from '@/lib/firebase-admin';
 import { initiateB2CTransfer, getPayoutBalance } from '@/lib/swapuzi';
 import * as admin from 'firebase-admin';
-
-const DIRECT_COMMISSION_RATE = 0.30; // 30%
-const INDIRECT_COMMISSION_RATE = 0.05; // 5%
+import { PLAN_CONFIG, PlanType, COMMISSION_RATES } from '@/lib/plan-config';
 
 export async function POST(request: Request) {
   const cookieStore = await cookies();
@@ -76,7 +74,7 @@ export async function POST(request: Request) {
         
         if (!subsSnapshot.empty) {
           const totalSubscribedAmount = subsSnapshot.docs.reduce((sum, subDoc) => sum + (subDoc.data().amount || 0), 0);
-          const rate = level === 1 ? DIRECT_COMMISSION_RATE : INDIRECT_COMMISSION_RATE;
+          const rate = level === 1 ? COMMISSION_RATES.DIRECT : COMMISSION_RATES.INDIRECT;
           commission = totalSubscribedAmount * rate;
         }
       }
@@ -94,6 +92,49 @@ export async function POST(request: Request) {
     const finalAmount = Math.floor(totalCalculatedAmount);
     if (finalAmount < 10) {
       return NextResponse.json({ success: false, message: `Total payout amount (KES ${finalAmount}) is below the minimum required (KES 10).` }, { status: 400 });
+    }
+    
+    // Get user's plan for daily limit check
+    const userDoc = await db.firestore().collection('users').doc(userId).get();
+    const userPlan = userDoc.data()?.subscriptionPlan as PlanType;
+    
+    if (!userPlan || !PLAN_CONFIG[userPlan]) {
+      return NextResponse.json({ success: false, message: 'User has no valid subscription plan.' }, { status: 403 });
+    }
+    
+    // Check daily payout limit
+    const maxDailyPayout = PLAN_CONFIG[userPlan].maxDailyPayout;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    // Get today's payouts (both video and affiliate)
+    const [videoPayoutsToday, affiliatePayoutsToday] = await Promise.all([
+        db.firestore().collection('payouts')
+            .where('userId', '==', userId)
+            .where('status', '==', 'COMPLETED')
+            .where('requestTimestamp', '>=', today)
+            .where('requestTimestamp', '<', tomorrow)
+            .get(),
+        db.firestore().collection('affiliate_payouts')
+            .where('userId', '==', userId)
+            .where('status', '==', 'COMPLETED')
+            .where('requestTimestamp', '>=', today)
+            .where('requestTimestamp', '<', tomorrow)
+            .get()
+    ]);
+    
+    const todaysTotalPayouts = [
+        ...videoPayoutsToday.docs.map(doc => doc.data().amount || 0),
+        ...affiliatePayoutsToday.docs.map(doc => doc.data().amount || 0)
+    ].reduce((sum, amount) => sum + amount, 0);
+    
+    if (todaysTotalPayouts + finalAmount > maxDailyPayout) {
+        return NextResponse.json({ 
+            success: false, 
+            message: `Daily payout limit exceeded. Limit: KES ${maxDailyPayout}, Used today: KES ${todaysTotalPayouts}, Requested: KES ${finalAmount}` 
+        }, { status: 400 });
     }
 
     // Check balance before initiating payout

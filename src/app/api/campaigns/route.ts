@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import  db  from '@/lib/firebase-admin'; 
 import admin from '@/lib/firebase-admin';
 
@@ -24,6 +25,13 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const cookieStore = await cookies();
+  const session = cookieStore.get('session')?.value;
+
+  if (!session) {
+    return NextResponse.json({ success: false, message: 'User not authenticated' }, { status: 401 });
+  }
+
   const formData = await request.formData();
 
   const campaignName = formData.get('campaignName') as string;
@@ -35,6 +43,8 @@ export async function POST(request: Request) {
     if (!campaignName || !description || !budgetAmount) {
       return NextResponse.json({ success: false, message: 'Missing required campaign fields' }, { status: 400 });
     }
+    
+    const userId = session;
 
     const budget = parseFloat(budgetAmount);
     if (isNaN(budget)) {
@@ -46,6 +56,7 @@ export async function POST(request: Request) {
       description: description,
       budget: budget,
       brandAssetsUrl: brandAssetsUrl || '',
+      createdBy: userId,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
