@@ -1,14 +1,13 @@
 {
-    "type": "service_account",
-    "project_id": "freelanceflow-gr0ep",
-    "private_key_id": "cd546e44443930ad86c4832ba4ac626a3dee0e9e",
-    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCu35buRD0jaSJY\n3g1YIcV4g9erGPtH5hC/6vLS6nFhELLxORp/balpELMnjzyaP4QUIioeKIPemaMA\nFADiAF3GtCJECEoUeWAfFY9LTviKtgdhnY7nwGe4v+uY6Bk+lffFBvIWu5fwyLjN\nLEdZSk4NEX2SutwFcd1SvXpPkJVCw3PO/GGBfQDUY5Ld1xxeQtkmnZUDONz7eQyD\nMHOQkbVlW9wa1hIPMgnlxfCYfFBNqdT7qFCHlMwE3IjO8NgaR3kjLeb4YkJgS2va\nedh21lLcIl+GNGCWmJvPCjSpAVXt4uHU+UBMgnEt6LjS/8+R8F+rKQiRPe4l8i5m\nitHI/ZatAgMBAAECggEABrluufoP6Ta+hANMKRBXYex4gje1oVXJFBlO9KDghRZ+\nOeCGCYkV6BhuFXVFEYR/Tnl1jm93HGBivfrQE+Cv3wUaFH80Py8ofyKj4pg9S/wt\nxOlf4b8PFNZit6Btuu+Uo0GwVLnhPFPV3si3KxKX4wd47wfWRsXkwXYZDJN5fUgG\nmMgq4Fk9XX4vnvU5RYA083nUYcpLMnF1wg4csOIwpA3HHOYZSBPlEidoZPj/xFUv\nWG8kQUwD37cVuAsVYUGpbhHKzj7WuIt4D4rks/6jMahzJ2K7jOASdzpEHGH6Mv6e\nt3kz6tf9YtDGUQMaDpznE63uX5lY1qnPu5NCettoIwKBgQDhJjU5AArGcvGwP4ex\nV0r5CY0aHLoVyHkkU/rnUlt2n7WCA98dlpIe2IITYBfWEeK6s4U9GUhuTb8Udjos\n1jcfiSOb5PuxZiO2ZXDxi7lBj+wOs1aKJv2nvQZvqVpXvDMW3bIKM6X3i1aaiOtA\nALc0ESLLFlX64P1WzZe/8qsPjwKBgQDG1c3GL0+HnoVbKagDPkEQjP049byfYDXk\npjE2dnGW/OXy1xjsg+H0aDqWBZFLn5MnNQpbbnHromViCKf0TotqRF/tVqvQZGZ/\nwQ25XoIEHM0Zwoe+fMM2JHF5sA1NSaSIIrprTQUOedr6KzMfmXSsGP1U5kXdOXgq\nRQjGLIkYAwKBgFk3G6Xfh2WFjJGrSuiRz4qJJ1lugqo5Cw/DG0voTYfe1zySril6\nTaJdZoWo8SkJY09Z7XT9fL8AnbPM+VZk9+jOHccbYES2VXZkEfIUzK7XCdH1bFhI\nBQEfnNpIQB093Py1kmQKfTxvAT0w/g8ZeX7vP1s8GYvU9W4c/4G29eOvAoGABy8y\ngDa1aPERYHng2D0nnLF7dNNsPVX8nIZkwNMGx63boSqke+dIAszBUSpiVZkud/wy\no5saAqmbgC9P4kP0RaKy1KCNFLqL+ZHALTJ9ACkKQCQHQ5q+cvZeI0d5M5G1oDWh\nBr+Br0Q35VIqRroEvTMp9Cdd3uB0txJHfuGdEoECgYBRa/AIqwj1iuIbY8bSOqjp\ndy9hdp3MF8VlIceUJBIC0/1/T/KAZo00R1c7xcaZ9ZnkrYxHTYvb5yQTsuHm9aVg\nANnjeRja6HiM1d8oSRx2+sMbQuxyx3dGH6X+ySR7HjFgFLf9UxT1i7X29A6ax/6H\nskdeSKqRqTRNe1g/TB7kwg==\n-----END PRIVATE KEY-----\n",
-    "client_email": "firebase-adminsdk-fbsvc@freelanceflow-gr0ep.iam.gserviceaccount.com",
-    "client_id": "107301153345711085597",
-    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-    "token_uri": "https://oauth2.googleapis.com/token",
-    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40freelanceflow-gr0ep.iam.gserviceaccount.com",
-    "universe_domain": "googleapis.com"
-  }
-  
+  "type": "service_account",
+  "project_id": "freelanceflow-gr0ep",
+  "private_key_id": "4468e0df62eea5cd3a4949034ca442a72d42e468",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCrSX0eF411kGlv\nADxIH44hZq8zrJHPuUxyJV5dhMeEMlIHtyA2VK4QzT0Jr7dsZ6VVoAXboJV3Agx5\ncx1yiTgtvPdxYTwJDNzwT2Sk8VcB/K/NEpfVKe4L+JRXLUOB1/wbOKrdfoLuyuew\nFAS6Na0ouM6rLOyX6zZMl+vEZ3c6gmSl4mIr8Ov9S9Sou/X00q6Xpuvb1faxz1cx\nasvrq7q+Y7D/Y+lsjcRS7QR6Wh3o7JIuiKu/xeER1l3c+3QLaCbOINy4cWnOxS1B\ntP5uGqMmlqsMidKdTXMpitTBng4FYeZEk843ZLd5Pr0gAf3q9xoTCG6GU856urKG\nvFWtM1nNAgMBAAECggEABbBAm/27QHLF1Z5j4h9OKJTQ773k78mfHNFZ43Az8hN7\nvu7ZfoRsbXlrdAVmaY69omzYlPUt0ZB7WpM0oKem+nnim9zXUhOfyMlSNdogAhxi\nuERMT5N/aN1eC9Egg1Dpefv1TLrVXVnWvPXFPGvo7sfIcU3iI593o66N8W1gO8yn\nxbeYgce8HxpeeZIsZ6vyKTp2U6K9hvISYqKiqJK/yh+ieo4wQooA3TIY57iKi9lI\nfidAXuPtCj/YTbqWQe/q5C7uhxNc9WgDq/+XY+2dNpXe4xf/4BuNG2uXIUv43n4O\n3Zb3ohsINnrAH+RDQcBOxTp9k0Bvtq4DscOi4Gx7cQKBgQDuPFNC5t6QnW2aXOjh\nruydBQW8ReIYaW9wVQCPGyiwbuxPiUi6ABDakvxAh2Qp1w8GnoVxCg1cT5qml3nk\nl6nqT6bui8Nrntf3r0BQOmG/+0TbLkUPIMnb9BAaHXHQp7Ve6G5gDn2gZtVqtqdL\nC6CkR6sX8jx3djmLT4A6b/2flQKBgQC4Dy8ADmikjZ+V/PFegm6HDf+g16Kw+iVJ\nwU0XkC9AjFf20QG+AuSbRhc3HtbeyyMTxiXdmM9nZFPDUaJCpLYU9jv6hhVvio5W\n6naiYQFiLOXH/ev20J74ivdIYv/RkkI3iZEz7eWVGbVKzu60wLCsEmBcUDkZ123g\n2KEgHP+jWQKBgDf976e6sTaV+YudKJLaVPw2kPmGBzSrmyhwofgAbxjAiUPMRU6J\n82wbvbPA3nbC9+IbYcuGjEtU3kknMtvaFXJflCFesehaZfHtu5Tfk9fWS4GkJ1D9\n6NOMUjiBER30PLl4sXBcF4SahrBVC46kxfW2bmzrXvDI1Y97eOzDI33dAoGAa0DF\nxYWf6otwO+laCRV+LIq2s9YTwobxJYpTTvDA6B8fvv5JwpxS9DwimQcKdGbwuLwV\nIozCBuCKgt1V7Pmn9I0LpE9vvECD8xfLK5HVSY0aFLDdSESG7hOkRvURVuCgX1Z1\nW0o8JucFImN067UA/jPzHLfOnkVPjN8O/PSI7nkCgYEA4r7IiUJwjKr3GEY72EqK\nkVVrdeQ2luYSxVz8HbYi2zbt0hf1AEmwmSevmRAdkuiIKua9+BVbHbE+oOkxfiG8\nS/nzBwgtCoIpyM+osKxJcerQVDJORmrmxO+SbbTHMA1dnnyeMWilLzrBeq/Tme2F\nBJkVrkBoDiR9b1qqOzzCscE=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-fbsvc@freelanceflow-gr0ep.iam.gserviceaccount.com",
+  "client_id": "107301153345711085597",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40freelanceflow-gr0ep.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
