@@ -36,6 +36,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Cookies from 'js-cookie';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { OnboardingProvider, OnboardingTour, OnboardingTrigger, WelcomeModal, FloatingHelp, useOnboarding } from '@/components/onboarding';
 
 const navItems = [
   { href: '/dashboard', label: 'Home', icon: Home },
@@ -64,6 +65,11 @@ function NavLink({ href, icon: Icon, label, disabled }: { href: string; icon: Re
           {label}
         </Link>
     )
+}
+
+function OnboardingWrapper() {
+  const { isOnboardingOpen, closeOnboarding } = useOnboarding();
+  return <OnboardingTour isOpen={isOnboardingOpen} onClose={closeOnboarding} />;
 }
 
 export default function DashboardLayout({
@@ -161,6 +167,7 @@ export default function DashboardLayout({
             </SheetContent>
           </Sheet>
           <div className="w-full flex-1" />
+          <OnboardingTrigger />
           <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -238,21 +245,26 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-      <div className="hidden border-r bg-muted/40 md:block">
-        <div className="flex h-full max-h-screen flex-col gap-2">
-          <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-            <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
-              <Logo className="h-6 w-6 text-primary" />
-              <span>VeriFlow</span>
-            </Link>
-          </div>
-          <div className="flex-1">
-            <NavContent />
+    <OnboardingProvider>
+      <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+        <div className="hidden border-r bg-muted/40 md:block">
+          <div className="flex h-full max-h-screen flex-col gap-2">
+            <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+              <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
+                <Logo className="h-6 w-6 text-primary" />
+                <span>Hearts On Tiktok</span>
+              </Link>
+            </div>
+            <div className="flex-1">
+              <NavContent />
+            </div>
           </div>
         </div>
+        <MainContent/>
+        <WelcomeModal />
+        <OnboardingWrapper />
+        <FloatingHelp />
       </div>
-      <MainContent/>
-    </div>
+    </OnboardingProvider>
   );
 }

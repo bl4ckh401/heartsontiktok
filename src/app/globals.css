@@ -59,3 +59,21 @@
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
+
+/* Onboarding Styles */
+.onboarding-highlight {
+  position: relative;
+  z-index: 45;
+  border-radius: 8px;
+  box-shadow: 0 0 0 4px hsl(var(--primary) / 0.3), 0 0 0 8px hsl(var(--primary) / 0.1);
+  animation: pulse-highlight 2s infinite;
+}
+
+@keyframes pulse-highlight {
+  0%, 100% {
+    box-shadow: 0 0 0 4px hsl(var(--primary) / 0.3), 0 0 0 8px hsl(var(--primary) / 0.1);
+  }
+  50% {
+    box-shadow: 0 0 0 6px hsl(var(--primary) / 0.4), 0 0 0 12px hsl(var(--primary) / 0.15);
+  }
+}

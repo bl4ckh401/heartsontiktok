@@ -172,7 +172,7 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card data-testid="key-metrics">
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>Key Metrics</CardTitle>
