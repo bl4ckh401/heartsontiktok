@@ -38,10 +38,12 @@ export async function getSwapuziToken(): Promise<string> {
       },
     });
 
-    const token = response.headers['authorization']?.replace('Bearer ', '') || 
-                  response.data?.token;
+    // The token is returned in the Authorization header
+    const authHeader = response.headers['authorization'];
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : authHeader;
     
     if (!token) {
+      console.error('Token response:', { headers: response.headers, data: response.data });
       throw new Error('No token received from Swapuzi API');
     }
 
@@ -51,7 +53,15 @@ export async function getSwapuziToken(): Promise<string> {
 
     return token;
   } catch (error: any) {
-    console.error('Swapuzi token error:', error.response?.data || error.message);
+    console.error('Swapuzi token error:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message,
+      config: {
+        url: error.config?.url,
+        auth: error.config?.auth ? 'configured' : 'missing'
+      }
+    });
     throw new Error('Failed to get Swapuzi token');
   }
 }
