@@ -30,6 +30,8 @@ export async function getSwapuziToken(): Promise<string> {
   }
 
   try {
+    console.log('Getting Swapuzi token with credentials:', { username: SWAPUZI_USERNAME, merchantId: SWAPUZI_MERCHANT_ID });
+    
     const response = await fetch(`${SWAPUZI_BASE_URL}/api/v1`, {
       method: 'GET',
       headers: {
@@ -38,18 +40,23 @@ export async function getSwapuziToken(): Promise<string> {
       },
     });
 
+    const data = await response.json();
+    console.log('Token response:', { status: response.status, data });
+
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      console.error('Token request failed:', { status: response.status, data });
+      throw new Error(`HTTP ${response.status}: ${data?.message || 'Token request failed'}`);
     }
 
-    const data = await response.json();
     const token = data?.token;
     
     if (!token) {
-      console.error('Token response:', data);
+      console.error('No token in response:', data);
       throw new Error('No token received from Swapuzi API');
     }
 
+    console.log('Token obtained successfully');
+    
     // Cache token for 1 hour (adjust based on actual expiry)
     const expiresAt = Date.now() + (3600 * 1000);
     await tokenRef.set({ token, expiresAt });
@@ -83,6 +90,8 @@ export async function initiateB2CTransfer(
   };
 
   try {
+    console.log('B2C Transfer payload:', payload);
+    
     const response = await fetch(
       `${SWAPUZI_BASE_URL}/api/v1/mobile/transfer`,
       {
@@ -96,12 +105,14 @@ export async function initiateB2CTransfer(
     );
     
     const data = await response.json();
+    console.log('B2C Transfer response:', { status: response.status, data });
     
     if (!response.ok) {
-      throw new Error(data?.message || 'B2C transfer failed');
+      console.error('B2C Transfer failed:', { status: response.status, data });
+      throw new Error(data?.message || data?.errorMessage || `HTTP ${response.status}: B2C transfer failed`);
     }
     
-    return data;
+    return { success: true, ...data };
   } catch (error: any) {
     console.error('Swapuzi B2C error:', error.message);
     throw new Error(error.message || 'B2C transfer failed');
