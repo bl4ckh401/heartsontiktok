@@ -86,7 +86,7 @@ export async function POST(request: Request) {
     }
     
     const finalAmount = Math.floor(totalCalculatedAmount);
-    if (finalAmount < 10) {
+    if (finalAmount < 1) {
         return NextResponse.json({ success: false, message: `Total payout amount (KES ${finalAmount}) is below the minimum required (KES 10).` }, { status: 400 });
     }
     
