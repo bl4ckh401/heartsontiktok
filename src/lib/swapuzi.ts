@@ -80,7 +80,7 @@ export async function initiateB2CTransfer(
   const token = await getSwapuziToken();
   
   const payload = {
-    impalaMerchantId: SWAPUZI_MERCHANT_ID,
+    impalaMerchantId: SWAPUZI_USERNAME,
     currency: 'KES',
     amount,
     recipientPhone: phoneNumber,
