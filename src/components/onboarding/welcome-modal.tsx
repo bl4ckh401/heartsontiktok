@@ -33,7 +33,7 @@ export function WelcomeModal() {
     if (!hasCompletedOnboarding) {
       const timer = setTimeout(() => {
         setIsOpen(true);
-      }, 500);
+      }, 1000);
       return () => clearTimeout(timer);
     }
   }, [hasCompletedOnboarding]);
@@ -51,8 +51,8 @@ export function WelcomeModal() {
   if (!isOpen || hasCompletedOnboarding) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl shadow-2xl border-primary/20 bg-card/95 backdrop-blur-sm animate-in fade-in-0 zoom-in-95 duration-300">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-2xl shadow-2xl border-primary/20 bg-card/98 backdrop-blur-sm animate-in fade-in-0 zoom-in-95 duration-300">
         <CardHeader className="text-center pb-4">
           <div className="flex justify-between items-start mb-4">
             <div className="flex-1" />
@@ -82,21 +82,21 @@ export function WelcomeModal() {
         </CardHeader>
         
         <CardContent className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-3">
             {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
                 <div
                   key={index}
-                  className="text-center p-4 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors"
+                  className="text-center p-3 sm:p-4 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors"
                 >
-                  <div className="flex justify-center mb-3">
+                  <div className="flex justify-center mb-2 sm:mb-3">
                     <div className="p-2 rounded-lg bg-primary/10">
-                      <Icon className="h-6 w-6 text-primary" />
+                      <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                     </div>
                   </div>
-                  <h3 className="font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <h3 className="font-semibold mb-1 sm:mb-2 text-sm sm:text-base">{feature.title}</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     {feature.description}
                   </p>
                 </div>
@@ -107,16 +107,16 @@ export function WelcomeModal() {
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <Button
               onClick={handleStartTour}
-              className="flex-1 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-semibold"
+              className="flex-1 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-semibold text-sm sm:text-base"
               size="lg"
             >
-              <Sparkles className="h-5 w-5 mr-2" />
+              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
               Take the Tour
             </Button>
             <Button
               variant="outline"
               onClick={handleSkip}
-              className="sm:w-auto"
+              className="sm:w-auto text-sm sm:text-base"
               size="lg"
             >
               Skip for now

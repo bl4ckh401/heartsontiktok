@@ -94,28 +94,29 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
         let top = 0;
         let left = 0;
         
+        // Ensure tooltip stays within viewport
+        const tooltipWidth = window.innerWidth < 640 ? 320 : 384; // w-80 sm:w-96
+        const maxLeft = window.innerWidth - tooltipWidth - 20;
+        const maxTop = window.innerHeight - 250;
+        
         switch (step.position) {
           case 'top':
             top = rect.top + scrollTop - 120;
-            left = rect.left + scrollLeft + rect.width / 2 - 200;
+            left = rect.left + scrollLeft + rect.width / 2 - tooltipWidth / 2;
             break;
           case 'bottom':
             top = rect.bottom + scrollTop + 20;
-            left = rect.left + scrollLeft + rect.width / 2 - 200;
+            left = rect.left + scrollLeft + rect.width / 2 - tooltipWidth / 2;
             break;
           case 'left':
             top = rect.top + scrollTop + rect.height / 2 - 100;
-            left = rect.left + scrollLeft - 420;
+            left = rect.left + scrollLeft - tooltipWidth - 20;
             break;
           case 'right':
             top = rect.top + scrollTop + rect.height / 2 - 100;
             left = rect.right + scrollLeft + 20;
             break;
         }
-        
-        // Ensure tooltip stays within viewport
-        const maxLeft = window.innerWidth - 420;
-        const maxTop = window.innerHeight - 200;
         
         setTooltipPosition({
           top: Math.max(20, Math.min(top, maxTop)),
@@ -183,24 +184,24 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
   return (
     <>
       {/* Overlay */}
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity duration-300" />
+      <div className="fixed inset-0 bg-transparent z-40 transition-opacity duration-300" />
       
       {/* Particles */}
       <OnboardingParticles />
       
       {/* Tooltip */}
       <Card 
-        className="fixed z-50 w-96 shadow-2xl border-primary/20 bg-gradient-to-br from-card/95 to-card/90 backdrop-blur-sm transition-all duration-300 animate-in fade-in-0 zoom-in-95"
+        className="fixed z-50 w-80 sm:w-96 shadow-2xl border-primary/20 bg-gradient-to-br from-card/98 to-card/95 backdrop-blur-md transition-all duration-300 animate-in fade-in-0 zoom-in-95"
         style={{
           top: tooltipPosition.top,
           left: tooltipPosition.left,
         }}
       >
-        <CardContent className="p-6">
+        <CardContent className="p-4 sm:p-6">
           <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/20">
-                <Icon className="h-5 w-5 text-primary" />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/20">
+                <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <Badge variant="secondary" className="text-xs bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
                 {currentStep + 1} of {onboardingSteps.length}
@@ -218,10 +219,10 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
           
           <div className="space-y-4">
             <div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
+              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">
                 {step.title}
               </h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                 {step.description}
               </p>
             </div>
@@ -232,9 +233,9 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
                 size="sm"
                 onClick={prevStep}
                 disabled={currentStep === 0}
-                className="text-muted-foreground"
+                className="text-muted-foreground text-xs sm:text-sm"
               >
-                <ArrowLeft className="h-4 w-4 mr-1" />
+                <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                 Back
               </Button>
               
@@ -253,10 +254,10 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
               <Button
                 size="sm"
                 onClick={nextStep}
-                className="bg-primary hover:bg-primary/90"
+                className="bg-primary hover:bg-primary/90 text-xs sm:text-sm"
               >
                 {currentStep === onboardingSteps.length - 1 ? 'Finish' : 'Next'}
-                <ArrowRight className="h-4 w-4 ml-1" />
+                <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1" />
               </Button>
             </div>
           </div>

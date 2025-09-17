@@ -19,14 +19,6 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     const completed = localStorage.getItem('onboarding-completed');
     const hasCompleted = completed === 'true';
     setHasCompletedOnboarding(hasCompleted);
-    
-    // Auto-start onboarding for new users after a short delay
-    if (!hasCompleted) {
-      const timer = setTimeout(() => {
-        setIsOnboardingOpen(true);
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
   }, []);
 
   const startOnboarding = () => {
