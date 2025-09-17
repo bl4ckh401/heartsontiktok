@@ -1,4 +1,3 @@
-import axios from 'axios';
 import db from '@/lib/firebase-admin';
 
 const SWAPUZI_BASE_URL = process.env.SWAPUZI_BASE_URL || 'https://merchantsapi.swapuzi.com';
@@ -31,19 +30,23 @@ export async function getSwapuziToken(): Promise<string> {
   }
 
   try {
-    const response = await axios.get(`${SWAPUZI_BASE_URL}/api/v1`, {
-      auth: {
-        username: SWAPUZI_USERNAME,
-        password: SWAPUZI_PASSWORD,
+    const response = await fetch(`${SWAPUZI_BASE_URL}/api/v1`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Basic ${btoa(`${SWAPUZI_USERNAME}:${SWAPUZI_PASSWORD}`)}`,
+        'Content-Type': 'application/json',
       },
     });
 
-    // The token is returned in the Authorization header
-    const authHeader = response.headers['authorization'];
-    const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : authHeader;
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const token = data?.token;
     
     if (!token) {
-      console.error('Token response:', { headers: response.headers, data: response.data });
+      console.error('Token response:', data);
       throw new Error('No token received from Swapuzi API');
     }
 
@@ -53,15 +56,7 @@ export async function getSwapuziToken(): Promise<string> {
 
     return token;
   } catch (error: any) {
-    console.error('Swapuzi token error:', {
-      status: error.response?.status,
-      data: error.response?.data,
-      message: error.message,
-      config: {
-        url: error.config?.url,
-        auth: error.config?.auth ? 'configured' : 'missing'
-      }
-    });
+    console.error('Swapuzi token error:', error.message);
     throw new Error('Failed to get Swapuzi token');
   }
 }
@@ -88,20 +83,28 @@ export async function initiateB2CTransfer(
   };
 
   try {
-    const response = await axios.post(
+    const response = await fetch(
       `${SWAPUZI_BASE_URL}/api/v1/mobile/transfer`,
-      payload,
       {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify(payload),
       }
     );
-    return response.data;
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data?.message || 'B2C transfer failed');
+    }
+    
+    return data;
   } catch (error: any) {
-    console.error('Swapuzi B2C error:', error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || 'B2C transfer failed');
+    console.error('Swapuzi B2C error:', error.message);
+    throw new Error(error.message || 'B2C transfer failed');
   }
 }
 
@@ -112,17 +115,25 @@ export async function getPayoutBalance(): Promise<any> {
   const token = await getSwapuziToken();
   
   try {
-    const response = await axios.get(
+    const response = await fetch(
       `${SWAPUZI_BASE_URL}/api/v1/read/payouts/balance`,
       {
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       }
     );
-    return response.data;
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data?.message || 'Failed to check balance');
+    }
+    
+    return data;
   } catch (error: any) {
-    console.error('Balance check error:', error.response?.data || error.message);
+    console.error('Balance check error:', error.message);
     throw new Error('Failed to check balance');
   }
 }
