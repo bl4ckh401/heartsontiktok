@@ -9,6 +9,7 @@ import { Users, DollarSign, FileText, TrendingUp } from 'lucide-react';
 import { User, Transaction, CampaignSubmission } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
 
 const MetricCard = ({ title, value, icon: Icon, loading }: {
   title: string;
@@ -107,9 +108,28 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-        <p className="text-muted-foreground">Manage users, transactions, and campaign submissions</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
+          <p className="text-muted-foreground">Manage users, transactions, and campaign submissions</p>
+        </div>
+        <Button 
+          onClick={async () => {
+            try {
+              const response = await fetch('/api/admin/timeout-check', { method: 'POST' });
+              const result = await response.json();
+              toast({
+                title: result.success ? 'Success' : 'Error',
+                description: result.message,
+                variant: result.success ? 'default' : 'destructive'
+              });
+            } catch (error) {
+              toast({ title: 'Error', description: 'Failed to check timeouts', variant: 'destructive' });
+            }
+          }}
+        >
+          Check Timeouts
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
