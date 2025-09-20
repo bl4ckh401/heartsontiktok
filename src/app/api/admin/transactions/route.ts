@@ -10,17 +10,33 @@ export async function GET(request: NextRequest) {
   if (adminCheck) return adminCheck;
 
   try {
-    // Get all transactions from Firestore
-    const transactionsSnapshot = await adminDb.collection('transactions')
-      .orderBy('createdAt', 'desc')
-      .limit(100)
-      .get();
+    // Get all transactions from multiple collections
+    const [subscriptionsSnapshot, payoutsSnapshot, affiliatePayoutsSnapshot] = await Promise.all([
+      adminDb.collection('subscriptions').orderBy('createdAt', 'desc').limit(50).get(),
+      adminDb.collection('payouts').orderBy('requestTimestamp', 'desc').limit(50).get(),
+      adminDb.collection('affiliate_payouts').orderBy('requestTimestamp', 'desc').limit(50).get()
+    ]);
     
-    const transactions = transactionsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || new Date().toISOString()
-    }));
+    const transactions = [
+      ...subscriptionsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        type: 'subscription',
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || new Date().toISOString()
+      })),
+      ...payoutsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        type: 'payout',
+        ...doc.data(),
+        createdAt: doc.data().requestTimestamp?.toDate?.()?.toISOString() || new Date().toISOString()
+      })),
+      ...affiliatePayoutsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        type: 'affiliate',
+        ...doc.data(),
+        createdAt: doc.data().requestTimestamp?.toDate?.()?.toISOString() || new Date().toISOString()
+      }))
+    ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     return NextResponse.json({
       success: true,

@@ -90,12 +90,15 @@ export default function DashboardLayout({
         if (res.ok) {
             const data = await res.json();
             setSubscriptionStatus(data.subscriptionStatus === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE');
+            setUserRole(data.role || 'user');
         } else {
             setSubscriptionStatus('INACTIVE');
+            setUserRole('user');
         }
       } catch (error) {
         console.error("Failed to fetch user status", error);
         setSubscriptionStatus('INACTIVE');
+        setUserRole('user');
       }
     }, []);
 
@@ -128,10 +131,16 @@ export default function DashboardLayout({
         return; // Don't redirect while we're still checking the status
     }
     
-    if (!isSubscribed && pathname !== '/dashboard/subscription') {
+    // Redirect non-admin users away from admin pages
+    if (pathname === '/dashboard/admin' && userRole !== 'admin') {
+      router.push('/dashboard');
+      return;
+    }
+    
+    if (!isSubscribed && pathname !== '/dashboard/subscription' && pathname !== '/dashboard/admin') {
       router.push('/dashboard/subscription');
     }
-  }, [subscriptionStatus, isSubscribed, pathname, router]);
+  }, [subscriptionStatus, isSubscribed, pathname, router, userRole]);
 
 
   const NavContent = ({ inSheet = false }) => (
@@ -148,7 +157,7 @@ export default function DashboardLayout({
           href={item.href}
           icon={item.icon}
           label={item.label}
-          disabled={!isSubscribed && item.href !== '/dashboard/subscription' && !item.adminOnly}
+          disabled={!isSubscribed && item.href !== '/dashboard/subscription' && item.href !== '/dashboard/admin'}
         />
       ))}
     </nav>

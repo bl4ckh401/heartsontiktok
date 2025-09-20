@@ -28,6 +28,7 @@ export async function GET(request: Request) {
       success: true,
       subscriptionStatus: userData?.subscriptionStatus || 'INACTIVE',
       subscriptionPlan: userData?.subscriptionPlan || null,
+      role: userData?.role || 'user',
     });
 
   } catch (error: any) {
