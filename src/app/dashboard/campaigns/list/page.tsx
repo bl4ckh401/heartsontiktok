@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Calendar, Tag, Target } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import Cookies from 'js-cookie';
 
 // Define the structure for a Campaign
 interface Campaign {
@@ -55,7 +56,6 @@ export default function CampaignListingPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // Simulate user role (replace with actual auth logic)
   const [userRole, setUserRole] = useState<'user' | 'admin' | null>(null); 
 
   useEffect(() => {
@@ -80,9 +80,12 @@ export default function CampaignListingPage() {
       }
     };
 
-    // Simulate fetching user role (replace with actual auth logic)
-    // In a real app, you would fetch user data and set the role here
-    setUserRole('admin'); // Simulate an admin user for now
+    // Get user role from cookies
+    const userInfoCookie = Cookies.get('user_info');
+    if (userInfoCookie) {
+      const parsedUser = JSON.parse(userInfoCookie);
+      setUserRole(parsedUser.role || 'user');
+    }
 
     fetchCampaigns();
   }, []);

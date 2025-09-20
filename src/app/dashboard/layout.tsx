@@ -43,6 +43,7 @@ const navItems = [
   { href: '/dashboard/campaigns/list', label: 'Campaigns', icon: Megaphone },
   { href: '/dashboard/payouts', label: 'Payouts', icon: Wallet },
   { href: '/dashboard/affiliates', label: 'Affiliates', icon: Users },
+  { href: '/dashboard/admin', label: 'Admin', icon: ShieldAlert, adminOnly: true },
   { href: '/dashboard/subscription', label: 'Subscription', icon: CreditCard, mobileOnly: true },
 ];
 
@@ -80,6 +81,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
+  const [userRole, setUserRole] = useState<'user' | 'admin' | null>(null);
   const [subscriptionStatus, setSubscriptionStatus] = useState<'LOADING' | 'ACTIVE' | 'INACTIVE'>('LOADING');
 
   const fetchSubStatus = useCallback(async () => {
@@ -103,6 +105,7 @@ export default function DashboardLayout({
     if (userInfoCookie) {
       const parsedUser = JSON.parse(userInfoCookie);
       setUser(parsedUser);
+      setUserRole(parsedUser.role || 'user');
     }
     
     fetchSubStatus();
@@ -136,13 +139,16 @@ export default function DashboardLayout({
         "grid items-start text-sm font-medium",
         inSheet ? "gap-2 text-lg" : "px-2 lg:px-4"
     )}>
-      {navItems.filter(item => inSheet ? true : !item.mobileOnly).map((item) => (
+      {navItems
+        .filter(item => inSheet ? true : !item.mobileOnly)
+        .filter(item => item.adminOnly ? userRole === 'admin' : true)
+        .map((item) => (
         <NavLink
           key={item.label}
           href={item.href}
           icon={item.icon}
           label={item.label}
-          disabled={!isSubscribed && item.href !== '/dashboard/subscription'}
+          disabled={!isSubscribed && item.href !== '/dashboard/subscription' && !item.adminOnly}
         />
       ))}
     </nav>
