@@ -3,40 +3,44 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Quill Editor Styles */
-.ql-editor {
+/* Markdown Editor Styles */
+.w-md-editor {
+  @apply bg-background;
+}
+
+.w-md-editor-text-textarea {
+  @apply text-foreground bg-background;
+}
+
+.w-md-editor-text {
   @apply text-foreground;
 }
 
-.ql-toolbar {
-  @apply border-border;
+.wmde-markdown {
+  @apply bg-background text-foreground;
 }
 
-.ql-container {
-  @apply border-border;
-}
-
-.ql-editor h1 {
+.wmde-markdown h1 {
   @apply text-2xl font-bold;
 }
 
-.ql-editor h2 {
+.wmde-markdown h2 {
   @apply text-xl font-semibold;
 }
 
-.ql-editor h3 {
+.wmde-markdown h3 {
   @apply text-lg font-medium;
 }
 
-.ql-editor ul {
+.wmde-markdown ul {
   @apply list-disc list-inside;
 }
 
-.ql-editor ol {
+.wmde-markdown ol {
   @apply list-decimal list-inside;
 }
 
-.ql-editor a {
+.wmde-markdown a {
   @apply text-primary underline;
 }
 

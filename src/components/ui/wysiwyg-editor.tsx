@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
+import '@uiw/react-md-editor/markdown-editor.css';
+import '@uiw/react-markdown-preview/markdown.css';
 
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
-import 'react-quill/dist/quill.snow.css';
+const MDEditor = dynamic(() => import('@uiw/react-md-editor'), { ssr: false });
 
 interface WysiwygEditorProps {
   value: string;
@@ -13,31 +13,17 @@ interface WysiwygEditorProps {
 }
 
 export function WysiwygEditor({ value, onChange, placeholder }: WysiwygEditorProps) {
-  const modules = {
-    toolbar: [
-      [{ 'header': [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      ['link'],
-      ['clean']
-    ],
-  };
-
-  const formats = [
-    'header', 'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet', 'link'
-  ];
-
   return (
-    <div className="bg-background">
-      <ReactQuill
-        theme="snow"
+    <div className="bg-background" data-color-mode="light">
+      <MDEditor
         value={value}
-        onChange={onChange}
-        modules={modules}
-        formats={formats}
-        placeholder={placeholder}
-        className="bg-background"
+        onChange={(val) => onChange(val || '')}
+        preview="edit"
+        hideToolbar={false}
+        visibleDragbar={false}
+        textareaProps={{
+          placeholder: placeholder || 'Enter description...',
+        }}
       />
     </div>
   );
@@ -48,10 +34,11 @@ interface WysiwygViewerProps {
 }
 
 export function WysiwygViewer({ content }: WysiwygViewerProps) {
+  const MarkdownPreview = dynamic(() => import('@uiw/react-markdown-preview'), { ssr: false });
+  
   return (
-    <div 
-      className="prose prose-sm max-w-none"
-      dangerouslySetInnerHTML={{ __html: content }}
-    />
+    <div className="prose prose-sm max-w-none" data-color-mode="light">
+      <MarkdownPreview source={content} />
+    </div>
   );
 }
