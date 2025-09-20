@@ -30,6 +30,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { WysiwygViewer } from '@/components/ui/wysiwyg-editor';
+import { Edit } from 'lucide-react';
+import Cookies from 'js-cookie';
 
 interface Campaign {
   id: string;
@@ -52,6 +55,7 @@ const CampaignDetailsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'uploading' | 'processing' | 'success' | 'polling'>('idle');
   const [formKey, setFormKey] = useState(Date.now());
+  const [userRole, setUserRole] = useState<'user' | 'admin'>('user');
 
   const pollPublishStatus = useCallback(async (publishId: string, submissionId: string) => {
     setSubmissionStatus('polling');
@@ -104,6 +108,13 @@ const CampaignDetailsPage = () => {
   useEffect(() => {
     if (!campaignId) return;
 
+    // Get user role from cookies
+    const userInfoCookie = Cookies.get('user_info');
+    if (userInfoCookie) {
+      const parsedUser = JSON.parse(userInfoCookie);
+      setUserRole(parsedUser.role || 'user');
+    }
+
     const fetchCampaignDetails = async () => {
       setLoading(true);
       setError(null);
@@ -114,7 +125,7 @@ const CampaignDetailsPage = () => {
           throw new Error(errorData.message || 'Failed to fetch campaign details.');
         }
         const data = await response.json();
-        setCampaign(data);
+        setCampaign(data.campaign || data);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -229,11 +240,21 @@ const CampaignDetailsPage = () => {
               data-ai-hint="social media marketing"
             />
             <CardHeader>
-              <CardTitle className="text-3xl font-bold">{campaign.name}</CardTitle>
+              <div className="flex justify-between items-start">
+                <CardTitle className="text-3xl font-bold">{campaign.name}</CardTitle>
+                {userRole === 'admin' && (
+                  <Link href={`/dashboard/campaigns/edit/${campaign.id}`}>
+                    <Button variant="outline" size="sm">
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit Campaign
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               <h3 className="text-lg font-semibold mb-2">Campaign Brief</h3>
-              <p className="text-muted-foreground">{campaign.description}</p>
+              <WysiwygViewer content={campaign.description} />
             </CardContent>
           </Card>
 

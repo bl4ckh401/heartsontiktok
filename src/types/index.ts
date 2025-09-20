@@ -1,12 +1,11 @@
 export type Campaign = {
   id: string;
   name: string;
-  brand: string;
-  status: 'Active' | 'Completed' | 'Pending';
-  impressions: number;
-  clicks: number;
-  ctr: string;
-  earnings: number;
+  description: string;
+  budget: number;
+  brandAssetsUrl?: string;
+  status?: 'Active' | 'Completed' | 'Pending';
+  createdAt: any;
 };
 
 export type Metric = {

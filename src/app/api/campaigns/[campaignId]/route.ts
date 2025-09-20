@@ -1,79 +1,76 @@
-import { NextResponse } from 'next/server';
-import db from '@/lib/firebase-admin';
-import * as admin from 'firebase-admin';
+import { NextRequest, NextResponse } from 'next/server';
+import admin from '@/lib/firebase-admin';
+import { checkAdminRole } from '@/lib/auth-middleware';
 
-export async function GET(
-  request: Request,
-  { params }: { params: { campaignId: string } }
-) {
+const adminDb = admin.firestore();
+
+export async function GET(request: NextRequest, { params }: { params: { campaignId: string } }) {
   try {
-    const campaignId = params.campaignId;
-    if (!campaignId) {
-      return NextResponse.json(
-        { success: false, message: 'Campaign ID is required' },
-        { status: 400 }
-      );
-    }
-
-    const campaignRef = db.firestore().collection('campaigns').doc(campaignId);
-    const doc = await campaignRef.get();
-
-    if (!doc.exists) {
+    const { campaignId } = params;
+    
+    const campaignDoc = await adminDb.collection('campaigns').doc(campaignId).get();
+    
+    if (!campaignDoc.exists) {
       return NextResponse.json(
         { success: false, message: 'Campaign not found' },
         { status: 404 }
       );
     }
 
-    const campaignData = {
-      id: doc.id,
-      ...doc.data(),
+    const campaign = {
+      id: campaignDoc.id,
+      ...campaignDoc.data()
     };
 
-    return NextResponse.json(campaignData);
+    return NextResponse.json({
+      success: true,
+      campaign
+    });
+
   } catch (error) {
-    console.error(`Error fetching campaign ${params.campaignId}:`, error);
+    console.error('Error fetching campaign:', error);
     return NextResponse.json(
-      { success: false, message: 'Error fetching campaign details' },
+      { success: false, message: 'Failed to fetch campaign' },
       { status: 500 }
     );
   }
 }
 
-export async function POST(
-  request: Request,
-  { params }: { params: { campaignId: string } }
-) {
-  const { videoId, likeCount } = await request.json();
-
-  if (!videoId || likeCount === undefined) {
-    return NextResponse.json({ success: false, message: 'Missing videoId or likeCount' }, { status: 400 });
-  }
+export async function PUT(request: NextRequest, { params }: { params: { campaignId: string } }) {
+  // Check if user is admin
+  const adminCheck = await checkAdminRole(request);
+  if (adminCheck) return adminCheck;
 
   try {
-    const submissionQuery = await db.firestore()
-      .collection('submissions')
-      .where('campaignId', '==', params.campaignId)
-      .where('tiktokVideoId', '==', videoId)
-      .limit(1)
-      .get();
-    
-    if (submissionQuery.empty) {
-      return NextResponse.json({ success: false, message: 'Submission not found for this campaign and video' }, { status: 404 });
+    const { campaignId } = params;
+    const { name, description, budget, brandAssetsUrl } = await request.json();
+
+    if (!name || !description || budget === undefined) {
+      return NextResponse.json(
+        { success: false, message: 'Missing required fields' },
+        { status: 400 }
+      );
     }
 
-    const submissionDoc = submissionQuery.docs[0];
-    await submissionDoc.ref.update({
-      like_count: likeCount,
-      metricsLastUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    const updateData = {
+      name,
+      description,
+      budget: Number(budget),
+      brandAssetsUrl: brandAssetsUrl || '',
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    };
+
+    await adminDb.collection('campaigns').doc(campaignId).update(updateData);
+
+    return NextResponse.json({
+      success: true,
+      message: 'Campaign updated successfully'
     });
 
-    return NextResponse.json({ success: true, message: "Like count updated." });
-
   } catch (error) {
-    console.error(`Error updating like count for video ${videoId} in campaign ${params.campaignId}:`, error);
+    console.error('Error updating campaign:', error);
     return NextResponse.json(
-      { success: false, message: 'Error updating like count' },
+      { success: false, message: 'Failed to update campaign' },
       { status: 500 }
     );
   }

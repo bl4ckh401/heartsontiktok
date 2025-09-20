@@ -3,6 +3,43 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Quill Editor Styles */
+.ql-editor {
+  @apply text-foreground;
+}
+
+.ql-toolbar {
+  @apply border-border;
+}
+
+.ql-container {
+  @apply border-border;
+}
+
+.ql-editor h1 {
+  @apply text-2xl font-bold;
+}
+
+.ql-editor h2 {
+  @apply text-xl font-semibold;
+}
+
+.ql-editor h3 {
+  @apply text-lg font-medium;
+}
+
+.ql-editor ul {
+  @apply list-disc list-inside;
+}
+
+.ql-editor ol {
+  @apply list-decimal list-inside;
+}
+
+.ql-editor a {
+  @apply text-primary underline;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
