@@ -93,13 +93,12 @@ export default function CampaignListingPage() {
   }, []);
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Available Campaigns</h1>
-        {/* Conditionally render the Create Campaign button */}
+    <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Available Campaigns</h1>
         {userRole === 'admin' && (
           <Link href="/dashboard/campaigns/create" passHref>
-            <Button data-ai-hint="Create a new campaign">Create Campaign</Button>
+            <Button data-ai-hint="Create a new campaign" className="w-full sm:w-auto">Create Campaign</Button>
           </Link>)}
       </div>
 
@@ -122,9 +121,9 @@ export default function CampaignListingPage() {
       )}
 
       {!loading && campaigns.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {campaigns.map((campaign) => (
-            <Card key={campaign.id} className="flex flex-col justify-between overflow-hidden shadow-md transition-transform hover:scale-[1.02] hover:shadow-xl dark:border-gray-800">
+            <Card key={campaign.id} className="flex flex-col justify-between overflow-hidden shadow-md transition-transform hover:scale-[1.01] hover:shadow-xl dark:border-gray-800">
               <CardHeader className="p-0">
                 <Image 
                   src={`https://picsum.photos/seed/${campaign.id}/600/400`}
@@ -134,18 +133,18 @@ export default function CampaignListingPage() {
                   className="w-full h-40 object-cover"
                   data-ai-hint="social media campaign"
                 />
-                <div className="p-6">
-                  <CardTitle className="text-xl mb-2">{campaign.name}</CardTitle>
-                  <CardDescription className="line-clamp-2">{campaign.description}</CardDescription>
+                <div className="p-4 sm:p-6">
+                  <CardTitle className="text-lg sm:text-xl mb-2 line-clamp-2">{campaign.name}</CardTitle>
+                  <CardDescription className="line-clamp-3 text-sm">{campaign.description}</CardDescription>
                 </div>
               </CardHeader>
-              <CardContent className="p-6 pt-0">
+              <CardContent className="p-4 sm:p-6 pt-0">
                   <div className="flex items-center text-sm text-muted-foreground mb-4">
-                    <Tag className="mr-2 h-4 w-4" />
-                    <span>Budget: KES {campaign.budget.toLocaleString()}</span>
+                    <Tag className="mr-2 h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">Budget: KES {campaign.budget.toLocaleString()}</span>
                   </div>
               </CardContent>
-              <CardFooter className="p-6 pt-0">
+              <CardFooter className="p-4 sm:p-6 pt-0">
                 <Link href={`/dashboard/campaigns/${campaign.id}`} className="w-full" passHref>
                   <Button className="w-full">
                     View Details <ArrowRight className="ml-2 h-4 w-4" />

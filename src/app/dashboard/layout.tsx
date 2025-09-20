@@ -217,7 +217,7 @@ export default function DashboardLayout({
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
+        <main className="flex flex-1 flex-col gap-3 p-3 sm:gap-4 sm:p-4 lg:gap-6 lg:p-6 bg-background overflow-x-hidden">
           {showSubscriptionGate ? (
               <div className="flex items-center justify-center h-full">
                   <Alert className="max-w-md">
@@ -261,16 +261,16 @@ export default function DashboardLayout({
 
   return (
     <OnboardingProvider>
-      <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+      <div className="flex min-h-screen w-full flex-col md:grid md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
         <div className="hidden border-r bg-muted/40 md:block">
           <div className="flex h-full max-h-screen flex-col gap-2">
             <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-              <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
-                <Logo className="h-6 w-6 text-primary" />
-                <span>Hearts On Tiktok</span>
+              <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-sm lg:text-base">
+                <Logo className="h-5 w-5 lg:h-6 lg:w-6 text-primary" />
+                <span className="truncate">Hearts On TikTok</span>
               </Link>
             </div>
-            <div className="flex-1">
+            <div className="flex-1 overflow-y-auto">
               <NavContent />
             </div>
           </div>

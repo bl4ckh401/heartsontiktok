@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // Get all campaign submissions from Firestore
-    const submissionsSnapshot = await adminDb.collection('campaignSubmissions')
+    const submissionsSnapshot = await adminDb.collection('submissions')
       .orderBy('createdAt', 'desc')
       .limit(100)
       .get();

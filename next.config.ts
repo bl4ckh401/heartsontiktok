@@ -1,8 +1,19 @@
 
 import type {NextConfig} from 'next';
+import withPWA from 'next-pwa';
 
 const nextConfig: NextConfig = {
   /* config options here */
+  experimental: {
+    turbo: {
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js',
+        },
+      },
+    },
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -58,4 +69,9 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['firebase-admin'],
 };
 
-export default nextConfig;
+export default withPWA({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === 'development'
+})(nextConfig as any);
