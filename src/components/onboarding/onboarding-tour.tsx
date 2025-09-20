@@ -95,27 +95,33 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
         let left = 0;
         
         // Ensure tooltip stays within viewport
-        const tooltipWidth = window.innerWidth < 640 ? 320 : 384; // w-80 sm:w-96
+        const tooltipWidth = window.innerWidth < 640 ? Math.min(320, window.innerWidth - 40) : 384;
         const maxLeft = window.innerWidth - tooltipWidth - 20;
-        const maxTop = window.innerHeight - 250;
+        const maxTop = window.innerHeight - 300;
         
-        switch (step.position) {
-          case 'top':
-            top = rect.top + scrollTop - 120;
-            left = rect.left + scrollLeft + rect.width / 2 - tooltipWidth / 2;
-            break;
-          case 'bottom':
-            top = rect.bottom + scrollTop + 20;
-            left = rect.left + scrollLeft + rect.width / 2 - tooltipWidth / 2;
-            break;
-          case 'left':
-            top = rect.top + scrollTop + rect.height / 2 - 100;
-            left = rect.left + scrollLeft - tooltipWidth - 20;
-            break;
-          case 'right':
-            top = rect.top + scrollTop + rect.height / 2 - 100;
-            left = rect.right + scrollLeft + 20;
-            break;
+        // On mobile, always position below the element for better visibility
+        if (window.innerWidth < 640) {
+          top = rect.bottom + scrollTop + 20;
+          left = 16; // Fixed left margin on mobile
+        } else {
+          switch (step.position) {
+            case 'top':
+              top = rect.top + scrollTop - 120;
+              left = rect.left + scrollLeft + rect.width / 2 - tooltipWidth / 2;
+              break;
+            case 'bottom':
+              top = rect.bottom + scrollTop + 20;
+              left = rect.left + scrollLeft + rect.width / 2 - tooltipWidth / 2;
+              break;
+            case 'left':
+              top = rect.top + scrollTop + rect.height / 2 - 100;
+              left = rect.left + scrollLeft - tooltipWidth - 20;
+              break;
+            case 'right':
+              top = rect.top + scrollTop + rect.height / 2 - 100;
+              left = rect.right + scrollLeft + 20;
+              break;
+          }
         }
         
         setTooltipPosition({
@@ -191,7 +197,7 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
       
       {/* Tooltip */}
       <Card 
-        className="fixed z-50 w-80 sm:w-96 shadow-2xl border-primary/20 bg-gradient-to-br from-card/98 to-card/95 backdrop-blur-md transition-all duration-300 animate-in fade-in-0 zoom-in-95"
+        className="fixed z-50 w-[calc(100vw-2rem)] max-w-80 sm:w-96 shadow-2xl border-primary/20 bg-gradient-to-br from-card/98 to-card/95 backdrop-blur-md transition-all duration-300 animate-in fade-in-0 zoom-in-95"
         style={{
           top: tooltipPosition.top,
           left: tooltipPosition.left,

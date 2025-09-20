@@ -121,30 +121,30 @@ export default function CampaignListingPage() {
       )}
 
       {!loading && campaigns.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {campaigns.map((campaign) => (
-            <Card key={campaign.id} className="flex flex-col justify-between overflow-hidden shadow-md transition-transform hover:scale-[1.01] hover:shadow-xl dark:border-gray-800">
+            <Card key={campaign.id} className="flex flex-col justify-between overflow-hidden shadow-md transition-transform hover:scale-[1.01] hover:shadow-xl dark:border-gray-800 min-h-[400px]">
               <CardHeader className="p-0">
                 <Image 
                   src={`https://picsum.photos/seed/${campaign.id}/600/400`}
                   alt={`${campaign.name} cover image`}
                   width={600}
                   height={400}
-                  className="w-full h-40 object-cover"
+                  className="w-full h-48 sm:h-40 lg:h-48 object-cover"
                   data-ai-hint="social media campaign"
                 />
                 <div className="p-4 sm:p-6">
-                  <CardTitle className="text-lg sm:text-xl mb-2 line-clamp-2">{campaign.name}</CardTitle>
-                  <CardDescription className="line-clamp-3 text-sm">{campaign.description}</CardDescription>
+                  <CardTitle className="text-lg sm:text-xl mb-3 line-clamp-2 font-semibold">{campaign.name}</CardTitle>
+                  <CardDescription className="line-clamp-3 text-sm leading-relaxed">{campaign.description}</CardDescription>
                 </div>
               </CardHeader>
-              <CardContent className="p-4 sm:p-6 pt-0">
-                  <div className="flex items-center text-sm text-muted-foreground mb-4">
+              <CardContent className="p-4 sm:p-6 pt-0 flex-1">
+                  <div className="flex items-center text-sm text-muted-foreground mb-6">
                     <Tag className="mr-2 h-4 w-4 flex-shrink-0" />
-                    <span className="truncate">Budget: KES {campaign.budget.toLocaleString()}</span>
+                    <span className="truncate font-medium">Budget: KES {campaign.budget.toLocaleString()}</span>
                   </div>
               </CardContent>
-              <CardFooter className="p-4 sm:p-6 pt-0">
+              <CardFooter className="p-4 sm:p-6 pt-0 mt-auto">
                 <Link href={`/dashboard/campaigns/${campaign.id}`} className="w-full" passHref>
                   <Button className="w-full">
                     View Details <ArrowRight className="ml-2 h-4 w-4" />
