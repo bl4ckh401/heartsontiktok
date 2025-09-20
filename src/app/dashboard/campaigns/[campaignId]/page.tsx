@@ -108,24 +108,25 @@ const CampaignDetailsPage = () => {
   useEffect(() => {
     if (!campaignId) return;
 
-    // Get user role from cookies
-    const userInfoCookie = Cookies.get('user_info');
-    if (userInfoCookie) {
-      const parsedUser = JSON.parse(userInfoCookie);
-      setUserRole(parsedUser.role || 'user');
-    }
-
-    const fetchCampaignDetails = async () => {
+    const fetchData = async () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`/api/campaigns/${campaignId}`);
-        if (!response.ok) {
-          const errorData = await response.json();
+        // Fetch user status to get role
+        const userStatusResponse = await fetch('/api/user/status');
+        if (userStatusResponse.ok) {
+          const userData = await userStatusResponse.json();
+          setUserRole(userData.role || 'user');
+        }
+
+        // Fetch campaign details
+        const campaignResponse = await fetch(`/api/campaigns/${campaignId}`);
+        if (!campaignResponse.ok) {
+          const errorData = await campaignResponse.json();
           throw new Error(errorData.message || 'Failed to fetch campaign details.');
         }
-        const data = await response.json();
-        setCampaign(data.campaign || data);
+        const campaignData = await campaignResponse.json();
+        setCampaign(campaignData.campaign || campaignData);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -133,7 +134,7 @@ const CampaignDetailsPage = () => {
       }
     };
 
-    fetchCampaignDetails();
+    fetchData();
   }, [campaignId]);
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

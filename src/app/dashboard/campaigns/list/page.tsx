@@ -59,19 +59,28 @@ export default function CampaignListingPage() {
   const [userRole, setUserRole] = useState<'user' | 'admin' | null>(null); 
 
   useEffect(() => {
-    const fetchCampaigns = async () => {
+    const fetchData = async () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch('/api/campaigns'); 
-        if (!response.ok) {
-          throw new Error(`Error fetching campaigns: ${response.statusText}`);
+        // Fetch user status to get role
+        const userStatusResponse = await fetch('/api/user/status');
+        if (userStatusResponse.ok) {
+          const userData = await userStatusResponse.json();
+          console.log('User data from API:', userData);
+          setUserRole(userData.role || 'user');
         }
-        const data = await response.json();
-        if(data.success) {
-          setCampaigns(data.campaigns || []); 
+
+        // Fetch campaigns
+        const campaignsResponse = await fetch('/api/campaigns'); 
+        if (!campaignsResponse.ok) {
+          throw new Error(`Error fetching campaigns: ${campaignsResponse.statusText}`);
+        }
+        const campaignsData = await campaignsResponse.json();
+        if(campaignsData.success) {
+          setCampaigns(campaignsData.campaigns || []); 
         } else {
-          throw new Error(data.message || "Failed to fetch campaigns.");
+          throw new Error(campaignsData.message || "Failed to fetch campaigns.");
         }
       } catch (err: any) {
         setError(err.message);
@@ -80,14 +89,7 @@ export default function CampaignListingPage() {
       }
     };
 
-    // Get user role from cookies
-    const userInfoCookie = Cookies.get('user_info');
-    if (userInfoCookie) {
-      const parsedUser = JSON.parse(userInfoCookie);
-      setUserRole(parsedUser.role || 'user');
-    }
-
-    fetchCampaigns();
+    fetchData();
   }, []);
 
   return (
