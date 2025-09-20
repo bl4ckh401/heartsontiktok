@@ -5,17 +5,16 @@ const adminDb = admin.firestore();
 
 export async function checkAdminRole(request: NextRequest) {
   try {
-    // Get user ID from cookies or headers
-    const userCookie = request.cookies.get('user_info');
-    if (!userCookie) {
+    // Get user ID from session cookie
+    const sessionCookie = request.cookies.get('session');
+    if (!sessionCookie) {
       return NextResponse.json(
         { success: false, message: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const userData = JSON.parse(userCookie.value);
-    const userId = userData.id;
+    const userId = sessionCookie.value;
 
     if (!userId) {
       return NextResponse.json(
