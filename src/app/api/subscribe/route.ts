@@ -9,6 +9,13 @@ import * as admin from 'firebase-admin';
 
 // Define plan details to prevent tampering from the client-side
 const PLANS = {
+  Free: {
+    name: 'Free',
+    amount: 0,
+    maxCampaigns: 1,
+    minWithdrawal: 1000,
+    maxWithdrawal: 1500,
+  },
   Gold: { name: 'Gold', amount: 1000 },
   Platinum: { name: 'Platinum', amount: 3000 },
   Diamond: { name: 'Diamond', amount: 5500 },
@@ -34,9 +41,32 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: false, message: 'Invalid phone number. Please use the format 254XXXXXXXXX.' }, { status: 400 });
     }
 
+
     const selectedPlan = PLANS[plan as keyof typeof PLANS];
     const amount = selectedPlan.amount;
 
+    // Handle Free plan: no payment, activate immediately
+    if (selectedPlan.name === 'Free') {
+      const subscriptionRef = db.firestore().collection('subscriptions').doc();
+      await subscriptionRef.set({
+        subscriptionId: subscriptionRef.id,
+        userId: userId,
+        plan: selectedPlan.name,
+        amount: amount,
+        phoneNumber: phoneNumber,
+        status: 'ACTIVE',
+        requestTimestamp: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      return NextResponse.json({
+        success: true,
+        message: 'You are now on the Free plan. You can participate in one campaign.',
+        data: {
+          plan: selectedPlan.name,
+        },
+      });
+    }
+
+    // Paid plans: proceed with M-Pesa payment
     // 1. Get M-Pesa Auth Token
     const accessToken = await getMpesaToken();
 

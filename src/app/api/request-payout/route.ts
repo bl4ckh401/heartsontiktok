@@ -84,10 +84,23 @@ export async function POST(request: Request) {
     if (totalCalculatedAmount <= 0) {
         return NextResponse.json({ success: false, message: 'No new likes to payout or amount is zero.' }, { status: 400 });
     }
-    
+
     const finalAmount = Math.floor(totalCalculatedAmount);
-    if (finalAmount < 1) {
-        return NextResponse.json({ success: false, message: `Total payout amount (KES ${finalAmount}) is below the minimum required (KES 10).` }, { status: 400 });
+
+    // Enforce Free plan withdrawal limits
+    if (plan === 'Free') {
+        const min = PLAN_CONFIG.Free.minWithdrawal;
+        const max = PLAN_CONFIG.Free.maxWithdrawal;
+        if (finalAmount < min) {
+            return NextResponse.json({ success: false, message: `Minimum withdrawal for Free plan is KES ${min}.` }, { status: 400 });
+        }
+        if (finalAmount > max) {
+            return NextResponse.json({ success: false, message: `Maximum withdrawal for Free plan is KES ${max}.` }, { status: 400 });
+        }
+    } else {
+        if (finalAmount < 10) {
+            return NextResponse.json({ success: false, message: `Total payout amount (KES ${finalAmount}) is below the minimum required (KES 10).` }, { status: 400 });
+        }
     }
     
     // Check daily payout limit

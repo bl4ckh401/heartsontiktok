@@ -27,6 +27,21 @@ import { useToast } from '@/hooks/use-toast';
 
 const tiers = [
   {
+    id: 'Free',
+    name: 'Free',
+    price: 0,
+    frequency: '',
+    description: 'Start for free and participate in one campaign.',
+    features: [
+      'Earn KES 50 per 1000 Likes',
+      'Participate in 1 campaign per month',
+      'Minimum withdrawal: KES 1,000',
+      'Maximum withdrawal: KES 1,500',
+    ],
+    cta: 'Use Free Plan',
+    popular: false,
+  },
+  {
     id: 'Gold',
     name: 'Gold',
     price: 1000,

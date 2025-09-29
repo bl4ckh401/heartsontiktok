@@ -106,18 +106,18 @@ export async function GET(req: NextRequest) {
           displayName: tiktokUserData.display_name,
           photoURL: tiktokUserData.avatar_url,
         });
-        const userDoc: any = {
-            displayName: tiktokUserData.display_name,
-            photoURL: tiktokUserData.avatar_url,
-            open_id: tiktokUserData.open_id,
-            createdAt: new Date(),
-            subscriptionPlan: null,
-            subscriptionStatus: 'INACTIVE',
-        };
-        if (referredBy) {
-            userDoc.referredBy = referredBy;
-        }
-        await db.firestore().collection('users').doc(firebaseUid).set(userDoc);
+    const userDoc: any = {
+      displayName: tiktokUserData.display_name,
+      photoURL: tiktokUserData.avatar_url,
+      open_id: tiktokUserData.open_id,
+      createdAt: new Date(),
+      subscriptionPlan: 'Free',
+      subscriptionStatus: 'ACTIVE',
+    };
+    if (referredBy) {
+      userDoc.referredBy = referredBy;
+    }
+    await db.firestore().collection('users').doc(firebaseUid).set(userDoc);
       } else {
         throw error;
       }

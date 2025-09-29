@@ -59,7 +59,7 @@ function LoginContent() {
         </Alert>
       )}
       <Button asChild className="w-full" size="lg">
-        <Link href={authUrl} className="flex items-center gap-3">
+        <Link href={authUrl} prefetch={false} className="flex items-center gap-3">
           <TikTokIcon className="h-6 w-6" />
           Continue with TikTok
         </Link>
