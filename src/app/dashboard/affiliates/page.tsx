@@ -238,7 +238,7 @@ export default function AffiliatesPage() {
           <CardHeader>
             <CardTitle>Your Referrals</CardTitle>
             <CardDescription>
-              A list of creators you've invited to hearts on tiktok, directly and indirectly.
+              A list of creators you've invited to likezBuddy, directly and indirectly.
             </CardDescription>
           </CardHeader>
           <CardContent>

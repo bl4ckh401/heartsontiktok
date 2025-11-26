@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Available TikTok Brand Campaigns | Hearts On TikTok Creator Dashboard',
+  title: 'Available TikTok Brand Campaigns | LikezBuddy Creator Dashboard',
   description: 'Browse and join exclusive TikTok brand campaigns. Earn money from your content with verified brand partnerships and sponsored content opportunities.',
   keywords: [
     'TikTok brand campaigns',

@@ -72,7 +72,7 @@ export async function POST(request: Request) {
 
     // 2. Initiate STK Push
     const accountRef = `SUB-${userId.substring(0, 10)}`; // Create a unique reference
-    const transactionDesc = `Subscription to ${selectedPlan.name} Plan for hearts on tiktok`;
+    const transactionDesc = `Subscription to ${selectedPlan.name} Plan for likezBuddy`;
     const stkResult = await initiateSTKPush(accessToken, phoneNumber, amount, accountRef, transactionDesc);
     
     if (stkResult.ResponseCode !== '0') {

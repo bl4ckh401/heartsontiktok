@@ -267,7 +267,7 @@ export default function DashboardLayout({
             <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
               <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-sm lg:text-base">
                 <Logo className="h-5 w-5 lg:h-6 lg:w-6 text-primary" />
-                <span className="truncate">Hearts On TikTok</span>
+                <span className="truncate">LikezBuddy</span>
               </Link>
             </div>
             <div className="flex-1 overflow-y-auto">

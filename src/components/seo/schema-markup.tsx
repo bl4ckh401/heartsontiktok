@@ -27,7 +27,7 @@ export function CreatorPlatformSchema() {
     <SchemaMarkup
       type="WebApplication"
       data={{
-        name: 'Hearts On TikTok',
+        name: 'LikezBuddy',
         description: 'Creator monetization platform for TikTok content creators to earn money through brand campaigns',
         url: 'https://heartsontiktok.vercel.app',
         applicationCategory: 'BusinessApplication',

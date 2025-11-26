@@ -14,7 +14,7 @@ const testimonials = [
     avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
     title: 'Tech Creator',
     description:
-      '"hearts on tiktok revolutionized how I manage brand deals. The analytics are a game-changer and helped me double my revenue in three months!"',
+      '"likezBuddy revolutionized how I manage brand deals. The analytics are a game-changer and helped me double my revenue in three months!"',
   },
   {
     name: 'Sarah "Lifestyle" Chen',
@@ -39,7 +39,7 @@ export function TestimonialsSection() {
         <h2 className="text-3xl md:text-4xl font-bold">
           Discover Why Creators{' '}
           <span className="bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text">
-            Love hearts on tiktok
+            Love likezBuddy
           </span>
         </h2>
         <p className="text-xl text-muted-foreground mt-2">

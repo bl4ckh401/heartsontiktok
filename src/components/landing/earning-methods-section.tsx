@@ -41,7 +41,7 @@ export function EarningMethodsSection() {
             </span>
           </h2>
           <p className="text-xl text-muted-foreground mt-2">
-            hearts on tiktok provides a suite of tools to help you turn your creativity into a career.
+            likezBuddy provides a suite of tools to help you turn your creativity into a career.
           </p>
         </div>
 

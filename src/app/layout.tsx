@@ -9,8 +9,8 @@ import { Analytics } from '@vercel/analytics/react';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: 'Hearts On TikTok - Creator Monetization Platform | Earn Money from TikTok Content',
-  description: 'Transform your TikTok passion into income with Hearts On TikTok. Join thousands of creators earning KES 50 per 1,000 likes through brand campaigns, affiliate programs, and content monetization.',
+  title: 'LikezBuddy - Creator Monetization Platform | Earn Money from TikTok Content',
+  description: 'Transform your TikTok passion into income with LikezBuddy. Join thousands of creators earning KES 50 per 1,000 likes through brand campaigns, affiliate programs, and content monetization.',
   keywords: [
     'TikTok monetization',
     'creator economy Kenya',
@@ -23,9 +23,9 @@ export const metadata: Metadata = {
     'creator mission control',
     'TikTok analytics dashboard'
   ],
-  authors: [{ name: 'Hearts On TikTok Team' }],
-  creator: 'Hearts On TikTok',
-  publisher: 'Hearts On TikTok',
+  authors: [{ name: 'LikezBuddy Team' }],
+  creator: 'LikezBuddy',
+  publisher: 'LikezBuddy',
   formatDetection: {
     email: false,
     address: false,
@@ -36,16 +36,16 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: 'Hearts On TikTok - Creator Monetization Platform',
+    title: 'LikezBuddy - Creator Monetization Platform',
     description: 'Transform your TikTok passion into income. Earn KES 50 per 1,000 likes through brand campaigns and affiliate programs.',
     url: 'https://heartsontiktok.vercel.app',
-    siteName: 'Hearts On TikTok',
+    siteName: 'LikezBuddy',
     images: [
       {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Hearts On TikTok - Creator Monetization Platform',
+        alt: 'LikezBuddy - Creator Monetization Platform',
       },
     ],
     locale: 'en_US',
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Hearts On TikTok - Creator Monetization Platform',
+    title: 'LikezBuddy - Creator Monetization Platform',
     description: 'Transform your TikTok passion into income. Earn KES 50 per 1,000 likes through brand campaigns.',
     images: ['/og-image.jpg'],
     creator: '@heartsontiktok',
@@ -88,7 +88,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Hearts On TikTok" />
+        <meta name="apple-mobile-web-app-title" content="LikezBuddy" />
         <link rel="canonical" href="https://heartsontiktok.vercel.app" />
         <meta name="geo.region" content="KE" />
         <meta name="geo.country" content="Kenya" />
@@ -100,7 +100,7 @@ export default function RootLayout({
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'WebApplication',
-              name: 'Hearts On TikTok',
+              name: 'LikezBuddy',
               description: 'Creator monetization platform for TikTok content creators to earn money through brand campaigns and affiliate programs',
               url: 'https://heartsontiktok.vercel.app',
               applicationCategory: 'BusinessApplication',
@@ -113,7 +113,7 @@ export default function RootLayout({
               },
               creator: {
                 '@type': 'Organization',
-                name: 'Hearts On TikTok',
+                name: 'LikezBuddy',
                 url: 'https://heartsontiktok.vercel.app'
               },
               featureList: [

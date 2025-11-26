@@ -8,7 +8,7 @@ export default function PrivacyPolicyPage() {
         <div className="container flex h-14 items-center">
           <Link href="/" className="flex items-center space-x-2">
             <Logo className="h-6 w-6 text-primary" />
-            <span className="font-bold sm:inline-block">hearts on tiktok</span>
+            <span className="font-bold sm:inline-block">likezBuddy</span>
           </Link>
         </div>
       </header>

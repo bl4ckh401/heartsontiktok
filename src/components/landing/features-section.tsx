@@ -41,7 +41,7 @@ export function FeaturesSection() {
       <h2 className="text-3xl lg:text-4xl font-bold md:text-center">
         How{' '}
         <span className="bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text">
-          hearts on tiktok
+          likezBuddy
         </span>{' '}
         Supercharges Your Career
       </h2>
