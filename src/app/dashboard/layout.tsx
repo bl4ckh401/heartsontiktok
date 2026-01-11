@@ -277,14 +277,15 @@ export default function DashboardLayout({
   }
 
   return (
+  return (
     <OnboardingProvider>
-      <div className="flex min-h-screen w-full bg-background relative overflow-hidden">
+      <div className="flex h-screen w-full bg-background relative overflow-hidden">
         <BackgroundBlobs />
 
         {/* Desktop Sidebar */}
-        <aside className="hidden md:block w-[280px] p-4 h-screen sticky top-0 z-30">
-          <div className="glass-panel w-full h-full rounded-2xl flex flex-col overflow-hidden">
-            <div className="flex h-20 items-center px-6 border-b border-white/5">
+        <aside className="hidden md:block w-[280px] h-full border-r border-white/5 bg-background/50 backdrop-blur-xl relative z-30">
+          <div className="w-full h-full flex flex-col">
+            <div className="flex h-20 items-center px-6 border-b border-white/5 shrink-0">
               <Link href="/dashboard" className="flex items-center gap-3 font-semibold group">
                 <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-white/10 group-hover:shadow-[0_0_20px_rgba(var(--primary),0.4)] transition-all duration-500">
                   <Logo className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
@@ -297,7 +298,7 @@ export default function DashboardLayout({
               <NavContent />
             </div>
 
-            <div className="p-4 mt-auto">
+            <div className="p-4 mt-auto shrink-0">
               <div className="p-4 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10 border border-white/5 relative overflow-hidden group">
                 <div className="absolute inset-0 bg-primary/5 translate-y-[100%] group-hover:translate-y-0 transition-transform duration-500" />
                 <h4 className="font-semibold text-sm mb-1 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent relative z-10">Pro Creator Tips</h4>
@@ -308,8 +309,94 @@ export default function DashboardLayout({
           </div>
         </aside>
 
-        <div className="flex-1 flex flex-col md:max-w-[calc(100vw-280px)]">
-          <MainContent />
+        <div className="flex-1 flex flex-col h-full overflow-hidden relative z-10">
+          {/* Header */}
+          <header className="flex h-20 items-center gap-4 px-4 lg:px-8 py-4 shrink-0 transition-all duration-300 border-b border-white/5 bg-background/50 backdrop-blur-sm">
+            <div className="w-full flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon" className="shrink-0 md:hidden hover:bg-white/10">
+                      <Menu className="h-5 w-5" />
+                      <span className="sr-only">Toggle navigation menu</span>
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="flex flex-col glass-panel border-r border-white/10 p-0">
+                    <div className="flex h-16 items-center border-b border-white/10 px-6">
+                      <Link href="/dashboard" className="flex items-center gap-2 font-bold text-xl">
+                        <Logo className="h-8 w-8 text-primary drop-shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
+                        <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent drop-shadow-sm">LikezBuddy</span>
+                      </Link>
+                    </div>
+                    <div className="p-4">
+                      <NavContent inSheet={true} />
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <OnboardingTrigger />
+                <ThemeToggle />
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/10 h-10 w-10 border border-white/10 overflow-hidden ring-2 ring-transparent hover:ring-primary/50 transition-all">
+                      {user ? (
+                        <Image
+                          src={user.avatar_url || "https://placehold.co/40x40.png"}
+                          width={40} height={40} alt={user.display_name || "User Avatar"}
+                          className="rounded-full"
+                          data-ai-hint="creator avatar"
+                        />
+                      ) : <User className="h-5 w-5" />}
+                      <span className="sr-only">Toggle user menu</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="glass-panel border-white/10 w-56">
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{user?.display_name || 'My Account'}</p>
+                        <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-white/10" />
+                    <DropdownMenuItem asChild className="focus:bg-white/10 cursor-pointer">
+                      <Link href="/dashboard/subscription" className="flex items-center w-full">
+                        <CreditCard className="mr-2 h-4 w-4 text-primary" />
+                        Subscription
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="bg-white/10" />
+                    <DropdownMenuItem asChild className="focus:bg-red-500/20 cursor-pointer">
+                      <Link href="/api/auth/logout" className="flex items-center w-full text-red-400 focus:text-red-400">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Logout
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+          </header>
+
+          <main className="flex-1 overflow-y-auto p-2 sm:p-4 lg:p-8 custom-scrollbar">
+            {showSubscriptionGate ? (
+              <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="glass-panel p-10 rounded-3xl max-w-md w-full text-center border border-red-500/30 shadow-[0_0_50px_rgba(239,68,68,0.2)]">
+                  <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <ShieldAlert className="h-10 w-10 text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
+                  </div>
+                  <h2 className="text-3xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-br from-white to-white/70">Access Restricted</h2>
+                  <p className="text-muted-foreground mb-8 text-lg">
+                    Upgrade your plan to unlock premium features and maximize your reach.
+                  </p>
+                  <Button asChild size="lg" className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 shadow-lg shadow-red-500/25 border-0">
+                    <Link href="/dashboard/subscription">Check Subscription Status</Link>
+                  </Button>
+                </div>
+              </div>
+            ) : children}
+          </main>
         </div>
 
         <WelcomeModal />

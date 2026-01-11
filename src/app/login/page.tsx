@@ -114,11 +114,11 @@ export default function LoginPage() {
   }, { scope: containerRef });
 
   return (
-    <div ref={containerRef} className="min-h-screen w-full flex bg-background">
+    <div ref={containerRef} className="h-screen w-full flex bg-background overflow-hidden relative">
       {/* Left Column - Visuals (Hidden on mobile) */}
       <div
         ref={leftColRef}
-        className="hidden lg:flex lg:w-1/2 relative bg-black items-center justify-center p-12 overflow-hidden border-r border-white/10"
+        className="hidden lg:flex lg:w-1/2 relative bg-black items-center justify-center p-12 overflow-hidden border-r border-white/10 h-full"
       >
         {/* Background Gradients */}
         <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gray-900 via-[#0a0a0a] to-black" />
@@ -166,28 +166,26 @@ export default function LoginPage() {
       {/* Right Column - Login Form */}
       <div
         ref={rightColRef}
-        className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 relative"
+        className="flex-1 flex flex-col items-center justify-center p-4 lg:p-12 relative overflow-y-auto h-full"
       >
-        <div className="absolute inset-0 bg-transparent flex flex-col">
-          <div className="flex-1" />
+        <div className="w-full max-w-[400px] relative z-10 my-auto">
+          {/* Mobile Background inside the scrollable area */}
+          <div className="lg:hidden absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background pointer-events-none h-screen fixed top-0 left-0" />
 
-          {/* Decorative background for mobile */}
-          <div className="lg:hidden absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background" />
-        </div>
+          <div className="glass-panel lg:border-none lg:bg-transparent lg:backdrop-blur-none p-5 lg:p-0 rounded-3xl lg:rounded-none shadow-2xl lg:shadow-none border-white/10 lg:border-0 bg-black/40 lg:bg-transparent backdrop-blur-xl">
+            <Suspense fallback={
+              <div className="flex flex-col items-center justify-center space-y-4 h-64">
+                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                <p className="text-muted-foreground">Loading...</p>
+              </div>
+            }>
+              <LoginContent />
+            </Suspense>
+          </div>
 
-        <div className="w-full max-w-sm relative z-10 glass-panel lg:border-none lg:bg-transparent lg:backdrop-blur-none p-8 lg:p-0 rounded-3xl lg:rounded-none shadow-2xl lg:shadow-none border-white/10 lg:border-0 bg-black/40 lg:bg-transparent backdrop-blur-xl">
-          <Suspense fallback={
-            <div className="flex flex-col items-center justify-center space-y-4 h-64">
-              <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-              <p className="text-muted-foreground">Loading...</p>
-            </div>
-          }>
-            <LoginContent />
-          </Suspense>
-        </div>
-        
-        <div className="mt-12 text-center lg:hidden">
-          <p className="text-muted-foreground text-sm">Trusted by 10,000+ Creators</p>
+          <div className="mt-8 text-center lg:hidden pb-8">
+            <p className="text-muted-foreground text-sm">Trusted by 10,000+ Creators</p>
+          </div>
         </div>
       </div>
     </div>

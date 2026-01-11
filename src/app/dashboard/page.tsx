@@ -164,37 +164,37 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Welcome / Header Card */}
-      <div className="glass-panel rounded-3xl p-8 relative overflow-hidden animate-fade-in-up">
-        <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-gradient-to-bl from-primary/20 to-transparent rounded-full blur-3xl -z-10" />
-        <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
-          <div className="relative group">
+      <div className="glass-panel rounded-3xl p-4 sm:p-8 relative overflow-hidden animate-fade-in-up">
+        <div className="absolute top-0 right-0 w-[150px] sm:w-[300px] h-[300px] bg-gradient-to-bl from-primary/20 to-transparent rounded-full blur-3xl -z-10" />
+        <div className="relative z-10 flex flex-col md:flex-row items-center gap-3 sm:gap-6">
+          <div className="relative group shrink-0">
             <div className="absolute inset-0 bg-gradient-to-r from-primary to-secondary rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
             <Image
               src={userProfile.avatar_url || 'https://placehold.co/64x64.png'}
               alt={userProfile.display_name || 'User Avatar'}
               width={80}
               height={80}
-              className="relative rounded-full border-2 border-white/20 shadow-xl"
+              className="relative rounded-full border-2 border-white/20 shadow-xl w-14 h-14 sm:w-20 sm:h-20 object-cover"
               data-ai-hint="creator avatar"
             />
           </div>
 
-          <div className="flex-1 text-center md:text-left space-y-2">
-            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
-              Welcome back, {userProfile.display_name || 'Creator'}!
+          <div className="flex-1 text-center md:text-left space-y-2 w-full min-w-0">
+            <h2 className="text-xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70 truncate px-1">
+              Welcome back, {userProfile.display_name?.split(' ')[0] || 'Creator'}!
             </h2>
-            <p className="text-muted-foreground flex items-center justify-center md:justify-start gap-2">
-              <Sparkles className="h-4 w-4 text-yellow-400" />
+            <p className="text-muted-foreground flex items-center justify-center md:justify-start gap-2 text-xs sm:text-base break-all line-clamp-2 px-2 md:px-0">
+              <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-400 shrink-0" />
               {userProfile.bio_description || "Ready to create some viral content today?"}
             </p>
-            <div className="flex items-center justify-center md:justify-start gap-4 text-sm text-muted-foreground/80 pt-2">
-              <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 shadow-sm">{userProfile.likes_count?.toLocaleString() || 0} Likes</span>
-              <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 shadow-sm">{userProfile.follower_count?.toLocaleString() || 0} Followers</span>
-              <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 shadow-sm">{userProfile.following_count?.toLocaleString() || 0} Following</span>
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-4 text-[10px] sm:text-sm text-muted-foreground/80 pt-1 sm:pt-2">
+              <span className="px-2 sm:px-3 py-1 rounded-full bg-white/5 border border-white/10 shadow-sm">{userProfile.likes_count?.toLocaleString() || 0} Likes</span>
+              <span className="px-2 sm:px-3 py-1 rounded-full bg-white/5 border border-white/10 shadow-sm">{userProfile.follower_count?.toLocaleString() || 0} Followers</span>
+              <span className="px-2 sm:px-3 py-1 rounded-full bg-white/5 border border-white/10 shadow-sm">{userProfile.following_count?.toLocaleString() || 0} Following</span>
             </div>
           </div>
 
-          <div className="hidden md:block">
+          <div className="hidden md:block shrink-0">
             <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
               <p className="text-xs text-muted-foreground mb-1">Today's Earnings</p>
               <p className="text-2xl font-bold text-primary">
