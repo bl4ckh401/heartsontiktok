@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
     'user.info.basic',
     // 'user.info.profile',
     'user.info.stats',
-    // 'video.list',
+    'video.list',
     // 'video.publish',
     // 'video.upload',
  ].join(',');
