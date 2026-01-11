@@ -47,4 +47,6 @@ export type CampaignSubmission = {
   likes?: number;
   earnings?: number;
   createdAt: string;
+  title?: string;
+  cover_image_url?: string;
 };

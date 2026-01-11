@@ -103,6 +103,7 @@ export async function POST(request: Request) {
       tiktokOpenId: userInfo.open_id,
       title: videoTitle || 'Untitled Video',
       tiktokVideoId: videoId,
+      videoUrl: (await request.json()).videoUrl || `https://www.tiktok.com/@/video/${videoId}`,
       cover_image_url: videoCover || '',
       status: 'PENDING_APPROVAL', // Requires admin review
       submittedAt: admin.firestore.FieldValue.serverTimestamp(),

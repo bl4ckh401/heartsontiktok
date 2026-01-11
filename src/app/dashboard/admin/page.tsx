@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, DollarSign, FileText, TrendingUp } from 'lucide-react';
+import { Users, DollarSign, FileText, TrendingUp, Play, Heart, Video, Check, X } from 'lucide-react';
 import { User, Transaction, CampaignSubmission } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -302,29 +302,84 @@ export default function AdminDashboard() {
                       </TableRow>
                     ))
                   ) : (
-                    submissions.map((submission) => (
-                      <TableRow key={submission.id}>
-                        <TableCell>{submission.campaignId}</TableCell>
-                        <TableCell>{submission.userId}</TableCell>
-                        <TableCell>
-                          <a href={submission.videoUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
-                            View Video
-                          </a>
-                        </TableCell>
-                        <TableCell>{getStatusBadge(submission.status)}</TableCell>
-                        <TableCell>{submission.likes?.toLocaleString() || 'N/A'}</TableCell>
-                        <TableCell>{submission.earnings ? `KES ${submission.earnings}` : 'N/A'}</TableCell>
-                        <TableCell>{new Date(submission.createdAt).toLocaleDateString()}</TableCell>
-                        <TableCell>
-                          {submission.status === 'PENDING_APPROVAL' && (
-                            <div className="flex gap-2">
-                              <Button size="sm" onClick={() => handleReview(submission.id, 'APPROVE')} className="bg-green-600 hover:bg-green-700 h-8">Approve</Button>
-                              <Button size="sm" variant="destructive" onClick={() => handleReview(submission.id, 'REJECT')} className="h-8">Reject</Button>
-                            </div>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))
+                      submissions.map((submission) => {
+                        const creator = users.find(u => u.id === submission.userId);
+                        return (
+                          <TableRow key={submission.id} className="hover:bg-muted/50">
+                            <TableCell className="font-medium">
+                              <div className="flex flex-col">
+                                <span>{submission.title || 'Untitled Campaign'}</span>
+                                <span className="text-xs text-muted-foreground">{submission.campaignId}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                {creator ? (
+                                  <>
+                                    {/* Using a simple avatar placeholder if photoURL is missing, or initials */}
+                                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+                                      {creator.photoURL ? (
+                                        <img src={creator.photoURL} alt={creator.displayName} className="h-full w-full object-cover" />
+                                      ) : (
+                                        <span className="text-xs font-bold">{creator.displayName?.substring(0, 2).toUpperCase()}</span>
+                                      )}
+                                    </div>
+                                    <div className="flex flex-col">
+                                      <span className="text-sm font-medium">{creator.displayName}</span>
+                                      <span className="text-xs text-muted-foreground">{creator.email}</span>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <span className="text-muted-foreground">Unknown User ({submission.userId})</span>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <a
+                                href={submission.videoUrl || `https://www.tiktok.com/@/video/${(submission as any).tiktokVideoId}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="group relative block w-32 aspect-video rounded-md overflow-hidden bg-black/10 border border-white/10"
+                              >
+                                {submission.cover_image_url ? (
+                                  <img src={submission.cover_image_url} alt="Video thumbnail" className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+                                ) : (
+                                  <div className="h-full w-full flex items-center justify-center text-muted-foreground">
+                                    <Video className="h-6 w-6" />
+                                  </div>
+                                )}
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                  <Play className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md" fill="currentColor" />
+                                </div>
+                              </a>
+                            </TableCell>
+                            <TableCell>{getStatusBadge(submission.status)}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                <Heart className="h-3 w-3 text-red-500" />
+                                <span>{submission.likes?.toLocaleString() || 0}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-mono">{submission.earnings ? `KES ${submission.earnings}` : '-'}</TableCell>
+                            <TableCell className="text-muted-foreground text-sm">
+                              {new Date(submission.createdAt).toLocaleDateString()} <br />
+                              <span className="text-xs">{new Date(submission.createdAt).toLocaleTimeString()}</span>
+                            </TableCell>
+                            <TableCell>
+                              {submission.status === 'PENDING_APPROVAL' && (
+                                <div className="flex gap-2">
+                                  <Button size="sm" onClick={() => handleReview(submission.id, 'APPROVE')} className="bg-emerald-600 hover:bg-emerald-700 h-8 px-3">
+                                    <Check className="h-4 w-4 mr-1" /> Approve
+                                  </Button>
+                                  <Button size="sm" variant="destructive" onClick={() => handleReview(submission.id, 'REJECT')} className="h-8 px-3">
+                                    <X className="h-4 w-4 mr-1" /> Reject
+                                  </Button>
+                                </div>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
                   )}
                 </TableBody>
               </Table>

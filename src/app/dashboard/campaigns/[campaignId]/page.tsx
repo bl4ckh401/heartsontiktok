@@ -192,7 +192,8 @@ const CampaignDetailsPage = () => {
           campaignId: campaign.id,
           videoId: selectedVideo.id,
           videoTitle: selectedVideo.title,
-          videoCover: selectedVideo.cover_image_url
+          videoCover: selectedVideo.cover_image_url,
+          videoUrl: selectedVideo.share_url || selectedVideo.embed_link
         })
       });
 
