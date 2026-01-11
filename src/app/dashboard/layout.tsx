@@ -277,7 +277,6 @@ export default function DashboardLayout({
   }
 
   return (
-  return (
     <OnboardingProvider>
       <div className="flex h-screen w-full bg-background relative overflow-hidden">
         <BackgroundBlobs />
