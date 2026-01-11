@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
     // 1. Fetch all ELIGIBLE submissions from Firestore for the user
     const submissionsRef = db.firestore().collection('submissions')
       .where('userId', '==', userId)
-      .where('payoutStatus', '==', 'ELIGIBLE');
+      .where('payoutStatus', 'in', ['ELIGIBLE', 'PENDING_APPROVAL', 'PAID', 'UNPAID']);
     const submissionsSnapshot = await submissionsRef.get();
 
     if (submissionsSnapshot.empty) {
@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
     // 3. Augment our submission data with the latest metrics from TikTok
     const batch = db.firestore().batch();
     const videosWithStatus = submissionData.map(submission => {
-        const tiktokVideo = tiktokVideosMap.get(submission.tiktokVideoId!);
+      const tiktokVideo = tiktokVideosMap.get(submission.tiktokVideoId!) as any;
         const updatedLikeCount = tiktokVideo?.like_count || submission.like_count || 0;
 
         // If the like count has changed, update it in Firestore
