@@ -71,7 +71,7 @@ export async function POST(request: Request) {
     const accessToken = await getMpesaToken();
 
     // 2. Initiate STK Push
-    const accountRef = `SUB-${userId.substring(0, 10)}`; // Create a unique reference
+    const accountRef = `LikezBuddy`; // Create a unique reference
     const transactionDesc = `Subscription to ${selectedPlan.name} Plan for likezBuddy`;
     const stkResult = await initiateSTKPush(accessToken, phoneNumber, amount, accountRef, transactionDesc);
     
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
     const subscriptionRef = db.firestore().collection('subscriptions').doc();
     await subscriptionRef.set({
       subscriptionId: subscriptionRef.id,
-      userId: userId, // Use the full Firebase UID
+      userId: userId,
       plan: selectedPlan.name,
       amount: amount,
       phoneNumber: phoneNumber,

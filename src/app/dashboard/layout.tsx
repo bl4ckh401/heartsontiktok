@@ -54,8 +54,10 @@ function NavLink({ href, icon: Icon, label, disabled }: { href: string; icon: Re
         <Link
           href={disabled ? '#' : href}
           className={cn(
-            'flex items-center gap-3 rounded-xl px-4 py-3 text-muted-foreground transition-all duration-300 group relative overflow-hidden',
-            isActive ? 'text-white bg-primary/20 shadow-[0_0_20px_rgba(var(--primary),0.3)]' : 'hover:bg-white/5 hover:text-white',
+            'flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-300 group relative overflow-hidden',
+            isActive
+              ? 'text-primary bg-primary/10 dark:text-white dark:bg-primary/20 shadow-[0_0_20px_rgba(var(--primary),0.3)]'
+              : 'text-zinc-600 dark:text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 hover:text-black dark:hover:text-white',
             disabled && 'cursor-not-allowed opacity-50'
           )}
           onClick={(e) => disabled && e.preventDefault()}
@@ -184,8 +186,8 @@ export default function DashboardLayout({
                   <span className="sr-only">Toggle navigation menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="flex flex-col glass-panel border-r border-white/10 p-0">
-                <div className="flex h-16 items-center border-b border-white/10 px-6">
+              <SheetContent side="left" className="flex flex-col glass-panel border-r border-zinc-200 dark:border-white/10 p-0 bg-white/80 dark:bg-black/80 backdrop-blur-xl">
+                <div className="flex h-16 items-center border-b border-zinc-200 dark:border-white/10 px-6">
                   <Link href="/dashboard" className="flex items-center gap-2 font-bold text-xl">
                     <Logo className="h-8 w-8 text-primary drop-shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
                     <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent drop-shadow-sm">LikezBuddy</span>
@@ -204,7 +206,7 @@ export default function DashboardLayout({
             <ThemeToggle />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/10 h-10 w-10 border border-white/10 overflow-hidden ring-2 ring-transparent hover:ring-primary/50 transition-all">
+                <Button variant="ghost" size="icon" className="rounded-full hover:bg-black/5 dark:hover:bg-white/10 h-10 w-10 border border-zinc-200 dark:border-white/10 overflow-hidden ring-2 ring-transparent hover:ring-primary/50 transition-all">
                   {user ? (
                     <Image
                       src={user.avatar_url || "https://placehold.co/40x40.png"}
@@ -216,21 +218,21 @@ export default function DashboardLayout({
                   <span className="sr-only">Toggle user menu</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="glass-panel border-white/10 w-56">
+              <DropdownMenuContent align="end" className="glass-panel border-zinc-200 dark:border-white/10 w-56 bg-white/90 dark:bg-black/90">
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">{user?.display_name || 'My Account'}</p>
                     <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
                   </div>
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-white/10" />
-                <DropdownMenuItem asChild className="focus:bg-white/10 cursor-pointer">
+                <DropdownMenuSeparator className="bg-zinc-200 dark:bg-white/10" />
+                <DropdownMenuItem asChild className="focus:bg-black/5 dark:focus:bg-white/10 cursor-pointer">
                   <Link href="/dashboard/subscription" className="flex items-center w-full">
                     <CreditCard className="mr-2 h-4 w-4 text-primary" />
                     Subscription
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuSeparator className="bg-zinc-200 dark:bg-white/10" />
                 <DropdownMenuItem asChild className="focus:bg-red-500/20 cursor-pointer">
                   <Link href="/api/auth/logout" className="flex items-center w-full text-red-400 focus:text-red-400">
                     <LogOut className="mr-2 h-4 w-4" />
@@ -246,11 +248,11 @@ export default function DashboardLayout({
       <main className="flex flex-1 flex-col gap-4 p-2 sm:p-4 lg:gap-8 lg:p-8 overflow-x-hidden relative z-10 animate-fade-in-up">
           {showSubscriptionGate ? (
           <div className="flex items-center justify-center h-[60vh]">
-            <div className="glass-panel p-10 rounded-3xl max-w-md w-full text-center border border-red-500/30 shadow-[0_0_50px_rgba(239,68,68,0.2)]">
+            <div className="glass-panel p-10 rounded-3xl max-w-md w-full text-center border border-red-500/30 shadow-[0_0_50px_rgba(239,68,68,0.2)] bg-white/50 dark:bg-black/40">
               <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <ShieldAlert className="h-10 w-10 text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
               </div>
-              <h2 className="text-3xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-br from-white to-white/70">Access Restricted</h2>
+              <h2 className="text-3xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-br from-zinc-900 to-zinc-600 dark:from-white dark:to-white/70">Access Restricted</h2>
               <p className="text-muted-foreground mb-8 text-lg">
                 Upgrade your plan to unlock premium features and maximize your reach.
               </p>
@@ -268,7 +270,7 @@ export default function DashboardLayout({
       return (
          <div className="fixed inset-0 flex items-center justify-center bg-background z-50">
           <BackgroundBlobs />
-          <div className="glass-panel p-8 rounded-3xl flex flex-col items-center gap-4 relative z-10 w-full max-w-sm">
+          <div className="glass-panel p-8 rounded-3xl flex flex-col items-center gap-4 relative z-10 w-full max-w-sm bg-white/50 dark:bg-black/40">
             <div className="h-12 w-12 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
             <p className="text-muted-foreground animate-pulse">Loading experience...</p>
           </div>
@@ -283,13 +285,13 @@ export default function DashboardLayout({
 
         {/* Desktop Sidebar (Floating Glass Style) */}
         <aside className="hidden md:block w-[280px] h-full p-4 shrink-0 relative z-30">
-          <div className="glass-panel w-full h-full rounded-2xl flex flex-col overflow-hidden border-white/10 shadow-2xl bg-black/40 backdrop-blur-xl">
-            <div className="flex h-20 items-center px-6 border-b border-white/5 shrink-0">
+          <div className="glass-panel w-full h-full rounded-2xl flex flex-col overflow-hidden border-zinc-200 dark:border-white/10 shadow-2xl bg-white/60 dark:bg-black/40 backdrop-blur-xl">
+            <div className="flex h-20 items-center px-6 border-b border-zinc-200 dark:border-white/5 shrink-0">
               <Link href="/dashboard" className="flex items-center gap-3 font-semibold group">
-                <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-white/10 group-hover:shadow-[0_0_20px_rgba(var(--primary),0.4)] transition-all duration-500">
+                <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-zinc-200 dark:border-white/10 group-hover:shadow-[0_0_20px_rgba(var(--primary),0.4)] transition-all duration-500">
                   <Logo className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
                 </div>
-                <span className="text-xl bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent font-bold tracking-tight group-hover:text-white transition-colors">LikezBuddy</span>
+                <span className="text-xl bg-gradient-to-r from-zinc-900 to-zinc-600 dark:from-white dark:to-white/70 bg-clip-text text-transparent font-bold tracking-tight group-hover:text-black dark:group-hover:text-white transition-colors">LikezBuddy</span>
               </Link>
             </div>
 
@@ -298,11 +300,11 @@ export default function DashboardLayout({
             </div>
 
             <div className="p-4 mt-auto shrink-0">
-              <div className="p-4 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10 border border-white/5 relative overflow-hidden group">
+              <div className="p-4 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10 border border-zinc-200 dark:border-white/5 relative overflow-hidden group">
                 <div className="absolute inset-0 bg-primary/5 translate-y-[100%] group-hover:translate-y-0 transition-transform duration-500" />
                 <h4 className="font-semibold text-sm mb-1 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent relative z-10">Pro Creator Tips</h4>
                 <p className="text-xs text-muted-foreground mb-3 relative z-10">Maximize your earnings with our daily guide.</p>
-                <Button variant="outline" size="sm" className="w-full h-8 text-xs border-primary/20 hover:bg-primary hover:text-white hover:border-primary transition-all relative z-10 bg-transparent">View Guide</Button>
+                <Button variant="outline" size="sm" className="w-full h-8 text-xs border-primary/20 hover:bg-primary hover:text-white hover:border-primary transition-all relative z-10 bg-transparent text-primary">View Guide</Button>
               </div>
             </div>
           </div>
@@ -311,17 +313,17 @@ export default function DashboardLayout({
         <div className="flex-1 flex flex-col h-full overflow-hidden relative z-10">
           {/* Header (Floating Glass Style) */}
           <header className="shrink-0 p-4 lg:p-8 pb-0 transition-all duration-300">
-            <div className="glass-panel w-full h-20 rounded-2xl flex items-center px-6 justify-between border-white/10 shadow-lg bg-black/40 backdrop-blur-xl">
+            <div className="glass-panel w-full h-20 rounded-2xl flex items-center px-6 justify-between border-zinc-200 dark:border-white/10 shadow-lg bg-white/60 dark:bg-black/40 backdrop-blur-xl">
               <div className="flex items-center gap-4">
                 <Sheet>
                   <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="shrink-0 md:hidden hover:bg-white/10">
+                    <Button variant="ghost" size="icon" className="shrink-0 md:hidden hover:bg-black/5 dark:hover:bg-white/10">
                       <Menu className="h-5 w-5" />
                       <span className="sr-only">Toggle navigation menu</span>
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="left" className="flex flex-col glass-panel border-r border-white/10 p-0">
-                    <div className="flex h-16 items-center border-b border-white/10 px-6">
+                  <SheetContent side="left" className="flex flex-col glass-panel border-r border-zinc-200 dark:border-white/10 p-0 bg-white/80 dark:bg-black/80 backdrop-blur-xl">
+                    <div className="flex h-16 items-center border-b border-zinc-200 dark:border-white/10 px-6">
                       <Link href="/dashboard" className="flex items-center gap-2 font-bold text-xl">
                         <Logo className="h-8 w-8 text-primary drop-shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
                         <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent drop-shadow-sm">LikezBuddy</span>
@@ -339,7 +341,7 @@ export default function DashboardLayout({
                 <ThemeToggle />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/10 h-10 w-10 border border-white/10 overflow-hidden ring-2 ring-transparent hover:ring-primary/50 transition-all cursor-pointer">
+                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-black/5 dark:hover:bg-white/10 h-10 w-10 border border-zinc-200 dark:border-white/10 overflow-hidden ring-2 ring-transparent hover:ring-primary/50 transition-all cursor-pointer">
                       {user ? (
                         <Image
                           src={user.avatar_url || "https://placehold.co/40x40.png"}
@@ -351,21 +353,21 @@ export default function DashboardLayout({
                       <span className="sr-only">Toggle user menu</span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="glass-panel border-white/10 w-56">
+                  <DropdownMenuContent align="end" className="glass-panel border-zinc-200 dark:border-white/10 w-56 bg-white/90 dark:bg-black/90">
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium leading-none">{user?.display_name || 'My Account'}</p>
                         <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
                       </div>
                     </DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-white/10" />
-                    <DropdownMenuItem asChild className="focus:bg-white/10 cursor-pointer">
+                    <DropdownMenuSeparator className="bg-zinc-200 dark:bg-white/10" />
+                    <DropdownMenuItem asChild className="focus:bg-black/5 dark:focus:bg-white/10 cursor-pointer">
                       <Link href="/dashboard/subscription" className="flex items-center w-full">
                         <CreditCard className="mr-2 h-4 w-4 text-primary" />
                         Subscription
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator className="bg-white/10" />
+                    <DropdownMenuSeparator className="bg-zinc-200 dark:bg-white/10" />
                     <DropdownMenuItem asChild className="focus:bg-red-500/20 cursor-pointer">
                       {/* Using a standard anchor tag for logout to force full page reload and cookie clearing */}
                       <a href="/api/auth/logout" className="flex items-center w-full text-red-400 focus:text-red-400">
@@ -382,11 +384,11 @@ export default function DashboardLayout({
           <main className="flex-1 overflow-y-auto p-4 lg:p-8 custom-scrollbar">
             {showSubscriptionGate ? (
               <div className="flex items-center justify-center min-h-[60vh]">
-                <div className="glass-panel p-10 rounded-3xl max-w-md w-full text-center border border-red-500/30 shadow-[0_0_50px_rgba(239,68,68,0.2)]">
+                <div className="glass-panel p-10 rounded-3xl max-w-md w-full text-center border border-red-500/30 shadow-[0_0_50px_rgba(239,68,68,0.2)] bg-white/50 dark:bg-black/40">
                   <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
                     <ShieldAlert className="h-10 w-10 text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
                   </div>
-                  <h2 className="text-3xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-br from-white to-white/70">Access Restricted</h2>
+                  <h2 className="text-3xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-br from-zinc-900 to-zinc-600 dark:from-white dark:to-white/70">Access Restricted</h2>
                   <p className="text-muted-foreground mb-8 text-lg">
                     Upgrade your plan to unlock premium features and maximize your reach.
                   </p>
