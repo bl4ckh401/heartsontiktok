@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     const videoFields = 'id,title,cover_image_url,embed_link,like_count,create_time,share_url';
     
     // We request the most recent 20 videos
-    const response = await fetch('https://open.tiktokapis.com/v2/video/list/', {
+    const response = await fetch(`https://open.tiktokapis.com/v2/video/list/?fields=${videoFields}`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -26,7 +26,6 @@ export async function GET(req: NextRequest) {
       },
       body: JSON.stringify({
         max_count: 20, 
-        fields: videoFields.split(',')
       }),
     });
 

@@ -375,80 +375,36 @@ const CampaignDetailsPage = () => {
                 </Alert>
               ) : (
                   <>
-                    <Tabs defaultValue="select" onValueChange={(v) => setSubmissionMethod(v as any)} className="w-full">
-                      <TabsList className="grid w-full grid-cols-2 mb-6">
-                        <TabsTrigger value="select">Select Existing</TabsTrigger>
-                        <TabsTrigger value="upload">Upload New (Legacy)</TabsTrigger>
-                      </TabsList>
-
-                      <TabsContent value="select" className="space-y-4">
-                        <div className="bg-primary/5 p-4 rounded-lg border border-primary/10 mb-4">
-                          <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                    <>
+                      <div className="bg-primary/5 p-4 rounded-lg border border-primary/10 mb-4">
+                        <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
                             <Info className="h-4 w-4 text-primary" />
                             How to submit:
-                          </h4>
-                          <ol className="list-decimal list-inside text-xs space-y-1 text-muted-foreground">
+                        </h4>
+                        <ol className="list-decimal list-inside text-xs space-y-1 text-muted-foreground">
                             <li>Create and post your video directly in the TikTok app.</li>
                             <li>Use the hashtag <span className="font-bold text-primary">#LikezBuddyCreator</span> (and other required tags).</li>
                             <li>Come back here and click <strong>Refresh List</strong>.</li>
                             <li>Select your video and click Submit.</li>
-                          </ol>
-                        </div>
+                        </ol>
+                      </div>
 
-                        <VideoSelector
-                          onSelect={setSelectedVideo}
-                          selectedVideoId={selectedVideo?.id}
-                        />
+                      <VideoSelector
+                        onSelect={setSelectedVideo}
+                        selectedVideoId={selectedVideo?.id}
+                      />
 
-                        <Button
-                          onClick={handleSubmitSelected}
-                          className="w-full mt-4"
-                          disabled={!selectedVideo || isSubmitting}
-                        >
-                          {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
-                          Submit Selected Video
-                        </Button>
-                      </TabsContent>
+                      <Button
+                        onClick={handleSubmitSelected}
+                        className="w-full mt-4"
+                        disabled={!selectedVideo || isSubmitting}
+                      >
+                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
+                        Submit Selected Video
+                      </Button>
 
-                      <TabsContent value="upload">
-                        <form
-                          key={formKey}
-                          onSubmit={handleFormSubmit}
-                          className="space-y-4"
-                        >
-                          <div className="space-y-2">
-                            <Label htmlFor="videoFile">
-                              Video File <span className="text-red-500">*</span>
-                            </Label>
-                            <Input
-                              id="videoFile"
-                              type="file"
-                              name="video"
-                              accept="video/*"
-                              required
-                              disabled={isSubmitting}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="title">Video Title <span className="text-red-500">*</span></Label>
-                            <Textarea id="title" name="title" placeholder="Write a compelling title..." required disabled={isSubmitting} />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="hashtags">Hashtags</Label>
-                            <Input id="hashtags" name="hashtags" placeholder="#campaignhashtag #relevant" disabled={isSubmitting} />
-                          </div>
-
-                          <p className="text-xs text-muted-foreground">
-                            By submitting, you agree to post this content to your TikTok account. It will be posted privately.
-                          </p>
-
-                          <Button type="submit" className="w-full" disabled={isSubmitting || submissionStatus === 'success'}>
-                            {buttonIcon}
-                            {buttonText}
-                          </Button>
-                        </form>
-                      </TabsContent>
-                    </Tabs>
+                      {/* Legacy Upload Form Hidden */}
+                    </>
                 </>
               )}
             </CardContent>
