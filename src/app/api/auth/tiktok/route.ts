@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
   
   const scopes = [
     'user.info.basic',
-    'user.info.profile',
+    // 'user.info.profile',
     // 'user.info.stats',
     // 'video.list',
     // 'video.publish',

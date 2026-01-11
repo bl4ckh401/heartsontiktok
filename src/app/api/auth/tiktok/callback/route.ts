@@ -68,7 +68,7 @@ export async function GET(req: NextRequest) {
 
     const accessToken = tokenData.access_token;
     
-    const userFields = 'open_id,union_id,avatar_url,display_name,bio_description,is_verified'; // Removed stats fields temporarily
+    const userFields = 'open_id,union_id,avatar_url,display_name'; // Removed profile/stats fields to match basic scope
     const userRes = await fetch(`https://open.tiktokapis.com/v2/user/info/?fields=${userFields}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
