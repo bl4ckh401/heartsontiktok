@@ -281,9 +281,9 @@ export default function DashboardLayout({
       <div className="flex h-screen w-full bg-background relative overflow-hidden">
         <BackgroundBlobs />
 
-        {/* Desktop Sidebar */}
-        <aside className="hidden md:block w-[280px] h-full border-r border-white/5 bg-background/50 backdrop-blur-xl relative z-30">
-          <div className="w-full h-full flex flex-col">
+        {/* Desktop Sidebar (Floating Glass Style) */}
+        <aside className="hidden md:block w-[280px] h-full p-4 shrink-0 relative z-30">
+          <div className="glass-panel w-full h-full rounded-2xl flex flex-col overflow-hidden border-white/10 shadow-2xl bg-black/40 backdrop-blur-xl">
             <div className="flex h-20 items-center px-6 border-b border-white/5 shrink-0">
               <Link href="/dashboard" className="flex items-center gap-3 font-semibold group">
                 <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-white/10 group-hover:shadow-[0_0_20px_rgba(var(--primary),0.4)] transition-all duration-500">
@@ -309,9 +309,9 @@ export default function DashboardLayout({
         </aside>
 
         <div className="flex-1 flex flex-col h-full overflow-hidden relative z-10">
-          {/* Header */}
-          <header className="flex h-20 items-center gap-4 px-4 lg:px-8 py-4 shrink-0 transition-all duration-300 border-b border-white/5 bg-background/50 backdrop-blur-sm">
-            <div className="w-full flex items-center justify-between">
+          {/* Header (Floating Glass Style) */}
+          <header className="shrink-0 p-4 lg:p-8 pb-0 transition-all duration-300">
+            <div className="glass-panel w-full h-20 rounded-2xl flex items-center px-6 justify-between border-white/10 shadow-lg bg-black/40 backdrop-blur-xl">
               <div className="flex items-center gap-4">
                 <Sheet>
                   <SheetTrigger asChild>
@@ -339,12 +339,12 @@ export default function DashboardLayout({
                 <ThemeToggle />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/10 h-10 w-10 border border-white/10 overflow-hidden ring-2 ring-transparent hover:ring-primary/50 transition-all">
+                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/10 h-10 w-10 border border-white/10 overflow-hidden ring-2 ring-transparent hover:ring-primary/50 transition-all cursor-pointer">
                       {user ? (
                         <Image
                           src={user.avatar_url || "https://placehold.co/40x40.png"}
                           width={40} height={40} alt={user.display_name || "User Avatar"}
-                          className="rounded-full"
+                          className="rounded-full object-cover"
                           data-ai-hint="creator avatar"
                         />
                       ) : <User className="h-5 w-5" />}
@@ -367,10 +367,11 @@ export default function DashboardLayout({
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-white/10" />
                     <DropdownMenuItem asChild className="focus:bg-red-500/20 cursor-pointer">
-                      <Link href="/api/auth/logout" className="flex items-center w-full text-red-400 focus:text-red-400">
+                      {/* Using a standard anchor tag for logout to force full page reload and cookie clearing */}
+                      <a href="/api/auth/logout" className="flex items-center w-full text-red-400 focus:text-red-400">
                         <LogOut className="mr-2 h-4 w-4" />
                         Logout
-                      </Link>
+                      </a>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -378,7 +379,7 @@ export default function DashboardLayout({
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto p-2 sm:p-4 lg:p-8 custom-scrollbar">
+          <main className="flex-1 overflow-y-auto p-4 lg:p-8 custom-scrollbar">
             {showSubscriptionGate ? (
               <div className="flex items-center justify-center min-h-[60vh]">
                 <div className="glass-panel p-10 rounded-3xl max-w-md w-full text-center border border-red-500/30 shadow-[0_0_50px_rgba(239,68,68,0.2)]">
