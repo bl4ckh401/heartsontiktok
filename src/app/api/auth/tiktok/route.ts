@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
     // 'user.info.profile',
     'user.info.stats',
     'video.list',
-    // 'video.publish',
+    'video.publish',
     // 'video.upload',
  ].join(',');
 
