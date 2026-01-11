@@ -33,6 +33,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { WysiwygViewer } from '@/components/ui/wysiwyg-editor';
 import { Edit } from 'lucide-react';
 import Cookies from 'js-cookie';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { VideoSelector } from '@/components/campaigns/video-selector';
 
 interface Campaign {
   id: string;
@@ -56,6 +58,8 @@ const CampaignDetailsPage = () => {
   const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'uploading' | 'processing' | 'success' | 'polling'>('idle');
   const [formKey, setFormKey] = useState(Date.now());
   const [userRole, setUserRole] = useState<'user' | 'admin'>('user');
+  const [submissionMethod, setSubmissionMethod] = useState<'upload' | 'select'>('select');
+  const [selectedVideo, setSelectedVideo] = useState<any>(null);
 
   const pollPublishStatus = useCallback(async (publishId: string, submissionId: string) => {
     setSubmissionStatus('polling');
@@ -175,6 +179,44 @@ const CampaignDetailsPage = () => {
       setSubmissionStatus('idle');
     }
   }
+
+  const handleSubmitSelected = async () => {
+    if (!selectedVideo || !campaign?.id) return;
+    setSubmissionStatus('processing');
+
+    try {
+      const response = await fetch('/api/submit-video', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          campaignId: campaign.id,
+          videoId: selectedVideo.id,
+          videoTitle: selectedVideo.title,
+          videoCover: selectedVideo.cover_image_url
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        toast({
+          title: 'Submission Successful!',
+          description: 'Your video has been linked to this campaign.',
+        });
+        setSubmissionStatus('success');
+        router.push('/dashboard/payouts');
+      } else {
+        throw new Error(result.message || 'Submission failed.');
+      }
+    } catch (err: any) {
+      toast({
+        title: 'Submission Failed',
+        description: err.message,
+        variant: 'destructive'
+      });
+      setSubmissionStatus('idle');
+    }
+  };
 
   const isSubmitting = submissionStatus === 'uploading' || submissionStatus === 'polling';
   const isCampaignInactive = campaign?.status === 'INACTIVE' || (campaign?.budget !== undefined && campaign.budget <= 0);
@@ -333,42 +375,80 @@ const CampaignDetailsPage = () => {
                 </Alert>
               ) : (
                   <>
-                  <form
-                    key={formKey}
-                    onSubmit={handleFormSubmit}
-                    className="space-y-4"
-                  >
-                    <div className="space-y-2">
-                      <Label htmlFor="videoFile">
-                        Video File <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="videoFile"
-                        type="file"
-                        name="video"
-                        accept="video/*"
-                        required
-                        disabled={isSubmitting}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="title">Video Title <span className="text-red-500">*</span></Label>
-                      <Textarea id="title" name="title" placeholder="Write a compelling title..." required disabled={isSubmitting} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="hashtags">Hashtags</Label>
-                      <Input id="hashtags" name="hashtags" placeholder="#campaignhashtag #relevant" disabled={isSubmitting} />
-                    </div>
+                    <Tabs defaultValue="select" onValueChange={(v) => setSubmissionMethod(v as any)} className="w-full">
+                      <TabsList className="grid w-full grid-cols-2 mb-6">
+                        <TabsTrigger value="select">Select Existing</TabsTrigger>
+                        <TabsTrigger value="upload">Upload New (Legacy)</TabsTrigger>
+                      </TabsList>
 
-                    <p className="text-xs text-muted-foreground">
-                      By submitting, you agree to post this content to your TikTok account. It will be posted privately.
-                    </p>
+                      <TabsContent value="select" className="space-y-4">
+                        <div className="bg-primary/5 p-4 rounded-lg border border-primary/10 mb-4">
+                          <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                            <Info className="h-4 w-4 text-primary" />
+                            How to submit:
+                          </h4>
+                          <ol className="list-decimal list-inside text-xs space-y-1 text-muted-foreground">
+                            <li>Create and post your video directly in the TikTok app.</li>
+                            <li>Use the hashtag <span className="font-bold text-primary">#LikezBuddyCreator</span> (and other required tags).</li>
+                            <li>Come back here and click <strong>Refresh List</strong>.</li>
+                            <li>Select your video and click Submit.</li>
+                          </ol>
+                        </div>
 
-                    <Button type="submit" className="w-full" disabled={isSubmitting || submissionStatus === 'success'}>
-                      {buttonIcon}
-                      {buttonText}
-                    </Button>
-                  </form>
+                        <VideoSelector
+                          onSelect={setSelectedVideo}
+                          selectedVideoId={selectedVideo?.id}
+                        />
+
+                        <Button
+                          onClick={handleSubmitSelected}
+                          className="w-full mt-4"
+                          disabled={!selectedVideo || isSubmitting}
+                        >
+                          {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
+                          Submit Selected Video
+                        </Button>
+                      </TabsContent>
+
+                      <TabsContent value="upload">
+                        <form
+                          key={formKey}
+                          onSubmit={handleFormSubmit}
+                          className="space-y-4"
+                        >
+                          <div className="space-y-2">
+                            <Label htmlFor="videoFile">
+                              Video File <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                              id="videoFile"
+                              type="file"
+                              name="video"
+                              accept="video/*"
+                              required
+                              disabled={isSubmitting}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="title">Video Title <span className="text-red-500">*</span></Label>
+                            <Textarea id="title" name="title" placeholder="Write a compelling title..." required disabled={isSubmitting} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="hashtags">Hashtags</Label>
+                            <Input id="hashtags" name="hashtags" placeholder="#campaignhashtag #relevant" disabled={isSubmitting} />
+                          </div>
+
+                          <p className="text-xs text-muted-foreground">
+                            By submitting, you agree to post this content to your TikTok account. It will be posted privately.
+                          </p>
+
+                          <Button type="submit" className="w-full" disabled={isSubmitting || submissionStatus === 'success'}>
+                            {buttonIcon}
+                            {buttonText}
+                          </Button>
+                        </form>
+                      </TabsContent>
+                    </Tabs>
                 </>
               )}
             </CardContent>
