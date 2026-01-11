@@ -28,11 +28,11 @@ export async function GET(req: NextRequest) {
   
   const scopes = [
     'user.info.basic',
-    'user.info.profile',
+    // 'user.info.profile',
     'user.info.stats',
     'video.list',
     'video.publish',
-    // 'video.upload',
+    'video.upload',
  ].join(',');
 
   let url = 'https://www.tiktok.com/v2/auth/authorize/';
