@@ -33,7 +33,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { TrendingUp, Users, Video, MessageCircle, Heart, Share2, ArrowUp, ArrowDown, Sparkles } from 'lucide-react';
@@ -41,37 +40,43 @@ import Cookies from 'js-cookie';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const MetricCard = ({ title, value, change, changeType, icon: Icon, delay = 0 }: any) => (
-  <div
+const MetricCard = ({ title, value, change, changeType, icon: Icon, delay = 0 }: any) => {
+  // Ensure value is safe to render
+  const safeValue = typeof value === 'object' ? JSON.stringify(value) : value;
+  const safeChange = typeof change === 'object' ? '' : change;
+
+  return (
+    <div 
     className={cn(
       "glass-card rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(var(--primary),0.2)] group animate-fade-in-up",
       delay && `animate-delay-${delay}`
     )}
   >
     <div className="flex justify-between items-start mb-4">
-      <div className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10 border border-white/5 group-hover:bg-gradient-to-br group-hover:from-primary/20 group-hover:to-secondary/20 transition-colors">
-        <Icon className="h-5 w-5 text-primary" />
-      </div>
-        {change !== 'N/A' && (
-        <div className={cn(
-          "flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full border",
-          changeType === 'increase' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
-            changeType === 'decrease' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
-              'bg-white/5 text-muted-foreground border-white/10'
-        )}>
-          {changeType === 'increase' ? <ArrowUp className="h-3 w-3" /> : changeType === 'decrease' ? <ArrowDown className="h-3 w-3" /> : null}
-          {change}
+        <div className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10 border border-white/5 group-hover:bg-gradient-to-br group-hover:from-primary/20 group-hover:to-secondary/20 transition-colors">
+          <Icon className="h-5 w-5 text-primary" />
         </div>
+        {safeChange && safeChange !== 'N/A' && (
+          <div className={cn(
+            "flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full border",
+            changeType === 'increase' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
+              changeType === 'decrease' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                'bg-white/5 text-muted-foreground border-white/10'
+          )}>
+            {changeType === 'increase' ? <ArrowUp className="h-3 w-3" /> : changeType === 'decrease' ? <ArrowDown className="h-3 w-3" /> : null}
+            {safeChange}
+          </div>
         )}
     </div>
     <div className="space-y-1">
-      <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
-      <div className="text-3xl font-bold bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent group-hover:from-primary group-hover:to-secondary transition-all">
-        {value}
-      </div>
+        <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
+        <div className="text-3xl font-bold bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent group-hover:from-primary group-hover:to-secondary transition-all">
+          {safeValue}
+        </div>
     </div>
   </div>
-);
+  );
+};
 
 interface AffiliateSummary {
   totalEarnings: number;
