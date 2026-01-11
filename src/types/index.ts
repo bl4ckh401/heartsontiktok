@@ -26,6 +26,7 @@ export type User = {
   subscriptionStatus: 'ACTIVE' | 'INACTIVE';
   subscriptionPlan?: string;
   createdAt: string;
+  photoURL?: string;
 };
 
 export type Transaction = {
@@ -49,4 +50,5 @@ export type CampaignSubmission = {
   createdAt: string;
   title?: string;
   cover_image_url?: string;
+  tiktokVideoId?: string;
 };

@@ -336,7 +336,7 @@ export default function AdminDashboard() {
                             </TableCell>
                             <TableCell>
                               <a
-                                href={submission.videoUrl || `https://www.tiktok.com/@/video/${(submission as any).tiktokVideoId}`}
+                                href={submission.videoUrl || `https://www.tiktok.com/@/video/${submission.tiktokVideoId}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="group relative block w-32 aspect-video rounded-md overflow-hidden bg-black/10 border border-white/10"
