@@ -53,7 +53,7 @@ function LoginContent() {
   return (
     <div className="w-full max-w-sm mx-auto space-y-6">
       <div className="text-center space-y-2 mb-8">
-        <h1 className="text-4xl font-bold tracking-tight">Welcome Back</h1>
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Welcome Back</h1>
         <p className="text-muted-foreground">Log in to manage your campaigns and earnings.</p>
       </div>
 
@@ -114,7 +114,7 @@ export default function LoginPage() {
   }, { scope: containerRef });
 
   return (
-    <div ref={containerRef} className="min-h-screen w-full flex overflow-hidden bg-background">
+    <div ref={containerRef} className="min-h-screen w-full flex bg-background">
       {/* Left Column - Visuals (Hidden on mobile) */}
       <div
         ref={leftColRef}

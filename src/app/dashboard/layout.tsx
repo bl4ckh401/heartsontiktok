@@ -243,7 +243,7 @@ export default function DashboardLayout({
         </div>
       </header>
 
-      <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-8 lg:p-8 overflow-x-hidden relative z-10 animate-fade-in-up">
+      <main className="flex flex-1 flex-col gap-4 p-2 sm:p-4 lg:gap-8 lg:p-8 overflow-x-hidden relative z-10 animate-fade-in-up">
           {showSubscriptionGate ? (
           <div className="flex items-center justify-center h-[60vh]">
             <div className="glass-panel p-10 rounded-3xl max-w-md w-full text-center border border-red-500/30 shadow-[0_0_50px_rgba(239,68,68,0.2)]">

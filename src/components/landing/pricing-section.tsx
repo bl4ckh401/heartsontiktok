@@ -81,7 +81,7 @@ export function PricingSection() {
           <Card
             key={tier.name}
             className={`flex flex-col border-2 ${
-              tier.popular ? 'border-primary shadow-2xl scale-105' : 'border-border'
+              tier.popular ? 'border-primary md:shadow-2xl md:scale-105' : 'border-border'
             }`}
           >
             <CardHeader className="relative">

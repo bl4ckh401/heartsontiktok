@@ -47,7 +47,7 @@ const MetricCard = ({ title, value, change, changeType, icon: Icon, delay = 0 }:
   return (
     <div 
     className={cn(
-      "glass-card rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(var(--primary),0.2)] group animate-fade-in-up",
+      "glass-card rounded-2xl p-4 sm:p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(var(--primary),0.2)] group animate-fade-in-up",
       delay && `animate-delay-${delay}`
     )}
   >
@@ -234,7 +234,7 @@ export default function DashboardPage() {
             </Select>
         </div>
 
-        <div className="h-[350px] w-full">
+        <div className="h-[250px] sm:h-[350px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
               <defs>
@@ -286,47 +286,48 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Recent Videos Table */}
-      <div className="glass-card rounded-3xl p-6 animate-fade-in-up animate-delay-300">
+      {/* Recent Videos Section */}
+      <div className="glass-card rounded-3xl p-4 sm:p-6 animate-fade-in-up animate-delay-300">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <CardTitle className="text-xl">Recent Videos</CardTitle>
-            <CardDescription>Detailed engagement stats per video</CardDescription>
+            <CardTitle className="text-lg sm:text-xl">Recent Videos</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">Detailed engagement stats per video</CardDescription>
           </div>
-          <Button variant="outline" size="sm" className="bg-transparent border-white/10 hover:bg-white/5">View All</Button>
+          <Button variant="outline" size="sm" className="bg-transparent border-white/10 hover:bg-white/5 text-xs sm:text-sm">View All</Button>
         </div>
 
-        <Table>
-          <TableHeader>
-            <TableRow className="border-white/10 hover:bg-transparent">
-              <TableHead className="w-[80px]">Media</TableHead>
-              <TableHead>Title</TableHead>
-              <TableHead className="text-right">Views</TableHead>
-              <TableHead className="text-right">Likes</TableHead>
-              <TableHead className="text-right">Comments</TableHead>
-              <TableHead className="text-right">Shares</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              // Skeleton loading state
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i} className="border-white/5">
-                  <TableCell><Skeleton className="h-12 w-12 rounded-lg bg-white/5" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-40 bg-white/5" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-16 ml-auto bg-white/5" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-16 ml-auto bg-white/5" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-16 ml-auto bg-white/5" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-16 ml-auto bg-white/5" /></TableCell>
-                </TableRow>
-              ))
-            ) : recentVideos.length > 0 ? (
-              recentVideos.map((video) => (
-                <TableRow key={video.id} className="border-white/5 hover:bg-white/5 transition-colors group">
-                  <TableCell>
-                    <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-white/10 group-hover:border-primary/50 transition-colors">
-                      <Image
-                        alt={video.title || 'Video thumbnail'}
+        {/* Desktop Table View */}
+        <div className="hidden md:block">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-white/10 hover:bg-transparent">
+                <TableHead className="w-[80px]">Media</TableHead>
+                <TableHead>Title</TableHead>
+                <TableHead className="text-right">Views</TableHead>
+                <TableHead className="text-right">Likes</TableHead>
+                <TableHead className="text-right">Comments</TableHead>
+                <TableHead className="text-right">Shares</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i} className="border-white/5">
+                    <TableCell><Skeleton className="h-12 w-12 rounded-lg bg-white/5" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-40 bg-white/5" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-16 ml-auto bg-white/5" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-16 ml-auto bg-white/5" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-16 ml-auto bg-white/5" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-16 ml-auto bg-white/5" /></TableCell>
+                  </TableRow>
+                ))
+              ) : recentVideos.length > 0 ? (
+                recentVideos.map((video) => (
+                  <TableRow key={video.id} className="border-white/5 hover:bg-white/5 transition-colors group">
+                    <TableCell>
+                      <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-white/10 group-hover:border-primary/50 transition-colors">
+                        <Image
+                          alt={video.title || 'Video thumbnail'}
                           className="object-cover"
                           fill
                           src={video.cover_image_url || 'https://placehold.co/64x64.png'}
@@ -345,15 +346,79 @@ export default function DashboardPage() {
                     <TableCell className="text-right text-sm">{video.share_count?.toLocaleString() || 0}</TableCell>
                   </TableRow>
                 ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                  No videos found. Start creating to see stats here!
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                    No videos found. Start creating to see stats here!
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Mobile Card Feed View */}
+        <div className="md:hidden space-y-4">
+          {loading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="p-4 rounded-2xl bg-white/5 border border-white/5 flex gap-4">
+                <Skeleton className="w-20 h-28 rounded-xl bg-white/5 flex-shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-3/4 bg-white/5" />
+                  <Skeleton className="h-4 w-1/2 bg-white/5" />
+                </div>
+              </div>
+            ))
+          ) : recentVideos.length > 0 ? (
+            recentVideos.map((video) => (
+              <div key={video.id} className="p-4 rounded-2xl bg-white/5 border border-white/5 flex gap-4 active:scale-[0.98] transition-transform">
+                {/* Thumbnail */}
+                <div className="relative w-20 h-28 rounded-xl overflow-hidden flex-shrink-0 border border-white/10">
+                  <Image
+                    alt={video.title || 'Video thumbnail'}
+                    className="object-cover"
+                    fill
+                    src={video.cover_image_url || 'https://placehold.co/64x64.png'}
+                    unoptimized
+                    onError={(e) => (e.currentTarget.src = 'https://placehold.co/64x64.png')}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                  <div className="absolute bottom-1 left-2 flex items-center gap-1 text-[10px] font-medium text-white">
+                    <Video className="w-3 h-3" />
+                    <span>Reel</span>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 flex flex-col justify-between py-1">
+                  <div>
+                    <h3 className="font-semibold text-sm line-clamp-2 text-white mb-2">{video.title || 'Untitled Video'}</h3>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <TrendingUp className="w-3 h-3 text-primary" />
+                        <span className="text-foreground">{video.view_count?.toLocaleString() || 0}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Heart className="w-3 h-3 text-red-500" />
+                        <span className="text-foreground">{video.like_count?.toLocaleString() || 0}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Footer Stats */}
+                  <div className="pt-3 mt-2 border-t border-white/5 flex justify-between text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" /> {video.comment_count || 0}</span>
+                    <span className="flex items-center gap-1"><Share2 className="w-3 h-3" /> {video.share_count || 0}</span>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-8 text-muted-foreground text-sm">
+              No videos found. Time to create!
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

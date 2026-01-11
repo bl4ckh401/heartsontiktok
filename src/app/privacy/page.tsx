@@ -1,277 +1,172 @@
 import { Logo } from '@/components/icons';
 import Link from 'next/link';
-import { Shield, Lock, Eye, Database, Users, FileText, Globe, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Lock, Eye, Database, Globe, ShieldCheck } from 'lucide-react';
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center">
-          <Link href="/" className="flex items-center space-x-2 group">
-            <Logo className="h-7 w-7 text-primary transition-transform group-hover:scale-110" />
-            <span className="font-bold text-lg">likezBuddy</span>
+    <div className="min-h-screen bg-background text-foreground selection:bg-primary/20">
+
+      {/* Header */}
+      <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-background/80 backdrop-blur-xl">
+        <div className="container flex h-16 items-center place-content-between">
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+              <ArrowLeft className="w-4 h-4 text-primary" />
+            </div>
+            <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">Back to Home</span>
           </Link>
+          <div className="flex items-center gap-2">
+            <Logo className="h-6 w-6 text-primary" />
+            <span className="font-bold">likezBuddy</span>
+          </div>
         </div>
       </header>
-      <main className="container mx-auto py-16 px-4 md:px-8 max-w-5xl">
-        <article className="space-y-12">
-          <div className="text-center space-y-4">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary/10 mb-4">
-              <Shield className="w-10 h-10 text-primary" />
-            </div>
-            <h1 className="text-5xl md:text-6xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">Privacy Policy</h1>
-            <p className="text-lg text-muted-foreground">Last updated: {new Date().toLocaleDateString()}</p>
+
+      <main className="container py-12 md:py-20 max-w-7xl mx-auto">
+
+        {/* Page Header */}
+        <div className="max-w-3xl mx-auto text-center mb-16 md:mb-24">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/50">
+            Privacy Policy
+          </h1>
+          <p className="text-lg text-muted-foreground leading-relaxed">
+            Your privacy is paramount. This policy details how we collect, use, and protect your personal information on the LikezBuddy platform.
+          </p>
+          <div className="mt-8 flex items-center justify-center gap-4 text-sm text-muted-foreground">
+            <span className="px-3 py-1 rounded-full border border-white/10 bg-white/5">Effective Date: {new Date().toLocaleDateString()}</span>
+            <span className="flex items-center gap-1"><ShieldCheck className="w-4 h-4" /> Data Protection</span>
           </div>
+        </div>
 
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent border border-blue-500/20 p-8">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl"></div>
-            <div className="relative flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                <Lock className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-blue-900 dark:text-blue-100 mb-2">Privacy Notice</h2>
-                <p className="text-blue-800 dark:text-blue-200 leading-relaxed">LikezBuddy collects and processes data as described below. By using our platform, you consent to our data practices and assume responsibility for your own privacy protection.</p>
-              </div>
-            </div>
-          </div>
+        <div className="grid md:grid-cols-[250px_1fr] lg:grid-cols-[300px_1fr] gap-12 relative">
 
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Database className="w-5 h-5 text-primary" />
-              </div>
-              <h2 className="text-3xl font-bold">1. Information We Collect</h2>
-            </div>
-            <h3 className="text-xl font-semibold mb-3 text-primary">Account Information:</h3>
-          <ul>
-            <li>TikTok profile data (username, display name, profile picture, follower count)</li>
-            <li>TikTok authentication tokens and access credentials</li>
-            <li>Video performance metrics (views, likes, comments, shares)</li>
-            <li>Campaign participation and submission data</li>
-          </ul>
-          
-            <h3 className="text-xl font-semibold mb-3 mt-6 text-primary">Payment Information:</h3>
-          <ul>
-            <li>M-Pesa phone numbers for payouts (KES 50 per 1,000 likes)</li>
-            <li>Transaction history and payout records (daily limits: KES 10K-20K)</li>
-            <li>Subscription plan data (Gold/Platinum/Diamond: KES 1K-5.5K/month)</li>
-            <li>Affiliate commission records (30% direct, 5% indirect, 4 levels)</li>
-            <li>Campaign participation tracking (3-10 campaigns per month)</li>
-          </ul>
+          {/* Sidebar Navigation (Desktop) */}
+          <aside className="hidden md:block">
+            <nav className="sticky top-24 space-y-1">
+              <p className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-2">Sections</p>
+              <a href="#collection" className="block px-4 py-2 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors">1. Data Collection</a>
+              <a href="#usage" className="block px-4 py-2 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors">2. Usage</a>
+              <a href="#sharing" className="block px-4 py-2 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors">3. Sharing</a>
+              <a href="#security" className="block px-4 py-2 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors">4. Security</a>
+              <a href="#cookies" className="block px-4 py-2 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors">5. Cookies</a>
+            </nav>
+          </aside>
 
-            <h3 className="text-xl font-semibold mb-3 mt-6 text-primary">Usage Data:</h3>
-          <ul>
-            <li>Platform activity logs and interaction data</li>
-            <li>Device information and IP addresses</li>
-            <li>Browser type, operating system, and referral sources</li>
-            <li>Cookies and tracking technologies</li>
-          </ul>
+          {/* Content Content */}
+          <article className="prose prose-invert prose-lg max-w-none space-y-12">
 
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Eye className="w-5 h-5 text-primary" />
-              </div>
-              <h2 className="text-3xl font-bold">2. How We Use Your Information</h2>
-            </div>
-          <p><strong>We use collected information to:</strong></p>
-          <ul>
-            <li>Calculate and process video payouts (KES 50 per 1,000 likes)</li>
-            <li>Manage affiliate commissions (30% direct, 5% indirect up to 4 levels)</li>
-            <li>Enforce campaign participation limits (3-10 per month based on plan)</li>
-            <li>Apply daily payout limits (KES 10,000-20,000 based on subscription)</li>
-            <li>Process monthly subscription billing (KES 1,000-5,500)</li>
-            <li>Track TikTok video performance and engagement metrics</li>
-            <li>Facilitate M-Pesa payments through Swapuzi integration</li>
-            <li>Monitor platform usage and prevent fraud or abuse</li>
-            <li>Communicate about account status, limits, and platform updates</li>
-            <li>Comply with legal obligations and enforce our terms</li>
-          </ul>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Users className="w-5 h-5 text-primary" />
-              </div>
-              <h2 className="text-3xl font-bold">3. Information Sharing & Disclosure</h2>
-            </div>
-          <p><strong>We may share your information with:</strong></p>
-          <ul>
-            <li><strong>TikTok:</strong> Through API integrations for content posting and metrics</li>
-            <li><strong>Payment Processors:</strong> Swapuzi and other financial service providers</li>
-            <li><strong>Campaign Sponsors:</strong> Performance metrics and content data for campaigns you join</li>
-            <li><strong>Legal Authorities:</strong> When required by law or to protect our rights</li>
-            <li><strong>Service Providers:</strong> Third-party vendors supporting platform operations</li>
-            <li><strong>Business Transfers:</strong> In case of merger, acquisition, or asset sale</li>
-          </ul>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Shield className="w-5 h-5 text-primary" />
-              </div>
-              <h2 className="text-3xl font-bold">4. Data Security & Protection</h2>
-            </div>
-          <p><strong>Security Measures:</strong></p>
-          <ul>
-            <li>Encrypted data transmission and storage</li>
-            <li>Access controls and authentication systems</li>
-            <li>Regular security audits and monitoring</li>
-            <li>Secure payment processing through certified providers</li>
-          </ul>
-          
-            <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-yellow-500/10 via-yellow-500/5 to-transparent border border-yellow-500/20 p-6 my-6">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-yellow-900 dark:text-yellow-100 mb-1">Security Disclaimer</p>
-                  <p className="text-yellow-800 dark:text-yellow-200 text-sm leading-relaxed">While we implement security measures, we cannot guarantee absolute security. Users are responsible for maintaining account security and reporting suspicious activity.</p>
-                </div>
-              </div>
-            </div>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-primary" />
-              </div>
-              <h2 className="text-3xl font-bold">5. Data Retention</h2>
-            </div>
-          <p><strong>We retain information:</strong></p>
-          <ul>
-            <li>Account data: Until account deletion or 2 years of inactivity</li>
-            <li>Payment records: 7 years (video payouts, affiliate commissions, subscriptions)</li>
-            <li>TikTok performance data: 2 years for payout calculations</li>
-            <li>Campaign participation history: 2 years for limit enforcement</li>
-            <li>Usage logs: 12 months for platform optimization</li>
-            <li>Legal compliance data: As required by Kenyan and international laws</li>
-          </ul>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <h2 className="text-3xl font-bold mb-6">6. Cookies & Tracking</h2>
-          <p><strong>We use cookies for:</strong></p>
-          <ul>
-            <li>Authentication and session management</li>
-            <li>Platform functionality and user preferences</li>
-            <li>Analytics and performance monitoring</li>
-            <li>Security and fraud prevention</li>
-          </ul>
-          <p>Users can control cookies through browser settings, but this may affect platform functionality.</p>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <h2 className="text-3xl font-bold mb-6">7. Third-Party Integrations</h2>
-          <p><strong>Our platform integrates with:</strong></p>
-          <ul>
-            <li><strong>TikTok API:</strong> Subject to TikTok's privacy policy and terms</li>
-            <li><strong>Firebase:</strong> Google's privacy policy applies to data storage</li>
-            <li><strong>Swapuzi:</strong> Payment processor with separate privacy terms</li>
-            <li><strong>Analytics Services:</strong> For platform improvement and monitoring</li>
-          </ul>
-          <p className="font-semibold text-red-600">We are not responsible for third-party privacy practices. Users should review all third-party privacy policies.</p>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <h2 className="text-3xl font-bold mb-6">8. User Rights & Controls</h2>
-          <p><strong>Depending on your location, you may have rights to:</strong></p>
-          <ul>
-            <li>Access your personal information</li>
-            <li>Correct inaccurate data</li>
-            <li>Delete your account and associated data</li>
-            <li>Restrict or object to certain processing</li>
-            <li>Data portability (where technically feasible)</li>
-          </ul>
-          <p>Contact us through the platform to exercise these rights. We may require identity verification and have up to 30 days to respond.</p>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Globe className="w-5 h-5 text-primary" />
-              </div>
-              <h2 className="text-3xl font-bold">9. International Data Transfers</h2>
-            </div>
-          <p>Your information may be transferred to and processed in countries outside your residence, including Kenya, the United States, and other jurisdictions where our service providers operate. By using our platform, you consent to such transfers.</p>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <h2 className="text-3xl font-bold mb-6">10. Children's Privacy</h2>
-          <p><strong>Our platform is not intended for users under 18.</strong> We do not knowingly collect information from minors. If we discover such collection, we will delete the information immediately.</p>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <h2 className="text-3xl font-bold mb-6">11. California Privacy Rights</h2>
-          <p>California residents have additional rights under CCPA, including the right to know about personal information collection, sale, and disclosure. We do not sell personal information to third parties.</p>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <h2 className="text-3xl font-bold mb-6">12. GDPR Compliance</h2>
-          <p>For EU residents, we process data based on legitimate interests, contractual necessity, or consent. You have rights to access, rectify, erase, restrict, and port your data, as well as object to processing.</p>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <h2 className="text-3xl font-bold mb-6">13. Policy Updates</h2>
-          <p>We may update this policy at any time. Material changes will be communicated through the platform or email. Continued use after updates constitutes acceptance of the revised policy.</p>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <h2 className="text-3xl font-bold mb-6">14. Data Breach Notification</h2>
-          <p>In case of a data breach affecting your information, we will notify you and relevant authorities as required by law, typically within 72 hours of discovery.</p>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <h2 className="text-3xl font-bold mb-6">15. Contact Information</h2>
-          <p>For privacy-related questions or requests:</p>
-          <ul>
-            <li>Use the platform's support system</li>
-              <li>Email: privacy@likezzbuddy.com</li>
-            <li>Response time: Up to 30 business days</li>
-          </ul>
-
-          </section>
-
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-500/10 via-red-500/5 to-transparent border-2 border-red-500/30 p-8">
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-red-500/10 rounded-full blur-3xl"></div>
-            <div className="relative">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-red-500/20 flex items-center justify-center">
-                  <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
-                </div>
-                <h3 className="text-2xl font-bold text-red-900 dark:text-red-100">Important Privacy Notice</h3>
-              </div>
-              <p className="text-red-800 dark:text-red-200 font-semibold mb-4">
-                BY USING LikezBuddy, YOU ACKNOWLEDGE:
+            <section id="collection" className="scroll-mt-24">
+              <h2 className="flex items-center gap-3 text-2xl font-bold mb-6 text-foreground">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-500/10 text-blue-500 text-sm">1</span>
+                Information We Collect
+              </h2>
+              <p className="text-muted-foreground mb-6">
+                We collect specific data to enable monetization and platform functionality.
               </p>
-              <ul className="space-y-2 text-red-800 dark:text-red-200">
-                <li className="flex items-start gap-2"><span className="text-red-500 mt-1">•</span><span>You understand our data collection and sharing practices</span></li>
-                <li className="flex items-start gap-2"><span className="text-red-500 mt-1">•</span><span>You consent to data processing as described in this policy</span></li>
-                <li className="flex items-start gap-2"><span className="text-red-500 mt-1">•</span><span>You are responsible for protecting your own account security</span></li>
-                <li className="flex items-start gap-2"><span className="text-red-500 mt-1">•</span><span>We are not liable for third-party privacy practices</span></li>
-                <li className="flex items-start gap-2"><span className="text-red-500 mt-1">•</span><span>You assume all risks related to data sharing and platform use</span></li>
+              <div className="grid sm:grid-cols-2 gap-4 not-prose">
+                <div className="p-6 rounded-xl bg-white/5 border border-white/5">
+                  <Database className="w-6 h-6 text-primary mb-4" />
+                  <h3 className="text-lg font-bold mb-2">Account Data</h3>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li>• TikTok Phone Number/Email</li>
+                    <li>• Profile Statistics</li>
+                    <li>• M-Pesa Payment Details</li>
+                  </ul>
+                </div>
+                <div className="p-6 rounded-xl bg-white/5 border border-white/5">
+                  <Eye className="w-6 h-6 text-primary mb-4" />
+                  <h3 className="text-lg font-bold mb-2">Usage Metrics</h3>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li>• Login History</li>
+                    <li>• Campaign Participation</li>
+                    <li>• Transaction Logs</li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            <div className="h-px w-full bg-white/5" />
+
+            <section id="usage" className="scroll-mt-24">
+              <h2 className="flex items-center gap-3 text-2xl font-bold mb-6 text-foreground">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-500/10 text-blue-500 text-sm">2</span>
+                How We Use Your Data
+              </h2>
+              <p className="text-muted-foreground">
+                We strictly use your data to facilitate the core services of LikezBuddy:
+              </p>
+              <ul className="space-y-2 text-muted-foreground list-none pl-0 mt-4">
+                <li className="flex gap-3">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2.5" />
+                  <span>Processing daily M-Pesa payouts (KES 50/1k likes).</span>
+                </li>
+                <li className="flex gap-3">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2.5" />
+                  <span>Verifying campaign performance and calculating earnings.</span>
+                </li>
+                <li className="flex gap-3">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2.5" />
+                  <span>Preventing fraud and enforcing subscription limits.</span>
+                </li>
               </ul>
-            </div>
-          </div>
-        </article>
+            </section>
+
+            <div className="h-px w-full bg-white/5" />
+
+            <section id="sharing" className="scroll-mt-24">
+              <h2 className="flex items-center gap-3 text-2xl font-bold mb-6 text-foreground">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-500/10 text-blue-500 text-sm">3</span>
+                Information Sharing
+              </h2>
+              <p className="text-muted-foreground">
+                We do not sell your personal data. We share information only with:
+              </p>
+              <div className="mt-6 space-y-4 not-prose">
+                <div className="flex items-center gap-4 p-4 rounded-lg bg-white/5">
+                  <span className="font-bold min-w-[120px]">Swapuzi</span>
+                  <span className="text-sm text-muted-foreground">Payment processor for M-Pesa transactions.</span>
+                </div>
+                <div className="flex items-center gap-4 p-4 rounded-lg bg-white/5">
+                  <span className="font-bold min-w-[120px]">TikTok API</span>
+                  <span className="text-sm text-muted-foreground">Integration for content verification.</span>
+                </div>
+              </div>
+            </section>
+
+            <div className="h-px w-full bg-white/5" />
+
+            <section id="security" className="scroll-mt-24">
+              <h2 className="flex items-center gap-3 text-2xl font-bold mb-6 text-foreground">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-500/10 text-blue-500 text-sm">4</span>
+                Data Security
+              </h2>
+              <div className="rounded-2xl border border-blue-500/10 bg-blue-500/5 p-6 md:p-8 not-prose">
+                <div className="flex items-start gap-4">
+                  <Lock className="w-6 h-6 text-blue-500 shrink-0 mt-1" />
+                  <div>
+                    <h3 className="text-lg font-bold text-blue-500 mb-2">Bank-Grade Encryption</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      All sensitive financial data is encrypted in transit and at rest. We use industry-standard security protocols to protect your account information.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div className="h-px w-full bg-white/5" />
+
+            <section id="cookies" className="scroll-mt-24 pb-24">
+              <h2 className="flex items-center gap-3 text-2xl font-bold mb-6 text-foreground">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-500/10 text-blue-500 text-sm">5</span>
+                Cookies & Tracking
+              </h2>
+              <p className="text-muted-foreground">
+                We use cookies solely for session management and user authentication. You can control cookie preferences in your browser settings, though disabling them may affect platform functionality.
+              </p>
+            </section>
+
+          </article>
+        </div>
       </main>
     </div>
   );

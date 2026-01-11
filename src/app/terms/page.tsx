@@ -1,261 +1,203 @@
 import { Logo } from '@/components/icons';
 import Link from 'next/link';
-import { FileText, AlertTriangle, DollarSign, Shield, Scale, Ban, XCircle, Info } from 'lucide-react';
+import { ArrowLeft, FileText, Scale, Shield, AlertTriangle } from 'lucide-react';
 
 export default function TermsOfServicePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center">
-          <Link href="/" className="flex items-center space-x-2 group">
-            <Logo className="h-7 w-7 text-primary transition-transform group-hover:scale-110" />
-            <span className="font-bold text-lg">likezBuddy</span>
+    <div className="min-h-screen bg-background text-foreground selection:bg-primary/20">
+
+      {/* Header */}
+      <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-background/80 backdrop-blur-xl">
+        <div className="container flex h-16 items-center place-content-between">
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+              <ArrowLeft className="w-4 h-4 text-primary" />
+            </div>
+            <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">Back to Home</span>
           </Link>
+          <div className="flex items-center gap-2">
+            <Logo className="h-6 w-6 text-primary" />
+            <span className="font-bold">likezBuddy</span>
+          </div>
         </div>
       </header>
-      <main className="container mx-auto py-16 px-4 md:px-8 max-w-5xl">
-        <article className="space-y-12">
-          <div className="text-center space-y-4">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary/10 mb-4">
-              <FileText className="w-10 h-10 text-primary" />
-            </div>
-            <h1 className="text-5xl md:text-6xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">Terms & Conditions</h1>
-            <p className="text-lg text-muted-foreground">Last updated: {new Date().toLocaleDateString()}</p>
+
+      <main className="container py-12 md:py-20 max-w-7xl mx-auto">
+
+        {/* Page Header */}
+        <div className="max-w-3xl mx-auto text-center mb-16 md:mb-24">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/50">
+            Terms of Service
+          </h1>
+          <p className="text-lg text-muted-foreground leading-relaxed">
+            Please read these terms carefully before using our platform. They contain important information regarding your legal rights and remedies.
+          </p>
+          <div className="mt-8 flex items-center justify-center gap-4 text-sm text-muted-foreground">
+            <span className="px-3 py-1 rounded-full border border-white/10 bg-white/5">Last Updated: {new Date().toLocaleDateString()}</span>
+            <span className="flex items-center gap-1"><Scale className="w-4 h-4" /> Legal Agreement</span>
           </div>
+        </div>
 
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-500/10 via-red-500/5 to-transparent border-2 border-red-500/30 p-8">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-full blur-3xl"></div>
-            <div className="relative flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-red-500/20 flex items-center justify-center">
-                <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-red-900 dark:text-red-100 mb-2">Important Legal Notice</h2>
-                <p className="text-red-800 dark:text-red-200 font-semibold leading-relaxed">BY USING LikezBuddy, YOU ASSUME ALL RISKS. WE ARE NOT RESPONSIBLE FOR ANY LOSSES, DAMAGES, OR CONSEQUENCES.</p>
-              </div>
-            </div>
-          </div>
+        <div className="grid md:grid-cols-[250px_1fr] lg:grid-cols-[300px_1fr] gap-12 relative">
 
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-primary" />
-              </div>
-              <h2 className="text-3xl font-bold">1. Acceptance of Terms</h2>
-            </div>
-            <p>By accessing LikezBuddy ("Platform", "Service", "we", "us"), you agree to these Terms. If you disagree, do not use our service. You must be 18+ and legally capable of entering contracts.</p>
+          {/* Sidebar Navigation (Desktop) */}
+          <aside className="hidden md:block">
+            <nav className="sticky top-24 space-y-1">
+              <p className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-2">Contents</p>
+              <a href="#acceptance" className="block px-4 py-2 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors">1. Acceptance</a>
+              <a href="#platform" className="block px-4 py-2 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors">2. Platform & Earnings</a>
+              <a href="#responsibilities" className="block px-4 py-2 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors">3. Responsibilities</a>
+              <a href="#liability" className="block px-4 py-2 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors">4. Liability Limits</a>
+              <a href="#payment" className="block px-4 py-2 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors">5. Payment Terms</a>
+              <a href="#termination" className="block px-4 py-2 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors">6. Termination</a>
+            </nav>
+          </aside>
 
-          </section>
+          {/* Content Content */}
+          <article className="prose prose-invert prose-lg max-w-none space-y-12">
 
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Info className="w-5 h-5 text-primary" />
-              </div>
-              <h2 className="text-3xl font-bold">2. Platform Description & Disclaimers</h2>
-            </div>
-            <p><strong>LikezBuddy is ONLY a marketplace platform with the following features:</strong></p>
-          <ul>
-            <li><strong>Video Payouts:</strong> KES 50 per 1,000 likes on campaign videos</li>
-            <li><strong>Affiliate System:</strong> 30% direct + 5% indirect commissions (4 levels)</li>
-            <li><strong>Plan Limits:</strong> Gold (3), Platinum (5), Diamond (10) campaigns/month</li>
-            <li><strong>Daily Limits:</strong> KES 10K/15K/20K payout limits per plan</li>
-            <li><strong>Pricing:</strong> KES 1,000/3,000/5,500 monthly subscriptions</li>
-          </ul>
-          <p><strong>WE ARE NOT RESPONSIBLE FOR:</strong></p>
-          <ul>
-            <li>TikTok account suspensions, bans, or policy violations</li>
-            <li>Content removal or community guideline strikes</li>
-            <li>Payment processing failures or delays</li>
-            <li>Campaign performance or engagement results</li>
-            <li>Subscription plan changes or feature modifications</li>
-            <li>Third-party platform changes or policies</li>
-            <li>Lost earnings, missed opportunities, or business losses</li>
-            <li>Technical issues, bugs, or platform downtime</li>
-          </ul>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Shield className="w-5 h-5 text-primary" />
-              </div>
-              <h2 className="text-3xl font-bold">3. User Responsibilities</h2>
-            </div>
-            <h3 className="text-xl font-semibold mb-3 text-primary">ALL USERS MUST:</h3>
-          <ul>
-            <li>Comply with ALL TikTok terms, policies, and community guidelines</li>
-            <li>Ensure content is original and non-infringing</li>
-            <li>Disclose sponsored content as required by law</li>
-            <li>Maintain account security and authenticity</li>
-            <li>Pay all applicable taxes on earnings</li>
-            <li>Verify all legal requirements in their jurisdiction</li>
-          </ul>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <XCircle className="w-5 h-5 text-primary" />
-              </div>
-              <h2 className="text-3xl font-bold">4. Complete Limitation of Liability</h2>
-            </div>
-            <p className="font-bold text-red-600 text-lg">LikezBuddy PROVIDES SERVICES "AS IS" WITHOUT ANY WARRANTIES. WE DISCLAIM ALL LIABILITY FOR:</p>
-          <ul>
-            <li><strong>Account Issues:</strong> Suspensions, bans, restrictions by TikTok or other platforms</li>
-            <li><strong>Content Issues:</strong> Removal, strikes, policy violations, copyright claims</li>
-            <li><strong>Financial Losses:</strong> Lost revenue, missed opportunities, payment failures</li>
-            <li><strong>Technical Problems:</strong> Bugs, downtime, data loss, security breaches</li>
-            <li><strong>Third-Party Actions:</strong> Platform changes, policy updates, algorithm changes</li>
-            <li><strong>Legal Issues:</strong> Regulatory compliance, tax obligations, licensing requirements</li>
-            <li><strong>All Damages:</strong> Direct, indirect, consequential, punitive, or special damages</li>
-          </ul>
-          <p className="font-bold text-red-600">MAXIMUM LIABILITY LIMITED TO KES 100 TOTAL.</p>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Scale className="w-5 h-5 text-primary" />
-              </div>
-              <h2 className="text-3xl font-bold">5. Full Indemnification</h2>
-            </div>
-            <p><strong>Users agree to indemnify, defend, and hold harmless LikezBuddy from ALL claims, damages, costs, and expenses including attorney fees arising from:</strong></p>
-          <ul>
-            <li>User content, activities, or conduct</li>
-            <li>Violation of these terms or any laws</li>
-            <li>Infringement of third-party rights</li>
-            <li>TikTok or platform policy violations</li>
-            <li>Tax obligations or regulatory compliance</li>
-            <li>Any use of our platform or services</li>
-          </ul>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <DollarSign className="w-5 h-5 text-primary" />
-              </div>
-              <h2 className="text-3xl font-bold">6. Payment & Financial Terms</h2>
-            </div>
-          <p><strong>Subscription Pricing (Monthly, Non-Refundable):</strong></p>
-          <ul>
-            <li>Gold Plan: KES 1,000/month - 3 campaigns, KES 10,000 daily limit</li>
-            <li>Platinum Plan: KES 3,000/month - 5 campaigns, KES 15,000 daily limit</li>
-            <li>Diamond Plan: KES 5,500/month - 10 campaigns, KES 20,000 daily limit</li>
-          </ul>
-          <p><strong>Payout Structure:</strong></p>
-          <ul>
-            <li>Video earnings: KES 50 per 1,000 likes (all plans)</li>
-            <li>Affiliate commissions: 30% direct, 5% indirect (4 levels)</li>
-            <li>Daily payout limits enforced automatically</li>
-            <li>All payments via M-Pesa through Swapuzi (third-party processor)</li>
-          </ul>
-          <p><strong>Financial Disclaimers:</strong></p>
-          <ul>
-            <li>All subscription fees are non-refundable under any circumstances</li>
-            <li>Users solely responsible for tax reporting and compliance</li>
-            <li>We may modify pricing, limits, or features without notice</li>
-            <li>We may suspend payouts for violations or technical issues</li>
-            <li>No guarantee of payment processing timing or success</li>
-            <li>Minimum payout: KES 10, maximum per transaction: plan limits</li>
-          </ul>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Ban className="w-5 h-5 text-primary" />
-              </div>
-              <h2 className="text-3xl font-bold">7. Prohibited Activities</h2>
-            </div>
-          <p>Users may not engage in:</p>
-          <ul>
-            <li>Any fraudulent, misleading, or deceptive practices</li>
-            <li>Violation of platform policies or applicable laws</li>
-            <li>Harassment, hate speech, or illegal content</li>
-            <li>Manipulation of metrics, engagement, or algorithms</li>
-            <li>Unauthorized access or system interference</li>
-            <li>Any activity that could harm our reputation or operations</li>
-          </ul>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <h2 className="text-3xl font-bold mb-6">8. Account Termination</h2>
-          <p><strong>We may suspend or terminate accounts immediately at our sole discretion for any reason or no reason. No refunds, credits, or compensation will be provided for terminated accounts.</strong></p>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <h2 className="text-3xl font-bold mb-6">9. Intellectual Property</h2>
-          <p>Users retain content ownership but grant us unlimited license to use, display, and process content. Users must respect all intellectual property rights and assume full liability for infringement claims.</p>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <h2 className="text-3xl font-bold mb-6">10. Dispute Resolution</h2>
-          <p><strong>ALL disputes resolved through binding arbitration in Nairobi, Kenya. Users waive rights to jury trials and class actions. Kenyan law governs all disputes.</strong></p>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <h2 className="text-3xl font-bold mb-6">11. Modifications</h2>
-          <p>We may modify terms at any time without notice. Continued use constitutes acceptance. Users responsible for reviewing terms regularly.</p>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <h2 className="text-3xl font-bold mb-6">12. Force Majeure</h2>
-          <p>We are not liable for delays or failures due to circumstances beyond our control including but not limited to: natural disasters, government actions, internet outages, third-party platform changes, or technical failures.</p>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <h2 className="text-3xl font-bold mb-6">13. Severability</h2>
-          <p>If any provision is deemed invalid, the remaining terms remain in full effect. Invalid provisions will be replaced with similar enforceable terms.</p>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <h2 className="text-3xl font-bold mb-6">14. Entire Agreement</h2>
-          <p>These terms constitute the complete agreement between parties. No other agreements, representations, or warranties apply.</p>
-
-          </section>
-
-          <section className="bg-card rounded-2xl border border-border p-8 shadow-sm hover:shadow-md transition-shadow">
-            <h2 className="text-3xl font-bold mb-6">15. Contact</h2>
-          <p>Questions about terms should be submitted through our platform support system. We do not guarantee responses to inquiries.</p>
-
-          </section>
-
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-yellow-500/10 via-yellow-500/5 to-transparent border-2 border-yellow-500/30 p-8">
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-yellow-500/10 rounded-full blur-3xl"></div>
-            <div className="relative">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-yellow-500/20 flex items-center justify-center">
-                  <AlertTriangle className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+            {/* Intro Alert */}
+            <div className="rounded-2xl bg-red-500/5 border border-red-500/10 p-6 md:p-8 not-prose">
+              <div className="flex items-start gap-4">
+                <AlertTriangle className="w-6 h-6 text-red-500 shrink-0 mt-1" />
+                <div>
+                  <h3 className="text-lg font-bold text-red-500 mb-2">Risk Acknowledgement</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    By using LikezBuddy, you acknowledge that social media monetization involves inherent risks. We are not responsible for account suspensions, bans, or lost earnings resulting from platform policy changes (TikTok, etc.). Use at your own risk.
+                  </p>
                 </div>
-                <h3 className="text-2xl font-bold text-yellow-900 dark:text-yellow-100">Final Warning</h3>
               </div>
-              <p className="text-yellow-800 dark:text-yellow-200 font-semibold mb-4">
-                BY USING LikezBuddy, YOU ACKNOWLEDGE THAT:
-              </p>
-              <ul className="space-y-2 text-yellow-800 dark:text-yellow-200">
-                <li className="flex items-start gap-2"><span className="text-yellow-500 mt-1">•</span><span>You understand and accept ALL risks of social media marketing</span></li>
-                <li className="flex items-start gap-2"><span className="text-yellow-500 mt-1">•</span><span>We provide NO guarantees of success, earnings, or account safety</span></li>
-                <li className="flex items-start gap-2"><span className="text-yellow-500 mt-1">•</span><span>You are solely responsible for compliance with all laws and platform policies</span></li>
-                <li className="flex items-start gap-2"><span className="text-yellow-500 mt-1">•</span><span>We assume ZERO liability for any consequences of platform use</span></li>
-                <li className="flex items-start gap-2"><span className="text-yellow-500 mt-1">•</span><span>You will not hold us responsible for any losses or damages</span></li>
-              </ul>
             </div>
-          </div>
-        </article>
+
+            <section id="acceptance" className="scroll-mt-24">
+              <h2 className="flex items-center gap-3 text-2xl font-bold mb-6 text-foreground">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary text-sm">1</span>
+                Acceptance of Terms
+              </h2>
+              <p className="text-muted-foreground">
+                By accessing or using LikezBuddy ("Platform"), you agree to be bound by these Terms. If you disagree with any part of the terms, you may not access the service. You represent that you are over the age of 18 and legally capable of entering into binding contracts.
+              </p>
+            </section>
+
+            <div className="h-px w-full bg-white/5" />
+
+            <section id="platform" className="scroll-mt-24">
+              <h2 className="flex items-center gap-3 text-2xl font-bold mb-6 text-foreground">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary text-sm">2</span>
+                Platform Description
+              </h2>
+              <p className="text-muted-foreground mb-4">
+                LikezBuddy acts as an intermediary marketplace connecting creators with campaigns. We do not own the social platforms (TikTok) where content is posted.
+              </p>
+              <div className="grid sm:grid-cols-2 gap-4 not-prose">
+                <div className="p-4 rounded-xl bg-white/5 border border-white/5">
+                  <h4 className="font-semibold text-foreground mb-1">Earning Rates</h4>
+                  <p className="text-sm text-muted-foreground">KES 50 per 1,000 verified likes on active campaigns.</p>
+                </div>
+                <div className="p-4 rounded-xl bg-white/5 border border-white/5">
+                  <h4 className="font-semibold text-foreground mb-1">Affiliates</h4>
+                  <p className="text-sm text-muted-foreground">Earn up to 30% direct commission + 5% indirect rewards.</p>
+                </div>
+              </div>
+            </section>
+
+            <div className="h-px w-full bg-white/5" />
+
+            <section id="responsibilities" className="scroll-mt-24">
+              <h2 className="flex items-center gap-3 text-2xl font-bold mb-6 text-foreground">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary text-sm">3</span>
+                User Responsibilities
+              </h2>
+              <ul className="space-y-3 text-muted-foreground text-base list-none pl-0">
+                <li className="flex gap-3">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2.5" />
+                  <span>You must comply with all TikTok Community Guidelines and Terms of Service.</span>
+                </li>
+                <li className="flex gap-3">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2.5" />
+                  <span>You are solely responsible for paying any applicable taxes on your earnings.</span>
+                </li>
+                <li className="flex gap-3">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2.5" />
+                  <span>You agree not to use bots, fake engagement, or manipulation tactics.</span>
+                </li>
+              </ul>
+            </section>
+
+            <div className="h-px w-full bg-white/5" />
+
+            <section id="liability" className="scroll-mt-24">
+              <h2 className="flex items-center gap-3 text-2xl font-bold mb-6 text-foreground">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary text-sm">4</span>
+                Limitation of Liability
+              </h2>
+              <p className="text-muted-foreground mb-6">
+                TO THE MAXIMUM EXTENT PERMITTED BY LAW, LIKEZBUDDY SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS OR REVENUES.
+              </p>
+              <div className="rounded-xl border border-white/10 bg-white/5 p-6 not-prose">
+                <p className="text-sm font-medium text-foreground mb-2">We are specifically NOT liable for:</p>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• TikTok account bans or "shadowbans"</li>
+                  <li>• Rejected payouts due to suspicious activity</li>
+                  <li>• Content copyright claims</li>
+                </ul>
+              </div>
+            </section>
+
+            <div className="h-px w-full bg-white/5" />
+
+            <section id="payment" className="scroll-mt-24">
+              <h2 className="flex items-center gap-3 text-2xl font-bold mb-6 text-foreground">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary text-sm">5</span>
+                Payment & Financial Terms
+              </h2>
+              <p className="text-muted-foreground mb-4">
+                All payments are processed via M-Pesa. Subscription fees for paid plans (Gold, Platinum, Diamond) are non-refundable.
+              </p>
+              <div className="overflow-hidden rounded-xl border border-white/10 not-prose">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-white/5 text-foreground font-medium">
+                    <tr>
+                      <th className="p-4">Plan Tier</th>
+                      <th className="p-4">Daily Limit</th>
+                      <th className="p-4">Cost</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 text-muted-foreground">
+                    <tr>
+                      <td className="p-4 text-foreground">Gold</td>
+                      <td className="p-4">KES 10,000</td>
+                      <td className="p-4">KES 1,000/mo</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 text-foreground">Platinum</td>
+                      <td className="p-4">KES 15,000</td>
+                      <td className="p-4">KES 3,000/mo</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 text-foreground">Diamond</td>
+                      <td className="p-4">KES 20,000</td>
+                      <td className="p-4">KES 5,500/mo</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <div className="h-px w-full bg-white/5" />
+
+            <section id="termination" className="scroll-mt-24 pb-24">
+              <h2 className="flex items-center gap-3 text-2xl font-bold mb-6 text-foreground">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary text-sm">6</span>
+                Termination
+              </h2>
+              <p className="text-muted-foreground">
+                We reserve the right to terminate or suspend your account immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms. Upon termination, your right to use the Service will immediately cease.
+              </p>
+            </section>
+
+          </article>
+        </div>
       </main>
     </div>
   );
