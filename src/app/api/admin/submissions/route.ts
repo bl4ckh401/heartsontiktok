@@ -12,15 +12,18 @@ export async function GET(request: NextRequest) {
   try {
     // Get all campaign submissions from Firestore
     const submissionsSnapshot = await adminDb.collection('submissions')
-      .orderBy('createdAt', 'desc')
+      .orderBy('submittedAt', 'desc')
       .limit(100)
       .get();
     
-    const submissions = submissionsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || new Date().toISOString()
-    }));
+    const submissions = submissionsSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: (data.submittedAt?.toDate?.() || data.createdAt?.toDate?.() || new Date()).toISOString()
+      };
+    });
 
     return NextResponse.json({
       success: true,
