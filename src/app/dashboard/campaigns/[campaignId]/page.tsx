@@ -60,8 +60,8 @@ const CampaignDetailsPage = () => {
   const pollPublishStatus = useCallback(async (publishId: string, submissionId: string) => {
     setSubmissionStatus('polling');
     let attempts = 0;
-    const maxAttempts = 20; 
-    const interval = 6000; 
+    const maxAttempts = 20;
+    const interval = 6000;
 
     while (attempts < maxAttempts) {
       try {
@@ -82,7 +82,7 @@ const CampaignDetailsPage = () => {
           router.push('/dashboard/payouts');
           return;
         } else if (!result.success && result.status === 'FAILED') {
-           throw new Error(result.message || 'TikTok reported that the video publish failed.');
+          throw new Error(result.message || 'TikTok reported that the video publish failed.');
         }
       } catch (err: any) {
         setSubmissionStatus('idle');
@@ -100,7 +100,7 @@ const CampaignDetailsPage = () => {
       description: "Your video is still being processed by TikTok. We'll update its status in the background.",
       variant: 'default',
     });
-     router.push('/dashboard/payouts');
+    router.push('/dashboard/payouts');
 
   }, [toast, router]);
 
@@ -219,7 +219,7 @@ const CampaignDetailsPage = () => {
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-8">
+    <div className="w-full max-w-7xl mx-auto p-2 sm:p-4 md:p-6 lg:p-8 space-y-4 md:space-y-8">
       <Link
         href="/dashboard/campaigns/list"
         className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
@@ -228,21 +228,21 @@ const CampaignDetailsPage = () => {
         Back to Campaigns
       </Link>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
-          <Card className="overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
+        <div className="lg:col-span-2 space-y-4 md:space-y-8">
+          <Card className="overflow-hidden border-none shadow-none bg-transparent sm:border sm:shadow-sm sm:bg-card">
             <Image
               src={`https://picsum.photos/seed/${campaign.id}/1200/600`}
               alt={`${campaign.name} cover image`}
               width={1200}
               height={600}
-              className="w-full h-64 object-cover"
+              className="w-full h-48 sm:h-64 object-cover rounded-xl sm:rounded-none"
               priority
               data-ai-hint="social media marketing"
             />
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <CardTitle className="text-3xl font-bold">{campaign.name}</CardTitle>
+            <CardHeader className="px-0 sm:px-6">
+              <div className="flex justify-between items-start gap-4">
+                <CardTitle className="text-2xl sm:text-3xl font-bold">{campaign.name}</CardTitle>
                 {userRole === 'admin' && (
                   <Link href={`/dashboard/campaigns/edit/${campaign.id}`}>
                     <Button variant="outline" size="sm">
@@ -253,7 +253,7 @@ const CampaignDetailsPage = () => {
                 )}
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-0 sm:px-6">
               <h3 className="text-lg font-semibold mb-2">Campaign Brief</h3>
               <WysiwygViewer content={campaign.description} />
             </CardContent>
@@ -323,23 +323,16 @@ const CampaignDetailsPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-               {isCampaignInactive ? (
-                 <Alert variant="destructive">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Campaign Inactive</AlertTitle>
-                    <AlertDescription>
-                        This campaign has ended or its budget is depleted. No new submissions are being accepted.
-                    </AlertDescription>
-                 </Alert>
-               ) : (
-                <>
-                  <Alert variant="destructive" className="mb-4">
-                    <Info className="h-4 w-4" />
-                    <AlertTitle>Action Required</AlertTitle>
-                    <AlertDescription>
-                      Before submitting, please go to your TikTok app and set your account to **Private**. This is a temporary requirement for our app.
-                    </AlertDescription>
-                  </Alert>
+              {isCampaignInactive ? (
+                <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>Campaign Inactive</AlertTitle>
+                  <AlertDescription>
+                    This campaign has ended or its budget is depleted. No new submissions are being accepted.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                  <>
                   <form
                     key={formKey}
                     onSubmit={handleFormSubmit}
@@ -377,7 +370,7 @@ const CampaignDetailsPage = () => {
                     </Button>
                   </form>
                 </>
-               )}
+              )}
             </CardContent>
           </Card>
 

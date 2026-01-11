@@ -10,13 +10,14 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { Eye, Heart, MessageCircle, Video, Loader2, AlertCircle, RefreshCw, Users, Wallet } from 'lucide-react';
+import { Eye, Heart, MessageCircle, Video, Loader2, AlertCircle, RefreshCw, Users, Wallet, Lock, ArrowUpCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 
 interface EligibleVideo {
     id: string; // tiktokVideoId
@@ -40,7 +41,7 @@ interface Referral {
     level: 1 | 2 | 3 | 4;
 }
 
-import { PLAN_CONFIG } from '@/lib/plan-config';
+import { PLAN_CONFIG, PlanType } from '@/lib/plan-config';
 
 export default function PayoutsPage() {
     const [eligibleVideos, setEligibleVideos] = useState<EligibleVideo[]>([]);
@@ -55,7 +56,8 @@ export default function PayoutsPage() {
     const [affiliatePhoneNumber, setAffiliatePhoneNumber] = useState('');
     const [payoutStatus, setPayoutStatus] = useState<'idle' | 'loading'>('idle');
     const [affiliatePayoutStatus, setAffiliatePayoutStatus] = useState<'idle' | 'loading'>('idle');
-    const [userPlan, setUserPlan] = useState<string | null>(null);
+    const [userPlan, setUserPlan] = useState<PlanType | null>(null);
+    const [subscriptionStatus, setSubscriptionStatus] = useState<'ACTIVE' | 'INACTIVE'>('INACTIVE');
 
     const { toast } = useToast();
 
@@ -63,8 +65,13 @@ export default function PayoutsPage() {
         try {
             const res = await fetch('/api/user/status');
             const data = await res.json();
-            if (data.success && data.subscriptionPlan) {
-                setUserPlan(data.subscriptionPlan);
+            if (data.success) {
+                // Ensure the plan is a valid PlanType, default to Free if not found/invalid
+                const plan = (data.subscriptionPlan && data.subscriptionPlan in PLAN_CONFIG)
+                    ? (data.subscriptionPlan as PlanType)
+                    : null;
+                setUserPlan(plan);
+                setSubscriptionStatus(data.subscriptionStatus || 'INACTIVE');
             }
         } catch (err) {
             console.error("Failed to fetch user plan", err);
@@ -264,6 +271,28 @@ export default function PayoutsPage() {
         </Card>
     );
 
+    const isPayoutRestricted = subscriptionStatus !== 'ACTIVE';
+
+    const RestrictedPayoutCard = () => (
+        <div className="flex flex-col items-center justify-center space-y-4 py-6 text-center">
+            <div className="bg-primary/10 p-4 rounded-full">
+                <Lock className="h-8 w-8 text-primary" />
+            </div>
+            <div>
+                <h3 className="text-lg font-semibold">Payouts Locked</h3>
+                <p className="text-sm text-muted-foreground mt-1 max-w-[280px] mx-auto">
+                    Payout requests are available for Premium account holders only. Upgrade your plan to withdraw your earnings.
+                </p>
+            </div>
+            <Button asChild className="w-full bg-gradient-to-r from-primary to-secondary">
+                <Link href="/dashboard/subscription">
+                    <ArrowUpCircle className="mr-2 h-4 w-4" />
+                    Upgrade to Withdraw
+                </Link>
+            </Button>
+        </div>
+    );
+
     return (
         <div className="container mx-auto py-6 space-y-8">
              <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
@@ -375,22 +404,28 @@ export default function PayoutsPage() {
                                         <p className="text-4xl font-bold text-primary">KES {estimatedTotalPayout.toFixed(2)}</p>
                                         <p className="text-xs text-muted-foreground">Final amount calculated on the backend.</p>
                                     </div>
-                                    <div className="space-y-2">
-                                        <label htmlFor="phoneNumber" className="text-sm font-medium">M-Pesa Number</label>
-                                        <Input
-                                            id="phoneNumber"
-                                            type="tel"
-                                            value={phoneNumber}
-                                            onChange={(e) => setPhoneNumber(e.target.value)}
-                                            placeholder="e.g., 254712345678"
-                                            disabled={payoutStatus === 'loading' || selectedVideoIds.length === 0}
-                                        />
-                                    </div>
+                                    {!isPayoutRestricted && (
+                                        <div className="space-y-2">
+                                            <label htmlFor="phoneNumber" className="text-sm font-medium">M-Pesa Number</label>
+                                            <Input
+                                                id="phoneNumber"
+                                                type="tel"
+                                                value={phoneNumber}
+                                                onChange={(e) => setPhoneNumber(e.target.value)}
+                                                placeholder="e.g., 254712345678"
+                                                disabled={payoutStatus === 'loading' || selectedVideoIds.length === 0}
+                                            />
+                                        </div>
+                                    )}
                                 </CardContent>
                                 <CardContent>
-                                     <Button onClick={triggerPayout} className="w-full" size="lg" disabled={selectedVideoIds.length === 0 || payoutStatus === 'loading' || !phoneNumber.match(/^(254)\d{9}$/)}>
-                                        {payoutStatus === 'loading' ? <Loader2 className="animate-spin" /> : `Request Payout`}
-                                    </Button>
+                                    {isPayoutRestricted ? (
+                                        <RestrictedPayoutCard />
+                                    ) : (
+                                            <Button onClick={triggerPayout} className="w-full" size="lg" disabled={selectedVideoIds.length === 0 || payoutStatus === 'loading' || !phoneNumber.match(/^(254)\d{9}$/)}>
+                                                {payoutStatus === 'loading' ? <Loader2 className="animate-spin" /> : `Request Payout`}
+                                            </Button>
+                                    )}
                                 </CardContent>
                             </Card>
                         </div>
@@ -491,22 +526,28 @@ export default function PayoutsPage() {
                                         <p className="text-sm text-muted-foreground">Total Commission</p>
                                         <p className="text-4xl font-bold text-primary">KES {selectedCommission.toFixed(2)}</p>
                                     </div>
-                                    <div className="space-y-2">
-                                        <label htmlFor="affiliatePhoneNumber" className="text-sm font-medium">M-Pesa Number</label>
-                                        <Input
-                                            id="affiliatePhoneNumber"
-                                            type="tel"
-                                            value={affiliatePhoneNumber}
-                                            onChange={(e) => setAffiliatePhoneNumber(e.target.value)}
-                                            placeholder="e.g., 254712345678"
-                                            disabled={affiliatePayoutStatus === 'loading' || selectedReferrals.length === 0}
-                                        />
-                                    </div>
+                                    {!isPayoutRestricted && (
+                                        <div className="space-y-2">
+                                            <label htmlFor="affiliatePhoneNumber" className="text-sm font-medium">M-Pesa Number</label>
+                                            <Input
+                                                id="affiliatePhoneNumber"
+                                                type="tel"
+                                                value={affiliatePhoneNumber}
+                                                onChange={(e) => setAffiliatePhoneNumber(e.target.value)}
+                                                placeholder="e.g., 254712345678"
+                                                disabled={affiliatePayoutStatus === 'loading' || selectedReferrals.length === 0}
+                                            />
+                                        </div>
+                                    )}
                                 </CardContent>
                                 <CardContent>
-                                     <Button onClick={triggerAffiliatePayout} className="w-full" size="lg" disabled={selectedReferrals.length === 0 || affiliatePayoutStatus === 'loading' || !affiliatePhoneNumber.match(/^(254)\d{9}$/)}>
-                                        {affiliatePayoutStatus === 'loading' ? <Loader2 className="animate-spin" /> : `Request Payout`}
-                                    </Button>
+                                    {isPayoutRestricted ? (
+                                        <RestrictedPayoutCard />
+                                    ) : (
+                                            <Button onClick={triggerAffiliatePayout} className="w-full" size="lg" disabled={selectedReferrals.length === 0 || affiliatePayoutStatus === 'loading' || !affiliatePhoneNumber.match(/^(254)\d{9}$/)}>
+                                                {affiliatePayoutStatus === 'loading' ? <Loader2 className="animate-spin" /> : `Request Payout`}
+                                            </Button>
+                                    )}
                                 </CardContent>
                             </Card>
                         </div>
