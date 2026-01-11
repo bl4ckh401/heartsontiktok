@@ -43,7 +43,7 @@ export type CampaignSubmission = {
   campaignId: string;
   userId: string;
   videoUrl: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'rejected' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED' | 'SUBMITTED' | 'PUBLISHED';
   likes?: number;
   earnings?: number;
   createdAt: string;
