@@ -29,7 +29,7 @@ export function CreatorPlatformSchema() {
       data={{
         name: 'LikezBuddy',
         description: 'Creator monetization platform for TikTok content creators to earn money through brand campaigns',
-        url: 'https://heartsontiktok.vercel.app',
+        url: 'https://likezzbuddy.vercel.app',
         applicationCategory: 'BusinessApplication',
         operatingSystem: 'Web',
         offers: {

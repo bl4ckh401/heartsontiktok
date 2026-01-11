@@ -1,64 +1,92 @@
+"use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { DollarSign, BarChart3, Handshake } from 'lucide-react';
+import { useRef } from 'react';
+import { Heart, DollarSign, Zap, Users, ShieldCheck, Rocket } from 'lucide-react';
+import { gsap } from 'gsap';
+import { useGSAP } from '@gsap/react';
 
-interface FeatureProps {
-  icon: JSX.Element;
-  title: string;
-  description: string;
-}
-
-const features: FeatureProps[] = [
+const features = [
   {
-    icon: <Handshake />,
-    title: 'Streamlined Partnerships',
-    description:
-      'Connect with top brands, manage contracts, and track campaign performance all in one place. Say goodbye to messy spreadsheets.',
+        icon: <Heart className="w-8 h-8 text-pink-500" />,
+        title: "Monetize Every Like",
+        description: "Your content is valuable. Earn KES 50 for every 1,000 likes you generate on TikTok."
   },
   {
-    icon: <DollarSign />,
-    title: 'Instant Payouts',
-    description:
-      'Monetize your content instantly. Qualify for payouts based on performance and get paid quickly and securely.',
+      icon: <DollarSign className="w-8 h-8 text-green-500" />,
+      title: "Instant M-Pesa Payouts",
+      description: "No waiting for monthly checks. Withdraw your earnings directly to M-Pesa instantly."
   },
   {
-    icon: <BarChart3 />,
-    title: 'Powerful Analytics',
-    description:
-      'Get deep insights into your audience and content performance. Understand what works and grow your brand faster.',
+      icon: <Users className="w-8 h-8 text-blue-500" />,
+      title: "Creator Community",
+      description: "Join thousands of Kenyan creators. Share tips, collaborate, and grow together."
   },
+    {
+        icon: <Zap className="w-8 h-8 text-yellow-500" />,
+        title: "Brand Campaigns",
+        description: "Access exclusive high-paying campaigns from top brands looking for creators like you."
+    },
+    {
+        icon: <ShieldCheck className="w-8 h-8 text-purple-500" />,
+        title: "Secure Platform",
+        description: "Your data and earnings are safe with us. We use bank-grade security for all transactions."
+    },
+    {
+        icon: <Rocket className="w-8 h-8 text-orange-500" />,
+        title: "Growth Tools",
+        description: "Get analytics and insights to help you grow your audience and increase your earnings."
+    }
 ];
 
 export function FeaturesSection() {
+    const containerRef = useRef<HTMLElement>(null);
+    const cardsRef = useRef<HTMLDivElement[]>([]);
+
+    useGSAP(() => {
+        // Simple fade in for now, assuming user will scroll
+        // In a real app we'd use ScrollTrigger
+        gsap.fromTo(cardsRef.current,
+            { y: 50, autoAlpha: 0 },
+            {
+                y: 0,
+                autoAlpha: 1,
+                duration: 0.8,
+                stagger: 0.1,
+                ease: "power3.out",
+                delay: 0.5 // Small delay to allow page load
+            }
+        );
+    }, { scope: containerRef });
+
   return (
-    <section id="features" className="container py-24 sm:py-32 space-y-8">
-      <h2 className="text-3xl lg:text-4xl font-bold md:text-center">
-        How{' '}
-        <span className="bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text">
-          likezBuddy
-        </span>{' '}
-        Supercharges Your Career
-      </h2>
-
-      <div className="grid md:grid-cols-3 gap-8">
-        {features.map(({ icon, title, description }: FeatureProps) => (
-          <Card key={title}>
-            <CardHeader className="flex flex-row items-center gap-4 pb-2">
-              <div className="p-3 rounded-full bg-primary/10 text-primary">
-                {icon}
+      <section ref={containerRef} className="py-24 relative overflow-hidden bg-background">
+          <div className="container relative z-10">
+              <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                  <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
+                      Everything You Need to <span className="text-primary">Evolve</span>
+                  </h2>
+                  <p className="text-xl text-muted-foreground">
+                      We provide the tools and platform for you to turn your creative passion into a sustainable career.
+                  </p>
               </div>
-              <CardTitle>{title}</CardTitle>
-            </CardHeader>
 
-            <CardContent>{description}</CardContent>
-          </Card>
-        ))}
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {features.map((feature, index) => (
+                      <div
+                          key={index}
+                          ref={(el) => { if (el) cardsRef.current[index] = el; }}
+                          className="group glass-panel p-8 rounded-3xl border border-white/5 hover:border-primary/20 transition-all duration-300 hover:-translate-y-2"
+                      >
+                          <div className="mb-6 p-4 bg-background/50 rounded-2xl w-fit group-hover:bg-primary/10 transition-colors">
+                              {feature.icon}
+              </div>
+                  <h3 className="text-2xl font-bold mb-3">{feature.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                      {feature.description}
+                  </p>
+              </div>
+          ))}
+              </div>
       </div>
     </section>
   );

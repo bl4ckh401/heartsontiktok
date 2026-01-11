@@ -48,7 +48,7 @@ export function FloatingHelp() {
                 className="w-full justify-start text-xs"
                 asChild
               >
-                <a href="mailto:support@heartsontiktok.com">
+                <a href="mailto:support@likezzbuddy.com">
                   <BookOpen className="h-3 w-3 mr-2" />
                   Contact support
                 </a>

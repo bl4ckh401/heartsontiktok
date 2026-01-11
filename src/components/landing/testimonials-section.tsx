@@ -1,71 +1,65 @@
+"use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Star } from 'lucide-react';
+import Image from 'next/image';
 
 const testimonials = [
   {
-    name: 'Alex "Tech" Rivera',
-    avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
-    title: 'Tech Creator',
-    description:
-      '"likezBuddy revolutionized how I manage brand deals. The analytics are a game-changer and helped me double my revenue in three months!"',
+        name: "Sarah Wanjiku",
+        role: "Lifestyle Creator",
+        image: "https://i.pravatar.cc/150?u=sarah",
+        content: "I used to struggle to monetize my TikToks despite having good views. With LikezBuddy, I started earning from day one. The daily M-Pesa withdrawals are a lifesaver!"
   },
   {
-    name: 'Sarah "Lifestyle" Chen',
-    avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704e',
-    title: 'Lifestyle Influencer',
-    description:
-      '"I finally have a single place to see all my campaign progress and earnings. The instant payouts are a lifesaver for a full-time creator like me."',
+      name: "Kevin Omondi",
+      role: "Comedy Skits",
+      image: "https://i.pravatar.cc/150?u=kevin",
+      content: "The best platform for Kenyan creators hands down. KES 50 per 1k likes adds up fast when you have a viral video. Highly recommended!"
   },
   {
-    name: 'Mike "Gamer" Lee',
-    avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704f',
-    title: 'Gaming Streamer',
-    description:
-      '"The platform is so intuitive. It saves me hours of admin work every week, letting me focus on creating content for my community."',
-  },
+      name: "Brenda K.",
+      role: "Dance Trends",
+      image: "https://i.pravatar.cc/150?u=brenda",
+      content: "Apart from the like earnings, the brand campaigns have helped me work with companies I never thought I could reach. It's a game changer."
+  }
 ];
 
 export function TestimonialsSection() {
   return (
-    <section id="testimonials" className="container py-24 sm:py-32">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl md:text-4xl font-bold">
-          Discover Why Creators{' '}
-          <span className="bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text">
-            Love likezBuddy
-          </span>
+      <section className="py-24 bg-background relative overflow-hidden">
+          <div className="container relative z-10">
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-center mb-16">
+                  Trusted by <span className="text-primary">Top Creators</span>
         </h2>
-        <p className="text-xl text-muted-foreground mt-2">
-          Real stories from creators who have transformed their careers with us.
-        </p>
-      </div>
 
-      <div className="grid md:grid-cols-3 gap-8">
-        {testimonials.map(({ name, avatar, title, description }) => (
-          <Card key={name} className="flex flex-col">
-            <CardContent className="pt-6">
-              <p className="text-lg">"{description}"</p>
-            </CardContent>
-
-            <CardHeader className="flex flex-row items-center gap-4 pt-2">
-              <Avatar>
-                <AvatarImage src={avatar} alt={name} />
-                <AvatarFallback>{name.substring(0, 2)}</AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col">
-                <CardTitle className="text-lg">{name}</CardTitle>
-                <CardDescription>{title}</CardDescription>
+              <div className="grid md:grid-cols-3 gap-8">
+                  {testimonials.map((testimonial, index) => (
+                      <div key={index} className="glass-panel p-8 rounded-3xl border border-white/5 relative">
+                          <div className="flex gap-1 mb-6 text-yellow-500">
+                              {[...Array(5)].map((_, i) => (
+                                  <Star key={i} className="w-5 h-5 fill-current" />
+                              ))}
+                          </div>
+                          <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+                              "{testimonial.content}"
+                          </p>
+                  <div className="flex items-center gap-4">
+                      <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary/20">
+                          <Image
+                              src={testimonial.image}
+                              alt={testimonial.name}
+                              fill
+                              className="object-cover"
+                          />
+                      </div>
+                      <div>
+                          <p className="font-bold text-foreground">{testimonial.name}</p>
+                          <p className="text-sm text-primary">{testimonial.role}</p>
+                      </div>
+                  </div>
               </div>
-            </CardHeader>
-          </Card>
-        ))}
+          ))}
+              </div>
       </div>
     </section>
   );

@@ -244,7 +244,7 @@ export default function PrivacyPolicyPage() {
           <p>For privacy-related questions or requests:</p>
           <ul>
             <li>Use the platform's support system</li>
-            <li>Email: privacy@heartsontiktok.com</li>
+              <li>Email: privacy@likezzbuddy.com</li>
             <li>Response time: Up to 30 business days</li>
           </ul>
 

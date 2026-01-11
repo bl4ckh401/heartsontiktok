@@ -1,63 +1,57 @@
+"use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { DollarSign, Gift, Users } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
-const earningMethods = [
+const methods = [
   {
-    icon: <DollarSign className="h-8 w-8 text-primary" />,
-    title: 'Video Performance Payouts',
-    description:
-      'Earn KES 50 for every 1,000 likes on your campaign videos. Get paid based on actual engagement with daily payout limits based on your plan.',
+        title: "Pay Per Like",
+        description: "The simplest way to earn. Post quality content, get likes, and get paid KES 50 for every 1,000 likes.",
+        image: "https://picsum.photos/seed/like_earn/600/400"
   },
   {
-    icon: <Gift className="h-8 w-8 text-primary" />,
-    title: '4-Level Affiliate Program',
-    description:
-      'Earn 30% commission from direct referrals and 5% from 4 levels of indirect referrals. Build recurring income from subscription payments of your referral network.',
+      title: "Affiliate Marketing",
+      description: "Promote products from our brand partners. Earn up to 20% commission on every sale generated through your unique link.",
+      image: "https://picsum.photos/seed/affiliate/600/400"
   },
   {
-    icon: <Users className="h-8 w-8 text-primary" />,
-    title: 'Campaign Participation',
-    description:
-      'Join multiple campaigns per month based on your plan (3-10 campaigns). Participate in brand campaigns and monetize your TikTok content effectively.',
-  },
+      title: "Referral Bonuses",
+      description: "Invite other creators to join LikezBuddy. Earn 5% of their earnings for their first 3 months.",
+      image: "https://picsum.photos/seed/referral/600/400"
+  }
 ];
 
 export function EarningMethodsSection() {
   return (
-    <section id="earning-methods" className="bg-muted/50 py-24 sm:py-32">
+      <section className="py-24 bg-background/50 relative">
       <div className="container">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold">
-            Multiple Ways to{' '}
-            <span className="bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text">
-              Monetize Your Influence
-            </span>
-          </h2>
-          <p className="text-xl text-muted-foreground mt-2">
-            likezBuddy provides a suite of tools to help you turn your creativity into a career.
+              <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                  <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Multiple Ways to <span className="text-secondary">Earn</span></h2>
+                  <p className="text-xl text-muted-foreground">
+                      Diversify your income streams with our comprehensive monetization tools.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {earningMethods.map(({ icon, title, description }) => (
-            <Card key={title} className="text-center">
-              <CardHeader>
-                <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit">
-                    {icon}
-                </div>
-                <CardTitle className="pt-4">{title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{description}</p>
-              </CardContent>
-            </Card>
+              <div className="space-y-24">
+                  {methods.map((method, index) => (
+                      <div key={index} className={`flex flex-col lg:flex-row gap-12 items-center ${index % 2 === 1 ? 'lg:flex-row-reverse' : ''}`}>
+                          <div className="flex-1 space-y-6">
+                              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-bold text-sm uppercase tracking-wide">
+                                  <CheckCircle2 className="w-4 h-4" /> Method {index + 1}
+                              </div>
+                              <h3 className="text-3xl md:text-4xl font-bold">{method.title}</h3>
+                              <p className="text-xl text-muted-foreground leading-relaxed">
+                                  {method.description}
+                              </p>
+                          </div>
+                          <div className="flex-1 w-full aspect-video rounded-3xl overflow-hidden glass-panel p-2">
+                              <div className="w-full h-full rounded-2xl bg-muted/20 relative overflow-hidden">
+                                  {/* Placeholder for actual image */}
+                                  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center text-primary/40 font-bold text-4xl">
+                                      {method.title} Preview
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
           ))}
         </div>
       </div>
