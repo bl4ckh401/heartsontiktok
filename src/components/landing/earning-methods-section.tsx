@@ -1,22 +1,23 @@
 "use client";
 
 import { CheckCircle2 } from 'lucide-react';
+import Image from 'next/image';
 
 const methods = [
   {
         title: "Pay Per Like",
         description: "The simplest way to earn. Post quality content, get likes, and get paid KES 50 for every 1,000 likes.",
-        image: "https://picsum.photos/seed/like_earn/600/400"
+        image: "/assets/landing/pay_per_like.png"
   },
   {
       title: "Affiliate Marketing",
       description: "Promote products from our brand partners. Earn up to 20% commission on every sale generated through your unique link.",
-      image: "https://picsum.photos/seed/affiliate/600/400"
+      image: "/assets/landing/affiliate_marketing.png"
   },
   {
       title: "Referral Bonuses",
       description: "Invite other creators to join LikezBuddy. Earn 5% of their earnings for their first 3 months.",
-      image: "https://picsum.photos/seed/referral/600/400"
+      image: "/assets/landing/referral_bonuses.png"
   }
 ];
 
@@ -43,12 +44,16 @@ export function EarningMethodsSection() {
                                   {method.description}
                               </p>
                           </div>
-                          <div className="flex-1 w-full aspect-video rounded-3xl overflow-hidden glass-panel p-2">
-                              <div className="w-full h-full rounded-2xl bg-muted/20 relative overflow-hidden">
-                                  {/* Placeholder for actual image */}
-                                  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center text-primary/40 font-bold text-4xl">
-                                      {method.title} Preview
-                                  </div>
+                          <div className="flex-1 w-full aspect-video rounded-3xl overflow-hidden glass-panel p-2 transform hover:scale-[1.02] transition-transform duration-500">
+                              <div className="w-full h-full rounded-2xl bg-muted/20 relative overflow-hidden group">
+                                  <Image 
+                                    src={method.image} 
+                                    alt={`${method.title} preview`}
+                                    fill
+                                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                    sizes="(max-width: 768px) 100vw, 50vw"
+                                  />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60" />
                               </div>
                           </div>
                       </div>
