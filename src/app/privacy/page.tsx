@@ -31,7 +31,7 @@ export default function PrivacyPolicyPage() {
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-blue-900 dark:text-blue-100 mb-2">Privacy Notice</h2>
-                <p className="text-blue-800 dark:text-blue-200 leading-relaxed">HeartsOnTikTok collects and processes data as described below. By using our platform, you consent to our data practices and assume responsibility for your own privacy protection.</p>
+                <p className="text-blue-800 dark:text-blue-200 leading-relaxed">LikezBuddy collects and processes data as described below. By using our platform, you consent to our data practices and assume responsibility for your own privacy protection.</p>
               </div>
             </div>
           </div>
@@ -260,7 +260,7 @@ export default function PrivacyPolicyPage() {
                 <h3 className="text-2xl font-bold text-red-900 dark:text-red-100">Important Privacy Notice</h3>
               </div>
               <p className="text-red-800 dark:text-red-200 font-semibold mb-4">
-                BY USING HEARTSONTIKTOK, YOU ACKNOWLEDGE:
+                BY USING LikezBuddy, YOU ACKNOWLEDGE:
               </p>
               <ul className="space-y-2 text-red-800 dark:text-red-200">
                 <li className="flex items-start gap-2"><span className="text-red-500 mt-1">•</span><span>You understand our data collection and sharing practices</span></li>

@@ -34,6 +34,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { TrendingUp, Users, Video, MessageCircle, Heart, Share2, ArrowUp, ArrowDown, Sparkles } from 'lucide-react';
 import Cookies from 'js-cookie';

@@ -31,7 +31,7 @@ export default function TermsOfServicePage() {
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-red-900 dark:text-red-100 mb-2">Important Legal Notice</h2>
-                <p className="text-red-800 dark:text-red-200 font-semibold leading-relaxed">BY USING HEARTSONTIKTOK, YOU ASSUME ALL RISKS. WE ARE NOT RESPONSIBLE FOR ANY LOSSES, DAMAGES, OR CONSEQUENCES.</p>
+                <p className="text-red-800 dark:text-red-200 font-semibold leading-relaxed">BY USING LikezBuddy, YOU ASSUME ALL RISKS. WE ARE NOT RESPONSIBLE FOR ANY LOSSES, DAMAGES, OR CONSEQUENCES.</p>
               </div>
             </div>
           </div>
@@ -43,7 +43,7 @@ export default function TermsOfServicePage() {
               </div>
               <h2 className="text-3xl font-bold">1. Acceptance of Terms</h2>
             </div>
-          <p>By accessing HeartsOnTikTok ("Platform", "Service", "we", "us"), you agree to these Terms. If you disagree, do not use our service. You must be 18+ and legally capable of entering contracts.</p>
+            <p>By accessing LikezBuddy ("Platform", "Service", "we", "us"), you agree to these Terms. If you disagree, do not use our service. You must be 18+ and legally capable of entering contracts.</p>
 
           </section>
 
@@ -54,7 +54,7 @@ export default function TermsOfServicePage() {
               </div>
               <h2 className="text-3xl font-bold">2. Platform Description & Disclaimers</h2>
             </div>
-          <p><strong>HeartsOnTikTok is ONLY a marketplace platform with the following features:</strong></p>
+            <p><strong>LikezBuddy is ONLY a marketplace platform with the following features:</strong></p>
           <ul>
             <li><strong>Video Payouts:</strong> KES 50 per 1,000 likes on campaign videos</li>
             <li><strong>Affiliate System:</strong> 30% direct + 5% indirect commissions (4 levels)</li>
@@ -102,7 +102,7 @@ export default function TermsOfServicePage() {
               </div>
               <h2 className="text-3xl font-bold">4. Complete Limitation of Liability</h2>
             </div>
-          <p className="font-bold text-red-600 text-lg">HEARTSONTIKTOK PROVIDES SERVICES "AS IS" WITHOUT ANY WARRANTIES. WE DISCLAIM ALL LIABILITY FOR:</p>
+            <p className="font-bold text-red-600 text-lg">LikezBuddy PROVIDES SERVICES "AS IS" WITHOUT ANY WARRANTIES. WE DISCLAIM ALL LIABILITY FOR:</p>
           <ul>
             <li><strong>Account Issues:</strong> Suspensions, bans, restrictions by TikTok or other platforms</li>
             <li><strong>Content Issues:</strong> Removal, strikes, policy violations, copyright claims</li>
@@ -123,7 +123,7 @@ export default function TermsOfServicePage() {
               </div>
               <h2 className="text-3xl font-bold">5. Full Indemnification</h2>
             </div>
-          <p><strong>Users agree to indemnify, defend, and hold harmless HeartsOnTikTok from ALL claims, damages, costs, and expenses including attorney fees arising from:</strong></p>
+            <p><strong>Users agree to indemnify, defend, and hold harmless LikezBuddy from ALL claims, damages, costs, and expenses including attorney fees arising from:</strong></p>
           <ul>
             <li>User content, activities, or conduct</li>
             <li>Violation of these terms or any laws</li>
@@ -244,7 +244,7 @@ export default function TermsOfServicePage() {
                 <h3 className="text-2xl font-bold text-yellow-900 dark:text-yellow-100">Final Warning</h3>
               </div>
               <p className="text-yellow-800 dark:text-yellow-200 font-semibold mb-4">
-                BY USING HEARTSONTIKTOK, YOU ACKNOWLEDGE THAT:
+                BY USING LikezBuddy, YOU ACKNOWLEDGE THAT:
               </p>
               <ul className="space-y-2 text-yellow-800 dark:text-yellow-200">
                 <li className="flex items-start gap-2"><span className="text-yellow-500 mt-1">•</span><span>You understand and accept ALL risks of social media marketing</span></li>
