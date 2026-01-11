@@ -44,6 +44,8 @@ export async function GET(req: NextRequest) {
     state: stateWithPlan,
   });
 
+  console.log('Initiating TikTok Auth with scopes:', scopes);
+
   url += `?${params.toString()}`;
 
   return NextResponse.redirect(url);
