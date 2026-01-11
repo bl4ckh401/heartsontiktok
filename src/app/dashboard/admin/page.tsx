@@ -98,12 +98,37 @@ export default function AdminDashboard() {
       ACTIVE: 'default',
       INACTIVE: 'secondary',
       pending: 'outline',
+      PENDING_APPROVAL: 'outline', // Add variant for new status
       completed: 'default',
       failed: 'destructive',
       approved: 'default',
-      rejected: 'destructive'
+      APPROVED: 'default',
+      rejected: 'destructive',
+      REJECTED: 'destructive'
     };
     return <Badge variant={variants[status] || 'outline'}>{status}</Badge>;
+  };
+
+  const handleReview = async (id: string, action: 'APPROVE' | 'REJECT') => {
+    try {
+      const res = await fetch('/api/admin/submissions/review', {
+        method: 'POST',
+        body: JSON.stringify({ submissionId: id, action })
+      });
+      const result = await res.json();
+
+      if (res.ok) {
+        toast({ title: 'Success', description: `Submission ${action}D successfully` });
+        // Optimistic update
+        setSubmissions(prev => prev.map(s =>
+          s.id === id ? { ...s, status: action === 'APPROVE' ? 'APPROVED' : 'REJECTED' } : s
+        ));
+      } else {
+        toast({ title: 'Error', variant: 'destructive', description: result.error || 'Failed to update' });
+      }
+    } catch (e: any) {
+      toast({ title: 'Error', variant: 'destructive', description: e.message });
+    }
   };
 
   return (
@@ -131,6 +156,10 @@ export default function AdminDashboard() {
           Check Timeouts
         </Button>
       </div>
+
+      {/* Review Handler */}
+      {/* Note: Inserted via multi_replace but defined logically here */}
+
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard title="Total Users" value={metrics.totalUsers} icon={Users} loading={loading} />
@@ -256,6 +285,7 @@ export default function AdminDashboard() {
                     <TableHead>Likes</TableHead>
                     <TableHead>Earnings</TableHead>
                     <TableHead>Submitted</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -285,6 +315,14 @@ export default function AdminDashboard() {
                         <TableCell>{submission.likes?.toLocaleString() || 'N/A'}</TableCell>
                         <TableCell>{submission.earnings ? `KES ${submission.earnings}` : 'N/A'}</TableCell>
                         <TableCell>{new Date(submission.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          {submission.status === 'PENDING_APPROVAL' && (
+                            <div className="flex gap-2">
+                              <Button size="sm" onClick={() => handleReview(submission.id, 'APPROVE')} className="bg-green-600 hover:bg-green-700 h-8">Approve</Button>
+                              <Button size="sm" variant="destructive" onClick={() => handleReview(submission.id, 'REJECT')} className="h-8">Reject</Button>
+                            </div>
+                          )}
+                        </TableCell>
                       </TableRow>
                     ))
                   )}

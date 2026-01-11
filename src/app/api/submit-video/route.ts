@@ -104,9 +104,9 @@ export async function POST(request: Request) {
       title: videoTitle || 'Untitled Video',
       tiktokVideoId: videoId,
       cover_image_url: videoCover || '',
-      status: 'PUBLISHED', // Direct to PUBLISHED since it's already on TikTok
+      status: 'PENDING_APPROVAL', // Requires admin review
       submittedAt: admin.firestore.FieldValue.serverTimestamp(),
-      payoutStatus: 'ELIGIBLE', // Immediately eligible for tracking
+      payoutStatus: 'PENDING_APPROVAL', // Not eligible until approved
       like_count: 0, // Will be updated by the periodic tracker
       lastPaidLikeCount: 0, 
       submissionMethod: 'SELECT_EXISTING'
