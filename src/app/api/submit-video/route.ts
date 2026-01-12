@@ -72,7 +72,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { campaignId, videoId, videoTitle, videoCover } = await request.json();
+    const { campaignId, videoId, videoTitle, videoCover, videoUrl } = await request.json();
 
     if (!campaignId || !videoId) {
       return NextResponse.json({ success: false, message: 'Missing required fields (campaignId, videoId)' }, { status: 400 });
@@ -103,7 +103,7 @@ export async function POST(request: Request) {
       tiktokOpenId: userInfo.open_id,
       title: videoTitle || 'Untitled Video',
       tiktokVideoId: videoId,
-      videoUrl: (await request.json()).videoUrl || `https://www.tiktok.com/@/video/${videoId}`,
+      videoUrl: videoUrl || `https://www.tiktok.com/@/video/${videoId}`,
       cover_image_url: videoCover || '',
       status: 'PENDING_APPROVAL', // Requires admin review
       submittedAt: admin.firestore.FieldValue.serverTimestamp(),
