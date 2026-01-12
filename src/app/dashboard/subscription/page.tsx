@@ -35,8 +35,7 @@ const tiers = [
     features: [
       'Earn KES 50 per 1000 Likes',
       'Participate in 1 campaign per month',
-      'Minimum withdrawal: KES 1,000',
-      'Maximum withdrawal: KES 1,500',
+      'Upgrade to withdraw earnings',
     ],
     cta: 'Use Free Plan',
     popular: false,

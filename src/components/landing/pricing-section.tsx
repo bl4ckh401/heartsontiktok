@@ -12,6 +12,20 @@ import Link from 'next/link';
 
 const tiers = [
   {
+    name: 'Free',
+    price: 'KES 0',
+    frequency: '/lifetime',
+    description: 'Start for free and participate in one campaign.',
+    features: [
+      'Earn KES 50 per 1000 Likes',
+      'Participate in 1 campaign per month',
+      'Upgrade to withdraw earnings',
+    ],
+    cta: 'Start for Free',
+    href: '/login?plan=Free',
+    popular: false,
+  },
+  {
     name: 'Gold',
     price: 'KES 1,000',
     frequency: '/lifetime',
@@ -76,7 +90,7 @@ export function PricingSection() {
         </p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
         {tiers.map((tier) => (
           <Card
             key={tier.name}

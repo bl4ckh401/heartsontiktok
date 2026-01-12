@@ -89,7 +89,7 @@ export default function PayoutsPage() {
             }
             const data = await response.json();
             if (data.videos) {
-                setEligibleVideos(data.videos.filter((v: any) => v.payoutStatus === 'ELIGIBLE'));
+                setEligibleVideos(data.videos);
             } else if (data.error) {
                 throw new Error(data.error);
             }
@@ -293,6 +293,28 @@ export default function PayoutsPage() {
         </div>
     );
 
+    const getStatusBadge = (status: string) => {
+        const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+            ELIGIBLE: 'default',
+            PENDING: 'outline',
+            PENDING_APPROVAL: 'outline',
+            PAID: 'secondary',
+            UNPAID: 'default',
+            REJECTED: 'destructive'
+        };
+
+        const labels: Record<string, string> = {
+            ELIGIBLE: 'Eligible',
+            PENDING: 'Pending',
+            PENDING_APPROVAL: 'In Review',
+            PAID: 'Paid',
+            UNPAID: 'Unpaid',
+            REJECTED: 'Rejected'
+        };
+
+        return <Badge variant={variants[status] || 'outline'}>{labels[status] || status}</Badge>;
+    };
+
     return (
         <div className="container mx-auto py-6 space-y-8">
              <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
@@ -356,12 +378,12 @@ export default function PayoutsPage() {
                                             <Card
                                                 key={video.id}
                                                 className={`overflow-hidden transition-all duration-200 cursor-pointer ${selectedVideoIds.includes(video.id) ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : 'ring-0 hover:ring-2 hover:ring-muted-foreground/20'}`}
-                                                onClick={() => handleSelectVideo(video.id)}
+                                                onClick={() => video.payoutStatus === 'ELIGIBLE' && handleSelectVideo(video.id)}
                                             >
                                                 <div className="relative">
                                                     <Image
                                                         alt={video.title || "Video thumbnail"}
-                                                        className="aspect-video w-full object-cover"
+                                                        className={`aspect-video w-full object-cover ${video.payoutStatus !== 'ELIGIBLE' ? 'opacity-75 grayscale-[0.5]' : ''}`}
                                                         height="200"
                                                         src={video.cover_image_url || 'https://placehold.co/400x225.png'}
                                                         width="400"
@@ -369,8 +391,14 @@ export default function PayoutsPage() {
                                                         onError={(e) => e.currentTarget.src = 'https://placehold.co/400x225.png'}
                                                         data-ai-hint="video thumbnail"
                                                     />
-                                                    <div className="absolute top-2 right-2">
-                                                         <Checkbox checked={selectedVideoIds.includes(video.id)} className="bg-background/80 backdrop-blur-sm h-6 w-6 border-2" />
+                                                    <div className="absolute top-2 right-2 flex gap-2">
+                                                        {getStatusBadge(video.payoutStatus)}
+                                                        {video.payoutStatus === 'ELIGIBLE' && (
+                                                            <Checkbox
+                                                                checked={selectedVideoIds.includes(video.id)}
+                                                                className="bg-background/80 backdrop-blur-sm h-6 w-6 border-2"
+                                                            />
+                                                        )}
                                                     </div>
                                                 </div>
                                                 <CardContent className="p-4">

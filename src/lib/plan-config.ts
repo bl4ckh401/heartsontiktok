@@ -2,9 +2,9 @@ export const PLAN_CONFIG = {
   Free: {
     price: 0,
     maxCampaignParticipationPerMonth: 1,
-    minWithdrawal: 1000,
-    maxWithdrawal: 1500,
-    maxDailyPayout: 1500, // For compatibility, same as maxWithdrawal
+    minWithdrawal: 0,
+    maxWithdrawal: 0,
+    maxDailyPayout: 0, // Payouts disabled for Free plan
     payoutRatePer1000Likes: 50,
   },
   Gold: {
