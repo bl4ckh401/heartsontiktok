@@ -55,7 +55,11 @@ async function canSubmitToCampaign(userId: string, campaignId: string): Promise<
   const uniqueCampaignIds = new Set(submissionsSnapshot.docs.map(doc => doc.data().campaignId));
 
   if (uniqueCampaignIds.size >= limit) {
-    return { canSubmit: false, message: `You have reached your monthly limit of ${limit} campaign participations for the ${plan} plan.` };
+    // If the user is trying to submit to a campaign they are ALREADY participating in, allow it.
+    // The limit only applies to joining NEW unique campaigns.
+    if (!uniqueCampaignIds.has(campaignId)) {
+      return { canSubmit: false, message: `You have reached your monthly limit of ${limit} campaign participations for the ${plan} plan.` };
+    }
   }
 
   return { canSubmit: true, message: '' };

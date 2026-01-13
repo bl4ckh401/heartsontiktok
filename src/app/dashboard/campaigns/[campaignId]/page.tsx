@@ -320,7 +320,7 @@ const CampaignDetailsPage = () => {
                 <li className="flex items-start">
                   <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-1 flex-shrink-0" />
                   <span>
-                    <strong>Mention:</strong> Tag our official account @likezzbuddy in the video caption.
+                    <strong>Mention:</strong> Tag our official account @likezbuddy in the video caption.
                   </span>
                 </li>
                 <li className="flex items-start">

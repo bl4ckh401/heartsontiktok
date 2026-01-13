@@ -308,7 +308,7 @@ export default function AdminDashboard() {
                           <TableRow key={submission.id} className="hover:bg-muted/50">
                             <TableCell className="font-medium">
                               <div className="flex flex-col">
-                                <span>{submission.title || 'Untitled Campaign'}</span>
+                                <span>{submission.campaignName || 'Unknown Campaign'}</span>
                                 <span className="text-xs text-muted-foreground">{submission.campaignId}</span>
                               </div>
                             </TableCell>

@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     title: 'LikezBuddy - Creator Monetization Platform',
     description: 'Transform your TikTok passion into income. Earn KES 50 per 1,000 likes through brand campaigns.',
     images: ['/og-image.jpg'],
-    creator: '@likezzbuddy',
+    creator: '@likezbuddy',
   },
   robots: {
     index: true,

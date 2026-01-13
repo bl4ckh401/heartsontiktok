@@ -16,14 +16,31 @@ export async function GET(request: NextRequest) {
       .limit(100)
       .get();
     
-    const submissions = submissionsSnapshot.docs.map(doc => {
+    const submissionsData = submissionsSnapshot.docs.map(doc => {
       const data = doc.data();
       return {
         id: doc.id,
         ...data,
-        createdAt: (data.submittedAt?.toDate?.() || data.createdAt?.toDate?.() || new Date()).toISOString()
       };
     });
+
+    // Fetch campaign details
+    const campaignIds = Array.from(new Set(submissionsData.map((s: any) => s.campaignId).filter(Boolean)));
+    const campaignsSnapshot = await Promise.all(
+      campaignIds.map(id => adminDb.collection('campaigns').doc(id).get())
+    );
+    const campaignsMap = campaignsSnapshot.reduce((acc, doc) => {
+      if (doc.exists) {
+        acc[doc.id] = doc.data()?.name || 'Unknown Campaign';
+      }
+      return acc;
+    }, {} as Record<string, string>);
+
+    const submissions = submissionsData.map((s: any) => ({
+      ...s,
+      campaignName: campaignsMap[s.campaignId] || 'Unknown',
+      createdAt: (s.submittedAt?.toDate?.() || s.createdAt?.toDate?.() || new Date()).toISOString()
+    }));
 
     return NextResponse.json({
       success: true,

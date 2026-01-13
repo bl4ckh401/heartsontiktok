@@ -17,6 +17,7 @@ interface OnboardingStep {
   position: 'top' | 'bottom' | 'left' | 'right';
   icon: React.ElementType;
   highlight?: boolean;
+  requiresSidebar?: boolean;
 }
 
 const onboardingSteps: OnboardingStep[] = [
@@ -44,6 +45,7 @@ const onboardingSteps: OnboardingStep[] = [
     target: 'a[href="/dashboard/campaigns/list"]',
     position: 'right',
     icon: Zap,
+    requiresSidebar: true,
   },
   {
     id: 'payouts',
@@ -52,6 +54,7 @@ const onboardingSteps: OnboardingStep[] = [
     target: 'a[href="/dashboard/payouts"]',
     position: 'right',
     icon: Zap,
+    requiresSidebar: true,
   },
   {
     id: 'affiliates',
@@ -60,6 +63,7 @@ const onboardingSteps: OnboardingStep[] = [
     target: 'a[href="/dashboard/affiliates"]',
     position: 'right',
     icon: Zap,
+    requiresSidebar: true,
   },
 ];
 
@@ -79,8 +83,24 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
     if (!isOpen || !step) return;
 
     const findTarget = () => {
+      // Handle mobile sidebar
+      if (step.requiresSidebar && window.innerWidth < 768) {
+        const trigger = document.getElementById('mobile-menu-trigger');
+        if (trigger && trigger.getAttribute('data-state') !== 'open') {
+          trigger.click();
+          // Return false to indicate we are waiting for sidebar to open
+          // We'll rely on the retry timeout to find the element once it's visible
+        }
+      }
+
       const element = document.querySelector(step.target) as HTMLElement;
       if (element) {
+        // If element is found but not visible (e.g. sidebar closed but DOM exists), check visibility
+        if (element.offsetParent === null && step.requiresSidebar && window.innerWidth < 768) {
+          // Try clicking trigger again if needed, or just wait loop
+          return;
+        }
+
         setTargetElement(element);
         
         // Add highlight class
@@ -99,10 +119,26 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
         const maxLeft = window.innerWidth - tooltipWidth - 20;
         const maxTop = window.innerHeight - 300;
         
-        // On mobile, always position below the element for better visibility
+        // Mobile positioning logic
         if (window.innerWidth < 640) {
-          top = rect.bottom + scrollTop + 20;
-          left = 16; // Fixed left margin on mobile
+          const viewportHeight = window.innerHeight;
+          const spaceBelow = viewportHeight - rect.bottom;
+          const tooltipHeightEstimate = 200; // Approximate height
+
+          left = 16; // Default left margin
+
+          // If limited space below, try above
+          if (spaceBelow < tooltipHeightEstimate && rect.top > tooltipHeightEstimate) {
+            // Position above
+            top = rect.top + scrollTop - tooltipHeightEstimate - 10;
+          } else if (step.requiresSidebar) {
+            // Sidebar item logic
+            top = rect.bottom + scrollTop + 10;
+            left = 40;
+          } else {
+          // Default below
+              top = rect.bottom + scrollTop + 20;
+            }
         } else {
           switch (step.position) {
             case 'top':
@@ -129,24 +165,26 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
           left: Math.max(20, Math.min(left, maxLeft)),
         });
         
-        // Scroll element into view
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Scroll element into view (Removed in favor of manual scroll above)
+        // element.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     };
 
     // Try to find target immediately
     findTarget();
     
-    // If not found, try again after a short delay
-    const timeout = setTimeout(findTarget, 100);
+    // Retry loop to handle animations (sidebar opening)
+    const interval = setInterval(findTarget, 200);
+    const timeout = setTimeout(() => clearInterval(interval), 3000); // Stop looking after 3s
     
     return () => {
+      clearInterval(interval);
       clearTimeout(timeout);
       if (targetElement) {
         targetElement.classList.remove('onboarding-highlight');
       }
     };
-  }, [currentStep, isOpen, step, targetElement]);
+  }, [currentStep, isOpen, step]); // Remove targetElement dependency to avoid loops
 
   const nextStep = () => {
     if (currentStep < onboardingSteps.length - 1) {
@@ -185,6 +223,14 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
 
   if (!isOpen || !step) return null;
 
+  // Hide tooltip if celebration is showing to prevent overlap
+  if (showCelebration) {
+    return <CompletionCelebration
+      isVisible={showCelebration}
+      onClose={handleCelebrationClose}
+    />;
+  }
+
   const Icon = step.icon;
 
   return (
@@ -197,7 +243,7 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
       
       {/* Tooltip */}
       <Card 
-        className="fixed z-50 w-[calc(100vw-2rem)] max-w-80 sm:w-96 shadow-2xl border-primary/20 bg-gradient-to-br from-card/98 to-card/95 backdrop-blur-md transition-all duration-300 animate-in fade-in-0 zoom-in-95"
+        className="fixed z-[100] w-[calc(100vw-2rem)] max-w-80 sm:w-96 shadow-2xl border-primary/20 bg-gradient-to-br from-card/98 to-card/95 backdrop-blur-md transition-all duration-300 animate-in fade-in-0 zoom-in-95"
         style={{
           top: tooltipPosition.top,
           left: tooltipPosition.left,
@@ -269,11 +315,7 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
           </div>
         </CardContent>
       </Card>
-      
-      <CompletionCelebration 
-        isVisible={showCelebration} 
-        onClose={handleCelebrationClose} 
-      />
+
     </>
   );
 }

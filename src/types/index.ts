@@ -51,4 +51,5 @@ export type CampaignSubmission = {
   title?: string;
   cover_image_url?: string;
   tiktokVideoId?: string;
+  campaignName?: string;
 };
