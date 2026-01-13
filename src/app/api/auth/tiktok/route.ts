@@ -31,8 +31,8 @@ export async function GET(req: NextRequest) {
     // 'user.info.profile',
     'user.info.stats',
     'video.list',
-    'video.publish',
-    'video.upload',
+    // 'video.publish',
+    // 'video.upload',
  ].join(',');
 
   let url = 'https://www.tiktok.com/v2/auth/authorize/';
