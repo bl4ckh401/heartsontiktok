@@ -24,6 +24,6 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
-    sitemap: 'https://likezzbuddy.vercel.app/sitemap.xml',
+    sitemap: 'https://likezbuddy.com/sitemap.xml',
   }
 }

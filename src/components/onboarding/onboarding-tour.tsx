@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -76,6 +76,15 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
+  const [showCelebration, setShowCelebration] = useState(false);
+
+  // Ref to track if we've attempted to open sidebar for specific step
+  const sidebarOpenAttemptRef = useRef<string | null>(null);
+
+  // Reset ref when step changes
+  useEffect(() => {
+    sidebarOpenAttemptRef.current = null;
+  }, [currentStep]);
 
   const step = onboardingSteps[currentStep];
 
@@ -86,10 +95,12 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
       // Handle mobile sidebar
       if (step.requiresSidebar && window.innerWidth < 768) {
         const trigger = document.getElementById('mobile-menu-trigger');
-        if (trigger && trigger.getAttribute('data-state') !== 'open') {
-          trigger.click();
-          // Return false to indicate we are waiting for sidebar to open
-          // We'll rely on the retry timeout to find the element once it's visible
+        // Only attempt to click if we haven't done so for this step
+        if (trigger && sidebarOpenAttemptRef.current !== step.id) {
+          if (trigger.getAttribute('data-state') !== 'open') {
+            trigger.click();
+            sidebarOpenAttemptRef.current = step.id; // Mark as attempted
+          }
         }
       }
 
@@ -97,7 +108,6 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
       if (element) {
         // If element is found but not visible (e.g. sidebar closed but DOM exists), check visibility
         if (element.offsetParent === null && step.requiresSidebar && window.innerWidth < 768) {
-          // Try clicking trigger again if needed, or just wait loop
           return;
         }
 
@@ -136,9 +146,9 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
             top = rect.bottom + scrollTop + 10;
             left = 40;
           } else {
-          // Default below
-              top = rect.bottom + scrollTop + 20;
-            }
+            // Default below
+            top = rect.bottom + scrollTop + 20;
+          }
         } else {
           switch (step.position) {
             case 'top':
@@ -165,8 +175,8 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
           left: Math.max(20, Math.min(left, maxLeft)),
         });
         
-        // Scroll element into view (Removed in favor of manual scroll above)
-        // element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Scroll element into view
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     };
 
@@ -200,8 +210,6 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
     }
   };
 
-  const [showCelebration, setShowCelebration] = useState(false);
-
   const handleClose = () => {
     if (targetElement) {
       targetElement.classList.remove('onboarding-highlight');
@@ -225,10 +233,14 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
 
   // Hide tooltip if celebration is showing to prevent overlap
   if (showCelebration) {
-    return <CompletionCelebration
-      isVisible={showCelebration}
-      onClose={handleCelebrationClose}
-    />;
+    return (
+      <div className="relative z-[200]">
+        <CompletionCelebration
+          isVisible={showCelebration}
+          onClose={handleCelebrationClose}
+        />
+      </div>
+    );
   }
 
   const Icon = step.icon;

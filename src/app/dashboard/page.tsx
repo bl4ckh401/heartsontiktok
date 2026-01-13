@@ -206,7 +206,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6" data-testid="key-metrics">
         <MetricCard title="Total Earnings" value={loadingAffiliateSummary ? 'Loading...' : `KES ${affiliateSummary?.totalEarnings.toFixed(2) || '0.00'}`} icon={TrendingUp} delay={100} />
         <MetricCard title="Conversions" value={loadingAffiliateSummary ? 'Loading...' : affiliateSummary?.totalConversions.toLocaleString() || '0'} icon={Users} delay={100} />
         <MetricCard title="Videos Posted" value={userProfile.video_count?.toLocaleString() || '0'} icon={Video} delay={200} />

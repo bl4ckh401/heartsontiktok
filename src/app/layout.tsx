@@ -31,14 +31,14 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://likezzbuddy.vercel.app'),
+  metadataBase: new URL('https://likezbuddy.com'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     title: 'LikezBuddy - Creator Monetization Platform',
     description: 'Transform your TikTok passion into income. Earn KES 50 per 1,000 likes through brand campaigns and affiliate programs.',
-    url: 'https://likezzbuddy.vercel.app',
+    url: 'https://likezbuddy.com',
     siteName: 'LikezBuddy',
     images: [
       {
@@ -89,7 +89,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="LikezBuddy" />
-        <link rel="canonical" href="https://likezzbuddy.vercel.app" />
+        <link rel="canonical" href="https://likezbuddy.com" />
         <meta name="geo.region" content="KE" />
         <meta name="geo.country" content="Kenya" />
         <meta name="language" content="English" />
@@ -102,7 +102,7 @@ export default function RootLayout({
               '@type': 'WebApplication',
               name: 'LikezBuddy',
               description: 'Creator monetization platform for TikTok content creators to earn money through brand campaigns and affiliate programs',
-              url: 'https://likezzbuddy.vercel.app',
+              url: 'https://likezbuddy.com',
               applicationCategory: 'BusinessApplication',
               operatingSystem: 'Web',
               offers: {
@@ -114,7 +114,7 @@ export default function RootLayout({
               creator: {
                 '@type': 'Organization',
                 name: 'LikezBuddy',
-                url: 'https://likezzbuddy.vercel.app'
+                url: 'https://likezbuddy.com'
               },
               featureList: [
                 'TikTok Content Monetization',
