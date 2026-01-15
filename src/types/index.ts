@@ -27,6 +27,7 @@ export type User = {
   subscriptionPlan?: string;
   createdAt: string;
   photoURL?: string;
+  followerCount?: number;
 };
 
 export type Transaction = {

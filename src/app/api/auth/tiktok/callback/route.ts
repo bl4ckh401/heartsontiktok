@@ -97,6 +97,7 @@ export async function GET(req: NextRequest) {
         displayName: tiktokUserData.display_name,
         photoURL: tiktokUserData.avatar_url,
         open_id: tiktokUserData.open_id,
+        followerCount: tiktokUserData.follower_count,
         updatedAt: new Date(),
       }, { merge: true });
     } catch (error: any) {
@@ -110,6 +111,7 @@ export async function GET(req: NextRequest) {
       displayName: tiktokUserData.display_name,
       photoURL: tiktokUserData.avatar_url,
       open_id: tiktokUserData.open_id,
+      followerCount: tiktokUserData.follower_count,
       createdAt: new Date(),
       subscriptionPlan: 'Free',
       subscriptionStatus: 'ACTIVE',
